@@ -1,0 +1,726 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-06T07:52:44.824686+00:00",
+  "title": "Design System: RiverAtlas Showcase",
+  "extensions": {
+    "colorMeta": {
+      "sea": {
+        "role": "primary",
+        "displayName": "深海底色",
+        "canonical": "#061a2c",
+        "tonalRamp": [
+          "oklch(15% 0.0137 248.05)",
+          "oklch(27% 0.0283 248.05)",
+          "oklch(39% 0.0389 248.05)",
+          "oklch(51% 0.0440 248.05)",
+          "oklch(63% 0.0430 248.05)",
+          "oklch(75% 0.0359 248.05)",
+          "oklch(87% 0.0238 248.05)",
+          "oklch(95% 0.0137 248.05)"
+        ]
+      },
+      "panel": {
+        "role": "primary",
+        "displayName": "次级海蓝",
+        "canonical": "#123750",
+        "tonalRamp": [
+          "oklch(15% 0.0188 241.83)",
+          "oklch(27% 0.0389 241.83)",
+          "oklch(39% 0.0534 241.83)",
+          "oklch(51% 0.0605 241.83)",
+          "oklch(63% 0.0591 241.83)",
+          "oklch(75% 0.0493 241.83)",
+          "oklch(87% 0.0327 241.83)",
+          "oklch(95% 0.0188 241.83)"
+        ]
+      },
+      "water": {
+        "role": "primary",
+        "displayName": "水系青蓝",
+        "canonical": "#67d8ea",
+        "tonalRamp": [
+          "oklch(15% 0.0326 209.25)",
+          "oklch(27% 0.0672 209.25)",
+          "oklch(39% 0.0923 209.25)",
+          "oklch(51% 0.1045 209.25)",
+          "oklch(63% 0.1021 209.25)",
+          "oklch(75% 0.0852 209.25)",
+          "oklch(87% 0.0565 209.25)",
+          "oklch(95% 0.0326 209.25)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "正文雾白",
+        "canonical": "#edf4f8",
+        "tonalRamp": [
+          "oklch(15% 0.0028 232.36)",
+          "oklch(27% 0.0059 232.36)",
+          "oklch(39% 0.0081 232.36)",
+          "oklch(51% 0.0091 232.36)",
+          "oklch(63% 0.0089 232.36)",
+          "oklch(75% 0.0074 232.36)",
+          "oklch(87% 0.0049 232.36)",
+          "oklch(95% 0.0028 232.36)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "辅助灰蓝",
+        "canonical": "#b6cbd9",
+        "tonalRamp": [
+          "oklch(15% 0.0093 236.98)",
+          "oklch(27% 0.0192 236.98)",
+          "oklch(39% 0.0264 236.98)",
+          "oklch(51% 0.0299 236.98)",
+          "oklch(63% 0.0292 236.98)",
+          "oklch(75% 0.0244 236.98)",
+          "oklch(87% 0.0161 236.98)",
+          "oklch(95% 0.0093 236.98)"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "文件白",
+        "canonical": "#fff",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89.88)",
+          "oklch(27% 0.0000 89.88)",
+          "oklch(39% 0.0000 89.88)",
+          "oklch(51% 0.0000 89.88)",
+          "oklch(63% 0.0000 89.88)",
+          "oklch(75% 0.0000 89.88)",
+          "oklch(87% 0.0000 89.88)",
+          "oklch(95% 0.0000 89.88)"
+        ]
+      },
+      "amber": {
+        "role": "secondary",
+        "displayName": "待确认琥珀",
+        "canonical": "#f4c56a",
+        "tonalRamp": [
+          "oklch(15% 0.0371 82.34)",
+          "oklch(27% 0.0765 82.34)",
+          "oklch(39% 0.1052 82.34)",
+          "oklch(51% 0.1191 82.34)",
+          "oklch(63% 0.1162 82.34)",
+          "oklch(75% 0.0971 82.34)",
+          "oklch(87% 0.0643 82.34)",
+          "oklch(95% 0.0371 82.34)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "边界蓝灰",
+        "canonical": "#365066",
+        "tonalRamp": [
+          "oklch(15% 0.0150 244.85)",
+          "oklch(27% 0.0310 244.85)",
+          "oklch(39% 0.0426 244.85)",
+          "oklch(51% 0.0482 244.85)",
+          "oklch(63% 0.0470 244.85)",
+          "oklch(75% 0.0393 244.85)",
+          "oklch(87% 0.0260 244.85)",
+          "oklch(95% 0.0150 244.85)"
+        ]
+      },
+      "control-hover": {
+        "role": "neutral",
+        "displayName": "控件悬停",
+        "canonical": "#20455e",
+        "tonalRamp": [
+          "oklch(15% 0.0187 240.55)",
+          "oklch(27% 0.0385 240.55)",
+          "oklch(39% 0.0529 240.55)",
+          "oklch(51% 0.0599 240.55)",
+          "oklch(63% 0.0585 240.55)",
+          "oklch(75% 0.0489 240.55)",
+          "oklch(87% 0.0324 240.55)",
+          "oklch(95% 0.0187 240.55)"
+        ]
+      },
+      "control-pressed": {
+        "role": "neutral",
+        "displayName": "控件选中",
+        "canonical": "#225269",
+        "tonalRamp": [
+          "oklch(15% 0.0199 232.01)",
+          "oklch(27% 0.0410 232.01)",
+          "oklch(39% 0.0563 232.01)",
+          "oklch(51% 0.0638 232.01)",
+          "oklch(63% 0.0623 232.01)",
+          "oklch(75% 0.0520 232.01)",
+          "oklch(87% 0.0344 232.01)",
+          "oklch(95% 0.0199 232.01)"
+        ]
+      },
+      "control-pressed-ink": {
+        "role": "neutral",
+        "displayName": "控件选中文字",
+        "canonical": "#b5f3fb",
+        "tonalRamp": [
+          "oklch(15% 0.0195 206.04)",
+          "oklch(27% 0.0402 206.04)",
+          "oklch(39% 0.0552 206.04)",
+          "oklch(51% 0.0626 206.04)",
+          "oklch(63% 0.0611 206.04)",
+          "oklch(75% 0.0510 206.04)",
+          "oklch(87% 0.0338 206.04)",
+          "oklch(95% 0.0195 206.04)"
+        ]
+      },
+      "control-disabled": {
+        "role": "neutral",
+        "displayName": "禁用文字",
+        "canonical": "#829bad",
+        "tonalRamp": [
+          "oklch(15% 0.0120 239.46)",
+          "oklch(27% 0.0247 239.46)",
+          "oklch(39% 0.0340 239.46)",
+          "oklch(51% 0.0385 239.46)",
+          "oklch(63% 0.0376 239.46)",
+          "oklch(75% 0.0314 239.46)",
+          "oklch(87% 0.0208 239.46)",
+          "oklch(95% 0.0120 239.46)"
+        ]
+      },
+      "play": {
+        "role": "neutral",
+        "displayName": "播放底色",
+        "canonical": "#1c4c63",
+        "tonalRamp": [
+          "oklch(15% 0.0198 232.53)",
+          "oklch(27% 0.0409 232.53)",
+          "oklch(39% 0.0563 232.53)",
+          "oklch(51% 0.0637 232.53)",
+          "oklch(63% 0.0622 232.53)",
+          "oklch(75% 0.0520 232.53)",
+          "oklch(87% 0.0344 232.53)",
+          "oklch(95% 0.0198 232.53)"
+        ]
+      },
+      "play-ink": {
+        "role": "neutral",
+        "displayName": "播放文字",
+        "canonical": "#d5f8fc",
+        "tonalRamp": [
+          "oklch(15% 0.0113 204.98)",
+          "oklch(27% 0.0233 204.98)",
+          "oklch(39% 0.0321 204.98)",
+          "oklch(51% 0.0363 204.98)",
+          "oklch(63% 0.0354 204.98)",
+          "oklch(75% 0.0296 204.98)",
+          "oklch(87% 0.0196 204.98)",
+          "oklch(95% 0.0113 204.98)"
+        ]
+      },
+      "process": {
+        "role": "neutral",
+        "displayName": "流程底色",
+        "canonical": "#0c263d",
+        "tonalRamp": [
+          "oklch(15% 0.0166 248.17)",
+          "oklch(27% 0.0342 248.17)",
+          "oklch(39% 0.0471 248.17)",
+          "oklch(51% 0.0533 248.17)",
+          "oklch(63% 0.0520 248.17)",
+          "oklch(75% 0.0435 248.17)",
+          "oklch(87% 0.0288 248.17)",
+          "oklch(95% 0.0166 248.17)"
+        ]
+      },
+      "process-active": {
+        "role": "neutral",
+        "displayName": "当前讲解位置",
+        "canonical": "#16455e",
+        "tonalRamp": [
+          "oklch(15% 0.0203 235.90)",
+          "oklch(27% 0.0419 235.90)",
+          "oklch(39% 0.0576 235.90)",
+          "oklch(51% 0.0653 235.90)",
+          "oklch(63% 0.0637 235.90)",
+          "oklch(75% 0.0532 235.90)",
+          "oklch(87% 0.0352 235.90)",
+          "oklch(95% 0.0203 235.90)"
+        ]
+      },
+      "dialog": {
+        "role": "neutral",
+        "displayName": "阅读弹层",
+        "canonical": "#0c253a",
+        "tonalRamp": [
+          "oklch(15% 0.0155 246.78)",
+          "oklch(27% 0.0321 246.78)",
+          "oklch(39% 0.0441 246.78)",
+          "oklch(51% 0.0499 246.78)",
+          "oklch(63% 0.0487 246.78)",
+          "oklch(75% 0.0407 246.78)",
+          "oklch(87% 0.0270 246.78)",
+          "oklch(95% 0.0155 246.78)"
+        ]
+      },
+      "media-body": {
+        "role": "neutral",
+        "displayName": "媒体讲解正文",
+        "canonical": "#d7e6ed",
+        "tonalRamp": [
+          "oklch(15% 0.0058 227.29)",
+          "oklch(27% 0.0119 227.29)",
+          "oklch(39% 0.0164 227.29)",
+          "oklch(51% 0.0185 227.29)",
+          "oklch(63% 0.0181 227.29)",
+          "oklch(75% 0.0151 227.29)",
+          "oklch(87% 0.0100 227.29)",
+          "oklch(95% 0.0058 227.29)"
+        ]
+      },
+      "paired-paper": {
+        "role": "neutral",
+        "displayName": "并列文书纸面",
+        "canonical": "#f5f6f4",
+        "tonalRamp": [
+          "oklch(15% 0.0009 128.49)",
+          "oklch(27% 0.0018 128.49)",
+          "oklch(39% 0.0025 128.49)",
+          "oklch(51% 0.0028 128.49)",
+          "oklch(63% 0.0028 128.49)",
+          "oklch(75% 0.0023 128.49)",
+          "oklch(87% 0.0015 128.49)",
+          "oklch(95% 0.0009 128.49)"
+        ]
+      },
+      "photo-surface": {
+        "role": "neutral",
+        "displayName": "会议照片承托面",
+        "canonical": "#0b2437",
+        "tonalRamp": [
+          "oklch(15% 0.0147 244.38)",
+          "oklch(27% 0.0302 244.38)",
+          "oklch(39% 0.0416 244.38)",
+          "oklch(51% 0.0471 244.38)",
+          "oklch(63% 0.0460 244.38)",
+          "oklch(75% 0.0384 244.38)",
+          "oklch(87% 0.0254 244.38)",
+          "oklch(95% 0.0147 244.38)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "封面业务名称",
+        "purpose": "封面业务名称；业务布局的专用覆盖以实际源码为准。"
+      },
+      "headline": {
+        "displayName": "页面主标题",
+        "purpose": "页面主标题；业务布局的专用覆盖以实际源码为准。"
+      },
+      "title": {
+        "displayName": "图文小标题",
+        "purpose": "图文小标题；业务布局的专用覆盖以实际源码为准。"
+      },
+      "body": {
+        "displayName": "普通正文",
+        "purpose": "普通正文；业务布局的专用覆盖以实际源码为准。"
+      },
+      "lead": {
+        "displayName": "页面导语",
+        "purpose": "页面导语；业务布局的专用覆盖以实际源码为准。"
+      },
+      "label": {
+        "displayName": "控制文字",
+        "purpose": "控制文字；业务布局的专用覆盖以实际源码为准。"
+      },
+      "note": {
+        "displayName": "页注",
+        "purpose": "页注；业务布局的专用覆盖以实际源码为准。"
+      },
+      "table": {
+        "displayName": "审核表正文",
+        "purpose": "审核表正文；业务布局的专用覆盖以实际源码为准。"
+      },
+      "media-headline": {
+        "displayName": "媒体页主标题",
+        "purpose": "v1.1媒体展陈角色，普通业务页保留原有角色。"
+      },
+      "media-lead": {
+        "displayName": "媒体页导语",
+        "purpose": "v1.1媒体展陈角色，普通业务页保留原有角色。"
+      },
+      "media-title": {
+        "displayName": "讲解栏小标题",
+        "purpose": "v1.1媒体展陈角色，普通业务页保留原有角色。"
+      },
+      "media-body": {
+        "displayName": "讲解栏正文",
+        "purpose": "v1.1媒体展陈角色，普通业务页保留原有角色。"
+      },
+      "media-control": {
+        "displayName": "图件控制文字",
+        "purpose": "v1.1媒体展陈角色，普通业务页保留原有角色。"
+      },
+      "media-caption": {
+        "displayName": "图件名称",
+        "purpose": "v1.1媒体展陈角色，普通业务页保留原有角色。"
+      }
+    },
+    "shadows": [
+      {
+        "name": "dialog-shadow",
+        "value": "0 22px 40px #00000066",
+        "purpose": "弹出阅读层，遮罩背景#00101de8。"
+      },
+      {
+        "name": "document-shadow",
+        "value": "0 12px 30px #0005",
+        "purpose": "文书展台纸面承托，照片面无投影。"
+      },
+      {
+        "name": "layer-shadow",
+        "value": "0 18px 28px #0007",
+        "purpose": "v1.4真实图件裁切的资料分层承托；非配准GIS。"
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(.23, 1, .32, 1)",
+        "purpose": "既有CSS按钮与流程顶部线缓动。"
+      },
+      {
+        "name": "button-background",
+        "value": "150ms ease",
+        "purpose": "精细指针按钮背景过渡。"
+      },
+      {
+        "name": "button-press",
+        "value": "120ms",
+        "purpose": "按下缩放至0.97。"
+      },
+      {
+        "name": "cover-copy",
+        "value": "1.1s power3.out; stagger .18s",
+        "purpose": "封面文字y32px归位，线条1.2s展开。"
+      },
+      {
+        "name": "headings-entry",
+        "value": ".65s power3.out; stagger .12s",
+        "purpose": "普通标题和导语y18px归位。"
+      },
+      {
+        "name": "groups-entry",
+        "value": ".7s power3.out; stagger .09s",
+        "purpose": "业务组y26px归位。"
+      },
+      {
+        "name": "media-entry",
+        "value": "1.05s power3.out",
+        "purpose": "展台y30px、scale .965归位。"
+      },
+      {
+        "name": "media-switch",
+        "value": ".85s power3.out; stagger .12s",
+        "purpose": "图件y24px、rotationY7deg、scale .96归位。"
+      },
+      {
+        "name": "media-sequence",
+        "value": "3.2s",
+        "purpose": "显式播放间隔，手选中断序列。"
+      },
+      {
+        "name": "layers-entry",
+        "value": "none",
+        "purpose": "v1.4第七页手动图层，无旧空白叠层入场或自动播放。"
+      },
+      {
+        "name": "process-step",
+        "value": "1.5s",
+        "purpose": "流程与概念叠层阶段间隔。"
+      },
+      {
+        "name": "node-emphasis",
+        "value": ".55s power3.out",
+        "purpose": "流程节点y9px归位。"
+      },
+      {
+        "name": "layer-emphasis",
+        "value": ".55s power3.out",
+        "purpose": "v1.4人工选层，展开时所选层额外z18px/x-32px；静态直接切换。"
+      },
+      {
+        "name": "process-line",
+        "value": ".85s power3.inOut",
+        "purpose": "当前讲解位置连线。"
+      },
+      {
+        "name": "process-top-line",
+        "value": ".65s cubic-bezier(.23, 1, .32, 1)",
+        "purpose": "流程节点顶部线展开。"
+      },
+      {
+        "name": "chart-entry",
+        "value": "1.4s power2.inOut; stagger .16s",
+        "purpose": "面积条入场，完整数值保留。"
+      },
+      {
+        "name": "chart-replay",
+        "value": ".9s power3.out",
+        "purpose": "显式面积重播。"
+      },
+      {
+        "name": "map-focus",
+        "value": ".35s power3.out",
+        "purpose": "原栅格图局部查看，非GIS量算。"
+      },
+      {
+        "name": "landscape-draw",
+        "value": "1440x672; draw interval >=32ms",
+        "purpose": "持续WebGL水面UV扰动、微光与山体视差，约30帧调度目标，非性能实测。"
+      },
+      {
+        "name": "landscape-fallback",
+        "value": "24000ms ease-in-out infinite",
+        "purpose": "无WebGL/上下文丢失回退原图1.04至1.10倍轻缓镜头，统一暂停和静态控制。"
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "small-screen",
+        "value": "767px"
+      }
+    ],
+    "manualDocumentExhibit": {
+      "scope": "第二页手动样板",
+      "copyColumn": "280px",
+      "gap": "30px",
+      "columns": {
+        "rest": "1fr 1fr",
+        "focus": "1.55fr .65fr"
+      },
+      "paper": "#f2f2ef",
+      "ink": "#14334a",
+      "muted": "#3c5c6d",
+      "divider": "#c4d0d3",
+      "buttonBorder": "#9db2bc",
+      "hover": "#dce9eb",
+      "radius": "4px",
+      "title": {
+        "fontSize": "25px",
+        "fontWeight": 600
+      },
+      "field": {
+        "fontSize": "15px",
+        "fontWeight": 500
+      },
+      "motion": {
+        "durationMs": 350,
+        "ease": "power3.out",
+        "technique": "FLIP transform + image camera"
+      },
+      "automaticPlayback": false,
+      "hoverFocus": true,
+      "clickPin": true,
+      "keyboardAndTouch": true,
+      "completeOriginal": true,
+      "mobileCardHeight": "570px"
+    },
+    "manualPolicyLibrary": {
+      "scope": "第三页",
+      "directoryWidth": "650px",
+      "columnGap": "44px",
+      "readerPadding": "34px",
+      "separator": "1px #365066",
+      "rowFontSize": "24px",
+      "rowLineHeight": 1.5,
+      "groupFontSize": "23px",
+      "groupFontWeight": 550,
+      "supportFontSize": "22px",
+      "selectedBackground": "#173e53",
+      "selectedInk": "#c0f2f7",
+      "fixedBackground": "#225269",
+      "fixedInk": "#d5f8fc",
+      "selectionDurationMs": 280,
+      "zoomDurationMs": 250,
+      "ease": "power3.out",
+      "hoverZoom": 1.42,
+      "automaticPlayback": false,
+      "hoverPreview": true,
+      "clickPin": true,
+      "defaultAsset": 9,
+      "mobileRowFontSize": "19px",
+      "mobileReaderHeight": "460px",
+      "showReaderTitle": false,
+      "showReaderMeta": false,
+      "showOperationHints": false,
+      "readerUsesFullHeight": true
+    },
+    "pointerStarfield": {
+      "stars": 207,
+      "base": "#061a2c",
+      "color": "185,218,237",
+      "depths": [
+        0.3,
+        0.65,
+        1
+      ],
+      "horizontalRange": 28,
+      "verticalRange": 20,
+      "canvasWidthCap": 1920,
+      "idleAnimation": false,
+      "pointerDriven": true,
+      "pauseAndReducedMotion": true
+    },
+    "atlasLayerScene": {
+      "copyWidth": "380px",
+      "gap": "26px",
+      "perspective": "1450px",
+      "planeSize": [
+        "720px",
+        "380px"
+      ],
+      "depthStep": 64,
+      "selectedDepthOffset": 18,
+      "rotationX": 50,
+      "rotationZ": -18,
+      "radius": "4px",
+      "thickness": "8px",
+      "shadow": "0 18px 28px #0007",
+      "titleFontSize": "25px",
+      "bodyFontSize": "22px",
+      "bodyLineHeight": 1.55,
+      "labelFontSize": "25px",
+      "transitionMs": 550,
+      "orbitMs": 300,
+      "automaticPlayback": false,
+      "sourceAssets": [
+        19,
+        17,
+        18,
+        19
+      ],
+      "georeferencedGIS": false
+    }
+  },
+  "components": [
+    {
+      "name": "描边按钮",
+      "kind": "button",
+      "refersTo": "button-plain",
+      "description": "全部页面等辅助操作。",
+      "html": "<button class=\"ds-plain\" type=\"button\">全部页面</button>",
+      "css": ".ds-plain{font-family:\"Microsoft YaHei\", \"DengXian\", \"PingFang SC\", sans-serif;font-size:18px;line-height:1.3;color:var(--ink, #edf4f8);cursor:pointer;border:1px solid transparent;border-radius:8px;padding:10px 14px;background:transparent;transition:background-color 150ms ease,transform 120ms var(--ease-out, cubic-bezier(.23, 1, .32, 1));border-color:var(--line, #365066);}.ds-plain:focus-visible{outline:3px solid var(--water, #67d8ea);outline-offset:4px;}.ds-plain:active:not(:disabled){transform:scale(.97)}.ds-plain:disabled{color:#829bad;cursor:default}@media(hover:hover) and (pointer:fine){.ds-plain:hover:not(:disabled){background-color:#20455e}}@media(prefers-reduced-motion:reduce){.ds-plain{transition:none}}"
+    },
+    {
+      "name": "播放按钮",
+      "kind": "button",
+      "refersTo": "button-play",
+      "description": "显式触发当前页演示；保留实际ID背景优先级。",
+      "html": "<button class=\"ds-play\" type=\"button\">播放演示</button>",
+      "css": ".ds-play{font-family:\"Microsoft YaHei\", \"DengXian\", \"PingFang SC\", sans-serif;font-size:18px;line-height:1.3;color:var(--ink, #edf4f8);cursor:pointer;border:1px solid transparent;border-radius:8px;padding:10px 14px;background:transparent;transition:background-color 150ms ease,transform 120ms var(--ease-out, cubic-bezier(.23, 1, .32, 1));background:#1c4c63;color:#d5f8fc;padding:10px 12px;min-height:42px;}.ds-play:focus-visible{outline:3px solid var(--water, #67d8ea);outline-offset:4px;}.ds-play:active:not(:disabled){transform:scale(.97)}.ds-play:disabled{color:#829bad;cursor:default}@media(prefers-reduced-motion:reduce){.ds-play{transition:none}}.ds-play:hover:not(:disabled){background:#1c4c63}.ds-play:disabled{background:transparent;color:#829bad}"
+    },
+    {
+      "name": "章节导航",
+      "kind": "nav",
+      "refersTo": "chapter-navigation",
+      "description": "当前章节文字与下划线；单个当前项样例，不包含导航运行时。",
+      "html": "<nav aria-label=\"章节\"><button class=\"ds-chapter\" type=\"button\" aria-current=\"true\">项目实施</button></nav>",
+      "css": ".ds-chapter{font-family:\"Microsoft YaHei\", \"DengXian\", \"PingFang SC\", sans-serif;font-size:18px;line-height:1.3;color:var(--ink, #edf4f8);cursor:pointer;border:1px solid transparent;border-radius:8px;padding:10px 14px;background:transparent;transition:background-color 150ms ease,transform 120ms var(--ease-out, cubic-bezier(.23, 1, .32, 1));font-size:20px;padding:12px 16px;border-radius:0;color:var(--muted, #b6cbd9);position:relative;}.ds-chapter:focus-visible{outline:3px solid var(--water, #67d8ea);outline-offset:4px;}.ds-chapter:active:not(:disabled){transform:scale(.97)}.ds-chapter:disabled{color:#829bad;cursor:default}@media(hover:hover) and (pointer:fine){.ds-chapter:hover:not(:disabled){background-color:#20455e}}@media(prefers-reduced-motion:reduce){.ds-chapter{transition:none}}.ds-chapter[aria-current=\"true\"]{color:var(--water, #67d8ea)}.ds-chapter[aria-current=\"true\"]::after{content:\"\";position:absolute;bottom:-12px;left:16px;right:16px;height:2px;background:var(--water, #67d8ea)}"
+    },
+    {
+      "name": "事实状态标签",
+      "kind": "chip",
+      "refersTo": "status-label",
+      "description": "非交互状态说明，无悬停或按下态。",
+      "html": "<span class=\"ds-status\">待确认</span>",
+      "css": ".ds-status{font-family:\"Microsoft YaHei\", \"DengXian\", \"PingFang SC\", sans-serif;border:1px solid #b28a42;color:var(--amber, #f4c56a);font-size:19px;padding:7px 14px;white-space:nowrap;border-radius:6px}"
+    },
+    {
+      "name": "页面搜索",
+      "kind": "input",
+      "refersTo": "search-input",
+      "description": "现有标题搜索，保留焦点与占位色。",
+      "html": "<input class=\"ds-search\" type=\"search\" aria-label=\"搜索页面标题\" placeholder=\"搜索页面标题\">",
+      "css": ".ds-search{font-family:\"Microsoft YaHei\", \"DengXian\", \"PingFang SC\", sans-serif;background:var(--sea, #061a2c);color:var(--ink, #edf4f8);border:1px solid #7c9db2;border-radius:7px;padding:12px;caret-color:var(--water, #67d8ea);width:min(600px, 100%);font-size:18px}.ds-search::placeholder{color:#a8c2d4}.ds-search:focus-visible{outline:3px solid var(--water, #67d8ea);outline-offset:4px;}"
+    },
+    {
+      "name": "流程节点",
+      "kind": "card",
+      "refersTo": "process-node",
+      "description": "高亮只表示讲解位置，非业务完成。",
+      "html": "<button class=\"ds-process\" type=\"button\" aria-pressed=\"false\"><span class=\"ds-step\">01</span><h2 class=\"ds-process-title\">流程节点</h2><p class=\"ds-process-copy\">高亮表示当前讲解位置。</p></button>",
+      "css": ".ds-process{font-family:\"Microsoft YaHei\", \"DengXian\", \"PingFang SC\", sans-serif;font-size:18px;line-height:1.3;color:var(--ink, #edf4f8);cursor:pointer;border:1px solid transparent;border-radius:8px;padding:10px 14px;background:transparent;transition:background-color 150ms ease,transform 120ms var(--ease-out, cubic-bezier(.23, 1, .32, 1));border:1px solid #4b6a80;border-radius:12px;text-align:left;padding:28px 24px;min-height:320px;background:#0c263d;display:flex;flex-direction:column;}.ds-process:focus-visible{outline:3px solid var(--water, #67d8ea);outline-offset:4px;}.ds-process:active:not(:disabled){transform:scale(.97)}.ds-process:disabled{color:#829bad;cursor:default}@media(hover:hover) and (pointer:fine){.ds-process:hover:not(:disabled){background-color:#20455e}}@media(prefers-reduced-motion:reduce){.ds-process{transition:none}}.ds-process[aria-pressed=\"true\"]{background:#16455e;border-color:#93e4f1}.ds-step{color:#83dbe9;font-size:38px;font-variant-numeric:tabular-nums;margin-bottom:25px}.ds-process-title{font-size:30px;font-weight:550;margin:0 0 18px}.ds-process-copy{margin:0;font-size:24px;line-height:1.65}.ds-process{position:relative;overflow:hidden}.ds-process::after{content:\"\";position:absolute;top:0;left:0;height:3px;width:100%;background:var(--water, #67d8ea);transform:scaleX(0);transform-origin:left;transition:transform .65s var(--ease-out, cubic-bezier(.23, 1, .32, 1))}.ds-process[aria-pressed=\"true\"]::after{transform:scaleX(1)}@media(prefers-reduced-motion:reduce){.ds-process::after{transition:none}}"
+    },
+    {
+      "name": "文书展台",
+      "kind": "custom",
+      "refersTo": "evidence-surface",
+      "description": "当前文书展台，5px垫、2px角和纸面投影；单图预览不伪造原件。",
+      "html": "<button class=\"ds-document\" type=\"button\" aria-label=\"打开完整原件\"></button>",
+      "css": ".ds-document{font-family:\"Microsoft YaHei\", \"DengXian\", \"PingFang SC\", sans-serif;color:var(--ink, #edf4f8);background:var(--paper, #fff);border:1px solid transparent;padding:5px;border-radius:2px;box-shadow:0 12px 30px #0005;display:flex;align-items:center;justify-content:center;width:100%;min-height:330px;cursor:pointer;line-height:1.3;transition:background-color 150ms ease,transform 120ms var(--ease-out, cubic-bezier(.23, 1, .32, 1))}.ds-document:hover{background:var(--paper, #fff)}.ds-document:focus-visible{outline:3px solid var(--water, #67d8ea);outline-offset:4px}.ds-document:active{transform:scale(.97)}@media(prefers-reduced-motion:reduce){.ds-document{transition:none}}"
+    },
+    {
+      "name": "双页文书展台",
+      "kind": "custom",
+      "refersTo": "evidence-paired",
+      "description": "两页完整原件的承托容器预览；空白面不替代真实业务原件。",
+      "html": "<div class=\"ds-spread\"><button class=\"ds-spread-page\" type=\"button\" aria-label=\"打开第一份原件\"></button><button class=\"ds-spread-page\" type=\"button\" aria-label=\"打开第二份原件\"></button></div>",
+      "css": ".ds-spread{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;perspective:1400px}.ds-spread-page{height:330px;min-width:0;padding:5px;border:1px solid transparent;border-radius:2px;box-shadow:0 12px 30px #0005;background:#f5f6f4;cursor:pointer;transition:transform 120ms var(--ease-out,cubic-bezier(.23, 1, .32, 1))}.ds-spread-page:hover{background:#f5f6f4}.ds-spread-page:focus-visible{outline:3px solid var(--water, #67d8ea);outline-offset:4px;}.ds-spread-page:active{transform:scale(.97)}@media(max-width:767px){.ds-spread{grid-template-columns:1fr}.ds-spread-page{min-height:400px}}@media(prefers-reduced-motion:reduce){.ds-spread-page{transition:none}}"
+    },
+    {
+      "name": "图件专注按钮",
+      "kind": "button",
+      "refersTo": "focus-media",
+      "description": "即时收起或恢复标题、导语和讲解栏，保留展台。",
+      "html": "<button class=\"ds-focus-media\" type=\"button\" aria-pressed=\"false\">专注图件</button>",
+      "css": ".ds-focus-media{font-family:\"Microsoft YaHei\", \"DengXian\", \"PingFang SC\", sans-serif;font-size:16px;line-height:1.3;padding:5px 12px;border:1px solid #42677f;border-radius:8px;color:var(--ink, #edf4f8);background:transparent;white-space:nowrap;cursor:pointer;transition:background-color 150ms ease,transform 120ms var(--ease-out,cubic-bezier(.23, 1, .32, 1))}.ds-focus-media:hover{background:#20455e}.ds-focus-media[aria-pressed=\"true\"]{background:#225269;color:#b5f3fb}.ds-focus-media:focus-visible{outline:3px solid var(--water, #67d8ea);outline-offset:4px;}.ds-focus-media:active{transform:scale(.97)}@media(prefers-reduced-motion:reduce){.ds-focus-media{transition:none}}"
+    },
+    {
+      "name": "媒体讲解栏",
+      "kind": "custom",
+      "refersTo": "media-copy",
+      "description": "310px栏中的讲解组，小标题与组距组织信息，不带侧边色条。",
+      "html": "<div class=\"ds-media-copy\"><section class=\"ds-media-point\"><h2 class=\"ds-media-title\">讲解小标题</h2><p class=\"ds-media-body\">图件与文书保持主要展示面积。</p></section></div>",
+      "css": ".ds-media-copy{font-family:\"Microsoft YaHei\", \"DengXian\", \"PingFang SC\", sans-serif;display:flex;flex-direction:column;justify-content:center;gap:22px;padding:6px 4px 6px 0;max-width:310px}.ds-media-point{padding-left:0}.ds-media-title{margin:0 0 8px;font-size:24px;font-weight:600;color:#93e4f1}.ds-media-body{font-size:21px;line-height:1.6;color:#d7e6ed;margin:0}@media(max-width:767px){.ds-media-title{font-size:21px}.ds-media-body{font-size:18px}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "测绘证据台",
+    "overview": "以真实测绘图件、正射影像、正式文书和登记簿形成汇报的视觉依据。深海蓝承担稳定的讲解背景，水系青蓝引导章节、流程与技术重点，白色证据面承接原始图件；图件与正文拥有主要阅读面积，媒体页进一步采用窄讲解栏、双页展台与专注图件。\n\n这是沿用已授权方案并按用户本轮反馈扩展后提取的现行系统。字体继续使用微软雅黑、等线与中文系统后备，全部离线；首页和结束页对原稿装饰山河背景作可控WebGL视觉演绎，业务原件保持原貌。未执行概念seed或独立效果图轮，不据此宣称完整Impeccable流程合规。",
+    "keyCharacteristics": [
+      "原图、文书和来源构成证据，概念分层清楚标注示意。",
+      "深色讲解背景与白色原件阅读面并存。",
+      "固定演示画布与小屏纵向阅读共享内容。",
+      "人工推进，按业务组入场、显式图件播放与可控环境动态，静态内容始终可读。"
+    ],
+    "rules": [
+      {
+        "name": "The 证据原貌 Rule",
+        "body": "一般图件在白色证据面中完整容纳；第二页使用带内容标签的阅读取景，完整原件随时可查。技术高亮和取景均不改写图内证据。",
+        "section": "colors"
+      },
+      {
+        "name": "The 离线中文 Rule",
+        "body": "沿用已约定的中文字体栈，不引入依赖联网的展示字体；字号以实际实现的角色定义为准。",
+        "section": "typography"
+      },
+      {
+        "name": "The 平面优先 Rule",
+        "body": "普通内容页靠色面、细边框和留白分层；阴影仅服务文书承托、概念层分离与弹出阅读，不扩散为所有内容块的装饰。",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** 保留真实原图与白色阅读面，提供完整原件；第二页带标签的阅读取景不改原图字节。",
+      "**Do** 让章节、页码与来源可查；页码只表示演示位置。",
+      "**Do** 以文字保留草案、外地样例、历史资质、省本级语境和未知进度。",
+      "**Do** 提供清楚焦点、立即响应的键盘和人工分步，并遵循系统及手动静态模式。",
+      "**Do** 在既有大屏画布与小屏纵向回退中保持正文、表格和图例可读。"
+    ],
+    "donts": [
+      "**Don't** 以虚构地形、GIS坐标、实测动画或无依据指标增强视觉效果。",
+      "**Don't** 为增加动效缩小正文、遮挡原图或让来源说明排队入场。",
+      "**Don't** 将讲解高亮、进度线或概念图层解释为真实业务完成或空间量算。",
+      "**Don't** 将手机等比缩成一张幻灯片，或让控件操作等待动画。",
+      "**Don't** 将技术测试通过表述为业务验收或实际会议设备验收。"
+    ]
+  }
+}
