@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-06T19:49:53+08:00",
+  "generatedAt": "2026-11-06T19:54:21+08:00",
   "title": "Design System: RiverAtlas",
   "extensions": {
     "colorMeta": {
@@ -791,11 +791,22 @@
     },
     "headerBrand": {
       "text": "自然资源统一确权登记",
-      "logo": false,
+      "logo": "inline-layer-svg",
       "fontWeight": 700,
-      "desktopFontSize": 22,
-      "mobileFontSize": 16,
-      "homeLink": true
+      "desktopFontSize": 32,
+      "mobileFontSize": 18,
+      "homeLink": true,
+      "companyLogo": false,
+      "iconSize": "1em",
+      "iconViewBox": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "iconStrokeWidth": 3.4,
+      "gap": 12,
+      "mobileGap": 9
     }
   },
   "components": [

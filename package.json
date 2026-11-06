@@ -1,6 +1,6 @@
 {
   "name": "river-atlas",
-  "version": "1.10.1",
+  "version": "1.10.2",
   "private": true,
   "description": "RiverAtlas · 大连市级确权项目离线交互汇报",
   "scripts": {
