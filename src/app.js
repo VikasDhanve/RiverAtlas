@@ -4,7 +4,7 @@
   const $ = id => document.getElementById(id);
   const source = RiverAtlasSource;
   const slides = RiverAtlasSlides;
-  const assets = new Map(source.assets.map(a => [a.id, a]));
+  const assets = new Map([...source.assets, ...RiverAtlasSupplement].map(a => [a.id, a]));
   const reduceQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
   let pageIndex = parseHash(), currentStep = 0, timeline = null;
   let landscape = null, activeGallery = null, mediaTween = null, stepTween = null, exhibitView = null;
@@ -52,9 +52,9 @@
     }
     return c;
   }
-  function assetImage(id, className = '') {
+  function assetImage(id, className = '', display = false) {
     const a = assets.get(id); if (!a) return el('p', '', '原件未找到，请核对配套资源。');
-    const img = el('img', className); img.src = a.path; img.alt = RiverAtlasCaptions[id] || '原稿图像';
+    const img = el('img', className); img.src = display && a.displayPath ? a.displayPath : a.path; img.alt = RiverAtlasCaptions[id] || a.caption || '原稿图像';
     img.decoding = 'async'; img.dataset.asset = id;
     if (a.rotation) img.style.transform = 'rotate(' + a.rotation + 'deg)';
     img.addEventListener('error', () => notify('图像加载失败，请保留完整assets配套目录并重新打开。'));
@@ -65,28 +65,34 @@
     const caption = el('p', 'gallery-caption'), tabs = el('div', 'gallery-tabs');
     tabs.setAttribute('role', 'group'); tabs.setAttribute('aria-label', '选择业务图像');
     let active = ids[0];
-    const portraits = new Set([5,6,7,8,9,10,11,15,16,20,21,22,23,27,31,32,35,36,37,38,39,40,41,42]);
+    function fit() {
+      const sheet=spread.firstElementChild,img=sheet?.firstElementChild;
+      if(!img?.naturalWidth||!spread.clientHeight)return;
+      const scale=Math.min(spread.clientWidth/img.naturalWidth,spread.clientHeight/img.naturalHeight);
+      sheet.style.width=img.naturalWidth*scale+'px';sheet.style.height=img.naturalHeight*scale+'px';
+    }
     function select(id, animate = true) {
+      const direction=ids.indexOf(id)>=ids.indexOf(active)?1:-1;
       active = id;
-      const partner = ids.find(other => other !== id && portraits.has(other));
-      const shown = portraits.has(id) && partner ? [id, partner] : [id];
-      spread.classList.toggle('paired', shown.length === 2);
-      spread.replaceChildren(...shown.map(asset => {
+      mediaTween?.progress(1).kill();
+      spread.replaceChildren(...[id].map(asset => {
         const b = button('', () => openImage(asset), 'image-button');
         if ([24,25,26,33,34].includes(asset)) b.classList.add('photo-surface');
-        b.dataset.asset = asset; b.setAttribute('aria-label', '查看原件：' + RiverAtlasCaptions[asset]);
-        b.append(assetImage(asset)); return b;
+        b.dataset.asset = asset; b.setAttribute('aria-label', '查看原件：' + (RiverAtlasCaptions[asset] || assets.get(asset).caption));
+        const img=assetImage(asset,'',true);img.addEventListener('load',fit);b.append(img);return b;
       }));
-      caption.textContent = RiverAtlasCaptions[id];
+      caption.textContent = RiverAtlasCaptions[id] || assets.get(id).caption;
       for (const b of tabs.children) b.setAttribute('aria-pressed', String(Number(b.dataset.asset) === id));
       if (animate && !motionOff() && !paused) {
-        mediaTween?.kill(); mediaTween = gsap.fromTo(spread.children, { opacity:0, y:24, rotationY:7, scale:.96 },
-          { opacity:1, y:0, rotationY:0, scale:1, duration:.85, stagger:.12, ease:'power3.out' });
+        mediaTween = gsap.fromTo(spread.children, { opacity:.45, x:direction*28, scale:.985, clipPath:direction>0?'inset(0 0 0 9%)':'inset(0 9% 0 0)' },
+          { opacity:1, x:0, scale:1, clipPath:'inset(0 0 0 0)', duration:.28, ease:'power3.out', clearProps:'transform,opacity,clipPath' });
       }
+      fit();
     }
     ids.forEach((id, i) => {
-      const label = RiverAtlasCaptions[id];
-      const b = button(pad(i+1), () => { stopTimeline(); select(id); });
+      const label = RiverAtlasCaptions[id] || assets.get(id).caption;
+      const b = button('', () => { stopTimeline(); select(id); });
+      b.append(assetImage(id,'gallery-thumbnail',true),el('span','gallery-tab-number',pad(i+1)));
       b.dataset.asset = id; b.title = label; b.setAttribute('aria-label', label); tabs.append(b);
     });
     const tools = el('div', 'gallery-tools');
@@ -95,9 +101,12 @@
       const on = layout.dataset.focus !== 'true'; layout.dataset.focus = String(on);
       layout.closest('.slide')?.classList.toggle('media-focus',on);
       focus.textContent = on ? '显示讲解' : '专注图件'; focus.setAttribute('aria-pressed', String(on));
+      fit();
     }, 'focus-media'); focus.setAttribute('aria-pressed','false');
-    tools.append(tabs, focus); c.append(spread, tools, caption); select(active, false);
-    activeGallery = { element:c, ids, select };
+    const previous=button('',()=>{stopTimeline();select(ids[(ids.indexOf(active)+ids.length-1)%ids.length]);},'gallery-previous');previous.append(icon('prev'));previous.setAttribute('aria-label','上一张图件');
+    const next=button('',()=>{stopTimeline();select(ids[(ids.indexOf(active)+1)%ids.length]);},'gallery-next');next.append(icon('next'));next.setAttribute('aria-label','下一张图件');
+    tools.append(previous,tabs,next,focus);c.append(spread,tools,caption);select(active,false);
+    activeGallery = { element:c, ids, select, refit:fit };
     return c;
   }
   function mediaLayout(s) {
@@ -284,6 +293,17 @@
     const windowEl=el('div','map-window river-map'),controls=el('div','map-controls'),desc=el('span','','五河空间总览');
     windowEl.setAttribute('role','region');windowEl.setAttribute('aria-label','五河地理地图');windowEl.tabIndex=0;
     let view;
+    const attributes=el('div','river-attributes');attributes.setAttribute('aria-live','polite');
+    function showAttributes(index){
+      attributes.replaceChildren();
+      if(index===null){
+        const table=renderTable({heads:['河流','长度 / km','面积 / 公顷','涉及县区'],rows:s.rivers.map((r,i)=>[r[0],s.riverAttributes[i][1],s.riverAttributes[i][2],s.riverAttributes[i][3]])},'river-attribute-table');
+        attributes.append(el('h2','','五河属性 · 均为市级'),table);
+      }else{
+        const [level,length,area,county]=s.riverAttributes[index];attributes.append(el('h2','',s.rivers[index][0]+' · '+level));
+        const values=el('dl','river-attribute-values');for(const [name,value] of [['长度 / km',length],['面积 / 公顷',area],['涉及县区',county]])values.append(el('dt','',name),el('dd','',value));attributes.append(values);
+      }
+    }
     function select(index){view?.select(index);}
     const all=button('',()=>select(null),'river-choice river-all');all.dataset.river='all';
     all.append(el('strong','','全部'),el('span','','五条河流总览'));list.append(all);
@@ -294,9 +314,10 @@
     function selected(index){
       for(const choice of list.children)choice.setAttribute('aria-pressed',String(choice.dataset.river===(index===null?'all':String(index))));
       desc.textContent=index===null?'五河空间总览':s.rivers[index][0]+' · '+s.rivers[index][1];
+      showAttributes(index);
     }
     const original=button('查看原件',()=>openImage(12));original.dataset.asset='12';
-    controls.append(desc,button('恢复全图',()=>select(null)),original);figure.append(windowEl,controls);layout.append(list,figure);selected(null);
+    controls.append(desc,button('恢复全图',()=>select(null)),original);figure.append(windowEl,controls,attributes);layout.append(list,figure);selected(null);
     if(typeof RiverAtlasMap!=='undefined'&&typeof L!=='undefined'&&typeof RiverAtlasGeography!=='undefined'){
       view=RiverAtlasMap.create(windowEl,{onSelect:selected});
       exhibitView={...view,resetLabel:'显示全部',reset(){select(null);}};
@@ -307,68 +328,98 @@
     return layout;
   }
   function renderLayers(s) {
-    const layout=el('div','atlas-layers-layout'), list=el('div','atlas-layer-list'), display=el('div','atlas-layer-display');
-    const scene=el('div','atlas-layer-scene'), stack=el('div','atlas-stack'), controls=el('div','atlas-layer-controls');
-    const textures=[
-      {id:19,region:[.62,.18,.32,.18],label:'卫星 / 正射影像'},
-      {id:17,region:[.04,.18,.92,.57],label:'范围与现势'},
-      {id:18,region:[.03,.20,.94,.55],label:'权属成果'},
-      {id:19,region:[.10,.30,.84,.55],label:'管制与保护'}
-    ];
-    let selected=0,expanded=true,motion=null,orbit=null,disposed=false;
-    const planes=[],choices=[],crops=[];
-    function fit() {
-      if(disposed)return;
-      for(const crop of crops){
-        const {img,box,region}=crop;if(!img.naturalWidth||!box.clientWidth)continue;
-        const [rx,ry,rw,rh]=region,nw=img.naturalWidth,nh=img.naturalHeight;
-        const scale=Math.max(box.clientWidth/(rw*nw),box.clientHeight/(rh*nh));
-        img.style.width=nw+'px';img.style.height=nh+'px';
-        img.style.transform='translate3d('+(box.clientWidth/2-(rx+rw/2)*nw*scale)+'px,'+(box.clientHeight/2-(ry+rh/2)*nh*scale)+'px,0) scale('+scale+')';
-      }
-      const scale=Math.min(1,(scene.clientWidth-24)/960,(scene.clientHeight-18)/565);
-      if(typeof gsap!=='undefined')gsap.set(stack,{scale:Math.max(.32,scale)});
-      else stack.style.transform='translate(-50%,-50%) scale('+Math.max(.32,scale)+') rotateX(50deg) rotateZ(-18deg)';
+    const layout=el('div','atlas-layers-layout'),list=el('div','atlas-layer-list'),display=el('div','atlas-layer-display');
+    const scene=el('div','atlas-layer-scene'),stack=el('div','atlas-stack'),controls=el('div','atlas-layer-controls');
+    let selected=0,expanded=true,motion=null;
+    const planes=[],choices=[];
+    function fit(){
+      const scale=Math.max(.25,Math.min(1,scene.clientWidth/(window.innerWidth<768?500:1040),scene.clientHeight/540));
+      stack.style.transform='translate(-50%,-50%) scale('+scale+')';
     }
     function paint(animate=true){
-      if(disposed)return;
-      motion?.kill();const moving=animate&&!motionOff()&&!paused;
-      motion=moving?gsap.timeline():null;
+      motion?.progress(1).kill();
+      const moving=animate&&!motionOff()&&!paused;
+      motion=moving?gsap.timeline({defaults:{duration:.28,ease:'power3.out'}}):null;
+      let background=0;
       planes.forEach((plane,i)=>{
-        const values={z:expanded?i*64+(i===selected?18:0):(i===selected?6:i*1.2),x:expanded?(i-1.5)*18+(i===selected?-32:0):0};
-        plane.classList.toggle('active',i===selected);choices[i].setAttribute('aria-pressed',String(i===selected));
-        if(typeof gsap==='undefined')plane.style.transform='translate3d('+values.x+'px,0,'+values.z+'px)';
-        else if(moving)motion.to(plane,{...values,duration:.55,ease:'power3.out'},0);
+        const current=i===selected,slot=[-290,210,330][background];if(!current)background++;
+        const values={x:current?0:slot,y:current?0:18,z:current?90:-20-background*10,rotationY:current?0:(slot<0?16:-16),scale:current?1:.84,opacity:current?1:expanded?.62:0};
+        plane.classList.toggle('active',current);plane.inert=!current&&!expanded;
+        plane.style.zIndex=String(current?10:4-background);choices[i].setAttribute('aria-pressed',String(current));
+        if(typeof gsap==='undefined')plane.style.transform=`translate(-50%,-50%) translate(${values.x}px,${values.y}px) scale(${values.scale}) rotateY(${values.rotationY}deg)`;
+        else if(moving)motion.to(plane,values,0);
         else gsap.set(plane,values);
       });
-      expandButton.setAttribute('aria-pressed',String(expanded));collapseButton.setAttribute('aria-pressed',String(!expanded));
+      expand.setAttribute('aria-pressed',String(expanded));collapse.setAttribute('aria-pressed',String(!expanded));
     }
     s.points.forEach(([title,text],i)=>{
-      const choice=button('',()=>highlightStep(i),'atlas-layer-choice');choice.setAttribute('aria-label',title);
-      choice.append(el('h2','',title),el('p','',text));
-      choice.addEventListener('pointerenter',()=>{if(matchMedia('(hover: hover) and (pointer: fine)').matches)highlightStep(i);});
-      choices.push(choice);list.append(choice);
-      const plane=button('',()=>openImage(textures[i].id),'atlas-plane');plane.dataset.layer=i;
+      const choice=button('',()=>{stopTimeline();highlightStep(i);},'atlas-layer-choice');choice.setAttribute('aria-label',title);
+      choice.append(el('span','atlas-layer-index',pad(i+1)),el('h2','',title),el('p','',text));choices.push(choice);list.append(choice);
+      const plane=button('',()=>{if(selected===i)openImage(s.images[i]);else highlightStep(i);},'atlas-plane');plane.dataset.layer=i;
       plane.setAttribute('aria-label','查看'+title+'图件');
-      const box=el('div','atlas-raster-frame'),img=assetImage(textures[i].id,'atlas-raster');box.append(img);
-      plane.append(box,el('span','atlas-plane-label',textures[i].label));planes.push(plane);stack.append(plane);
-      crops.push({img,box,region:textures[i].region});img.addEventListener('load',fit);
+      const box=el('div','atlas-raster-frame'),img=assetImage(s.images[i],'atlas-raster',true);box.append(img);
+      plane.append(box,el('span','atlas-plane-label',title));planes.push(plane);stack.append(plane);
+      if(typeof gsap!=='undefined')gsap.set(plane,{xPercent:-50,yPercent:-50});
     });
-    const expandButton=button('分层',()=>{expanded=true;paint();},'atlas-mode');
-    const collapseButton=button('合拢',()=>{expanded=false;paint();},'atlas-mode');
-    controls.append(expandButton,collapseButton,button('查看图件',()=>openImage(textures[selected].id),'atlas-open'));
-    scene.append(stack,el('span','atlas-scene-label','分层示意'));display.append(scene,controls);layout.append(list,display);
-    if(typeof gsap!=='undefined')gsap.set(stack,{x:0,y:0,xPercent:-50,yPercent:-50,rotationX:50,rotationZ:-18});
-    scene.addEventListener('pointermove',event=>{
-      if(motionOff()||paused||!matchMedia('(hover: hover) and (pointer: fine)').matches)return;
-      const rect=scene.getBoundingClientRect(),x=(event.clientX-rect.left)/rect.width-.5,y=(event.clientY-rect.top)/rect.height-.5;
-      orbit?.kill();orbit=gsap.to(stack,{rotationX:50-y*5,rotationZ:-18+x*5,duration:.3,ease:'power3.out',overwrite:'auto'});
-    });
-    scene.addEventListener('pointerleave',()=>{if(!motionOff()&&!paused){orbit?.kill();orbit=gsap.to(stack,{rotationX:50,rotationZ:-18,duration:.3,ease:'power3.out'});}});
-    exhibitView={resetLabel:'复位图层',reset:()=>{expanded=true;orbit?.kill();if(typeof gsap!=='undefined')gsap.set(stack,{rotationX:50,rotationZ:-18});highlightStep(0);},
-      selectStep:index=>{selected=index;paint();},refit:fit,pause:()=>{motion?.pause();orbit?.pause();},resume:()=>{motion?.resume();orbit?.resume();},
-      finish:()=>{motion?.progress(1).pause();orbit?.progress(1).pause();},destroy:()=>{disposed=true;motion?.kill();orbit?.kill();}};
+    const expand=button('图集',()=>{expanded=true;paint();},'atlas-mode'),collapse=button('单图',()=>{expanded=false;paint();},'atlas-mode');
+    controls.append(el('span','atlas-unit','大沙河 · 210200331000003'),expand,collapse,button('查看图件',()=>openImage(s.images[selected]),'atlas-open'));
+    scene.append(stack);display.append(scene,controls);layout.append(list,display);
+    exhibitView={resetLabel:'复位图层',reset:()=>{expanded=true;highlightStep(0);},selectStep:index=>{selected=index;paint();},refit:fit,
+      pause:()=>motion?.pause(),resume:()=>motion?.resume(),finish:()=>motion?.progress(1).pause(),destroy:()=>motion?.kill()};
     paint(false);return layout;
+  }
+  function renderWorkflow(s){
+    const layout=el('div','workflow-layout'),phases=el('div','workflow-phases');
+    s.phases.forEach((phase,i)=>{
+      const lane=el('section','workflow-phase');lane.dataset.workflowStep=i;
+      const heading=button('',()=>{stopTimeline();highlightStep(i);},'workflow-heading');heading.append(el('span','',pad(i+1)),el('h2','',phase.name));lane.append(heading);
+      phase.nodes.forEach(([title,details],index)=>{
+        if(index)lane.append(el('div','workflow-vertical-link'));
+        const node=el('div','workflow-node');node.append(el('h3','',title));
+        if(details.length){const branches=el('div','workflow-details');details.forEach(text=>branches.append(el('span','',text)));node.append(branches);}
+        lane.append(node);
+      });phases.append(lane);
+    });
+    const loop=el('section','workflow-exceptions');loop.append(el('h2','','核实与补充调查闭环'));
+    const line=el('div','workflow-exception-line');
+    for(const text of ['权属不清、有争议或成果缺失','外业补充调查','争议解决或成果完善','成果上图'])line.append(el('span','',text));
+    const unresolved=el('p','workflow-unresolved','争议仍无法解决：划定权属争议区，再进入成果上图。成果无异议时直接上图。');
+    loop.append(line,unresolved);
+    const footer=el('div','workflow-footer'),desc=el('p','step-description');desc.id='step-description';desc.setAttribute('aria-live','polite');
+    footer.append(desc,button('查看流程原图',()=>openImage(111),'workflow-original'));
+    layout.append(phases,loop,footer);return layout;
+  }
+  function renderDatabase(s){
+    const layout=el('div','database-layout'),standards=el('div','database-standards');
+    standards.append(el('strong','','数据建库依据'));s.standards.forEach(text=>standards.append(el('span','',text)));
+    const flow=el('div','database-organization'),foundation=el('section','database-foundation');foundation.append(el('h2','','成果基础'));
+    s.foundations.forEach(text=>foundation.append(el('p','',text)));
+    const unit=el('section','database-unit');unit.append(el('h2','','自然资源\n登记单元'),el('p','','以单元为单位组织'));
+    const contents=el('section','database-contents');contents.append(el('h2','','自然资源数据库内容'));
+    s.categories.forEach((text,i)=>{const row=el('div','database-category');row.append(el('span','',pad(i+1)),el('p','',text));contents.append(row);});
+    flow.append(foundation,unit,contents);layout.append(standards,flow,renderProcess(s));return layout;
+  }
+  function renderStaffing(s){
+    const layout=el('div','staff-layout'),organization=el('section','staff-organization'),qualifications=el('section','staff-qualifications');
+    organization.append(el('h2','','岗位配置'));
+    const leaders=el('div','staff-leaders');s.roles.slice(0,2).forEach(([name,count])=>{const row=el('div','staff-role');row.append(el('span','',name),el('strong','',count+'人'));leaders.append(row);});organization.append(leaders);
+    const branches=el('div','staff-branches');
+    for(const [title,roles] of [['内业组',s.roles.slice(2,4)],['外业组',s.roles.slice(4,6)],['质量检查',s.roles.slice(6)]]){
+      const branch=el('section','staff-branch');branch.append(el('h3','',title));
+      roles.forEach(([name,count])=>{const row=el('div','staff-role');row.append(el('span','',name),el('strong','',count+'人'));branch.append(row);});branches.append(branch);
+    }
+    const temporary=el('div','staff-temporary');temporary.append(el('span','','临时抽调'),el('strong','',s.temporary+'人'),el('span','','配合项目实施'));
+    const total=el('p','staff-total','岗位配置13人 + 临时抽调10人 = 项目参与23人');organization.append(branches,temporary,total);
+    qualifications.append(el('h2','','职称构成'),el('p','staff-qualification-note','23名项目参与人员'));
+    s.qualifications.forEach(([name,count],i)=>{
+      const group=button('',()=>{stopTimeline();highlightStep(i);},'staff-qualification');group.dataset.staffStep=i;
+      const label=el('div','staff-qualification-label');label.append(el('span','',name),el('strong','',count+'人'));
+      const seats=el('div','staff-seats');seats.setAttribute('aria-hidden','true');
+      for(let j=0;j<count;j++)seats.append(el('span','staff-seat'));
+      group.append(label,seats);qualifications.append(group);
+    });
+    const desc=el('p','step-description sr-only');desc.id='step-description';desc.setAttribute('aria-live','polite');
+    layout.append(organization,qualifications,desc);return layout;
   }
   function renderProcess(s) {
     const c = el('div', 'process-layout'), track = el('div', 'process-track'), fill = el('span');
@@ -411,6 +462,9 @@
     t.append(body); return t;
   }
   function renderBody(s) {
+    if (s.layout === 'workflow') return renderWorkflow(s);
+    if (s.layout === 'database') return renderDatabase(s);
+    if (s.layout === 'staffing') return renderStaffing(s);
     if (s.interaction === 'document-exhibit') return renderDocumentExhibit(s);
     if (s.interaction === 'policy-library') return renderPolicyLibrary(s);
     if (s.layout === 'gallery' || s.layout === 'expert') {
@@ -460,7 +514,7 @@
     }
     return copyPoints(s.points);
   }
-  function stopTimeline() { timeline?.kill(); timeline = null; mediaTween?.kill(); mediaTween=null; stepTween?.kill(); stepTween=null; }
+  function stopTimeline() { timeline?.progress(1,true).kill(); timeline = null; mediaTween?.progress(1).kill(); mediaTween=null; stepTween?.progress(1).kill(); stepTween=null; }
   function highlightStep(n) {
     const s = slides[pageIndex], total = s.steps?.length || s.points?.length || 1;
     currentStep = Math.max(0, Math.min(total - 1, n));
@@ -469,7 +523,7 @@
     });
     document.querySelectorAll('.layer-plane').forEach(node => node.classList.toggle('active', Number(node.dataset.layer) === currentStep));
     if (!motionOff() && !paused) {
-      stepTween?.kill(); stepTween=gsap.timeline();
+      stepTween?.progress(1).kill(); stepTween=gsap.timeline();
       const node=document.querySelector('.process-node.active');
       if (node) stepTween.fromTo(node,{y:9},{y:0,duration:.55,ease:'power3.out'});
       document.querySelectorAll('.layer-plane').forEach(plane=> {
@@ -478,6 +532,14 @@
       });
     }
     exhibitView?.selectStep?.(currentStep);
+    document.querySelectorAll('[data-workflow-step]').forEach((node,i)=>{node.classList.toggle('is-current',i===currentStep);node.querySelector('button').setAttribute('aria-pressed',String(i===currentStep));});
+    document.querySelectorAll('[data-staff-step]').forEach((node,i)=>{node.classList.toggle('is-current',i===currentStep);node.setAttribute('aria-pressed',String(i===currentStep));});
+    if(stepTween){
+      const workflowNodes=document.querySelectorAll('.workflow-phase.is-current .workflow-node');
+      if(workflowNodes.length)stepTween.fromTo(workflowNodes,{opacity:.45,x:9},{opacity:1,x:0,duration:.28,stagger:.06,clearProps:'transform,opacity'},0);
+      const staffSeats=document.querySelectorAll('.staff-qualification.is-current .staff-seat');
+      if(staffSeats.length)stepTween.fromTo(staffSeats,{opacity:.4},{opacity:1,duration:.25,stagger:.035},0);
+    }
     const desc = $('step-description');
     if (desc && s.steps) desc.textContent = '当前讲解第' + (currentStep + 1) + '步：' + s.steps[currentStep][0] + '。';
     const fill = $('process-fill'); if (fill) {
@@ -521,6 +583,10 @@
     const planes = document.querySelectorAll('.layer-plane');
     if (planes.length) timeline.fromTo(planes,{ opacity:0, x:90 },{ opacity:1, x:0, duration:1.2, stagger:.18 },.25);
     if (document.querySelector('.area-fill')) timeline.fromTo('.area-fill',{scaleX:0},{scaleX:1,duration:1.4,stagger:.16,ease:'power2.inOut'},.25);
+    const workflow=document.querySelector('.workflow-phases');
+    if(workflow)timeline.fromTo(workflow.children,{opacity:.45,x:18},{opacity:1,x:0,duration:.65,stagger:.12},.15);
+    const seats=document.querySelectorAll('.staff-seat');
+    if(seats.length)timeline.fromTo(seats,{opacity:.2,scale:.9},{opacity:1,scale:1,duration:.45,stagger:.035},.25);
   }
   function showPage(index, { animate = true, keyboard = false } = {}) {
     const next = Math.max(0, Math.min(slides.length - 1, Math.trunc(index)));
@@ -541,6 +607,7 @@
       if (['gallery','expert'].includes(s.layout)) slide.classList.add('media-slide');
       if (s.interaction==='document-exhibit') slide.classList.add('exhibit-slide');
       if (s.interaction==='policy-library') slide.classList.add('policy-slide');
+      if (['layers','workflow','database','staffing'].includes(s.layout)) slide.classList.add('technical-slide');
       if (s.note && s.layout==='boundaries') slide.append(el('p','slide-note',s.note));
     }
     $('presentation').replaceChildren(slide);
@@ -548,11 +615,11 @@
     $('page-count').textContent = pad(pageIndex + 1) + ' / ' + slides.length;
     $('stage').dataset.page = String(pageIndex + 1);
     $('prev-button').disabled = pageIndex === 0; $('next-button').disabled = pageIndex === slides.length - 1;
-    $('step-button').disabled = !['process', 'layers'].includes(s.layout);
+    $('step-button').disabled = !['process', 'layers','workflow','database','staffing'].includes(s.layout);
     document.querySelectorAll('.chapter-button').forEach((b, i) => b.setAttribute('aria-current', String(i === s.chapter)));
     $('page-progress-fill').style.transform = 'scaleX(' + (pageIndex + 1) / slides.length + ')';
     try { history.replaceState(null, '', '#p' + (pageIndex + 1)); } catch { location.hash = 'p' + (pageIndex + 1); }
-    updateControls(); highlightStep(0); fitStage(); exhibitView?.refit(); intro(animate, direction);
+    updateControls(); highlightStep(0); fitStage(); exhibitView?.refit(); activeGallery?.refit(); intro(animate, direction);
     if (keyboard) $('slide-title').focus({ preventScroll: true });
     if (window.innerWidth < 768) window.scrollTo({ top: 0, behavior: 'instant' });
   }
@@ -567,7 +634,7 @@
       timeline=gsap.timeline();
       g.ids.slice(1).forEach((id,i)=>timeline.call(()=>g.select(id),[],(i+1)*3.2));
       timeline.to({}, {duration:3.2}, (g.ids.length-1)*3.2);
-    } else if (s.layout === 'process' || s.layout === 'layers') {
+    } else if (['process','layers','workflow','database','staffing'].includes(s.layout)) {
       const count = s.steps?.length || s.points.length;
       highlightStep(0);
       timeline = gsap.timeline({ onComplete: () => highlightStep(count - 1) });
@@ -588,7 +655,7 @@
   function skipAnimation() {
     timeline?.progress(1).pause(); landscape?.pause(); mediaTween?.progress(1).pause(); stepTween?.progress(1).pause(); exhibitView?.finish?.();
     const s = slides[pageIndex];
-    if (s.layout === 'process' || (s.layout === 'layers' && !exhibitView)) highlightStep((s.steps || s.points).length - 1);
+    if (['process','workflow','database','staffing'].includes(s.layout) || (s.layout === 'layers' && !exhibitView)) highlightStep((s.steps || s.points).length - 1);
   }
   function openDialog(id) { pauseAll(); const d = $(id); if (!d.open) d.showModal(); }
   function renderContents() {
@@ -604,9 +671,9 @@
   function imageGrid(ids) {
     const c = el('div', 'source-image-grid');
     for (const id of ids) {
-      const b = button('', () => openImage(id), 'source-image'); b.setAttribute('aria-label', '查看原件：' + RiverAtlasCaptions[id]);
+      const b = button('', () => openImage(id), 'source-image'); b.setAttribute('aria-label', '查看原件：' + (RiverAtlasCaptions[id] || assets.get(id).caption));
       const img = assetImage(id); img.loading = 'lazy';
-      b.append(img, el('span', '', RiverAtlasCaptions[id])); c.append(b);
+      b.append(img, el('span', '', RiverAtlasCaptions[id] || assets.get(id).caption)); c.append(b);
     }
     return c;
   }
@@ -614,6 +681,10 @@
     for (const [id, value] of [['current-sources','current'],['all-sources','all'],['all-images','images']]) $(id).setAttribute('aria-pressed', String(mode === value));
     const content = $('sources-content'); content.replaceChildren();
     if (mode==='current' && slides[pageIndex].note) content.append(el('p','source-explanation',slides[pageIndex].note));
+    if(mode==='current'){
+      const added=(slides[pageIndex].images||[]).filter(id=>id>=100);
+      if(added.length){content.append(el('h3','','2026-11-06新增资料'),imageGrid(added));}
+    }
     if (mode === 'images') {
       content.append(imageGrid(source.assets.filter(a => a.business).map(a => a.id))); return;
     }
@@ -641,7 +712,7 @@
     const a = assets.get(id); if (!a) { notify('原件不存在。'); return; }
     pauseAll(); imageId = id; zoom = 1;
     const img = $('original-image'); img.hidden = true;
-    $('image-title').textContent = RiverAtlasCaptions[id]; img.alt = RiverAtlasCaptions[id];
+    $('image-title').textContent = RiverAtlasCaptions[id] || a.caption; img.alt = RiverAtlasCaptions[id] || a.caption;
     img.onload = () => { img.hidden = false; fitOriginal(); $('image-scroll').scrollTo(0, 0); };
     img.onerror = () => { notify('原件加载失败，请确认assets/originals目录完整。'); };
     img.style.transform = a.rotation ? 'rotate(' + a.rotation + 'deg)' : 'none';
@@ -683,7 +754,7 @@
   $('zoom-reset').addEventListener('click', () => { zoom = 1; fitOriginal(); $('image-scroll').scrollTo(0, 0); });
   document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => $(b.dataset.close).close()));
   window.addEventListener('hashchange', () => { const n = parseHash(); if (n !== pageIndex) showPage(n, { animate:false }); });
-  window.addEventListener('resize', () => { fitStage(); landscape?.resize(); exhibitView?.refit(); if ($('image-dialog').open) fitOriginal(); });
+  window.addEventListener('resize', () => { fitStage(); landscape?.resize(); exhibitView?.refit(); activeGallery?.refit(); if ($('image-dialog').open) fitOriginal(); });
   document.addEventListener('visibilitychange', () => { if (document.hidden) pauseAll(); });
   document.addEventListener('fullscreenchange', () => {
     $('fullscreen-button').setAttribute('aria-pressed', String(Boolean(document.fullscreenElement)));

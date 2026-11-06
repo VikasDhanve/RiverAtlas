@@ -1,0 +1,81 @@
+'use strict';
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),crypto=require('node:crypto');
+const {chromium}=require('playwright');
+const {pathToFileURL}=require('node:url');
+const root=path.resolve(__dirname,'..'),url=pathToFileURL(path.join(root,'index.html')).href;
+const context={};vm.runInNewContext(fs.readFileSync(path.join(root,'src/content.js'),'utf8')+';this.slides=RiverAtlasSlides',context);
+const slides=context.slides,pageOf=title=>slides.findIndex(s=>s.title===title)+1;
+
+test('新增素材可追溯，32页内容、人员两种统计维度与PDF顺序保持一致',()=>{
+ assert.equal(slides.length,32);
+ const staff=slides.find(s=>s.layout==='staffing');assert.equal(staff.roles.reduce((sum,r)=>sum+r[1],0)+staff.temporary,23);assert.equal(staff.qualifications.reduce((sum,r)=>sum+r[1],0),23);
+ assert.equal(pageOf('人员投入：23人协同实施'),pageOf('数据入库与质量检查')+1);
+ assert.deepEqual(Array.from(slides.find(s=>s.title==='南京清流河登记簿样例').images),[101,102,103,104,105,106]);
+ assert.equal(slides.find(s=>s.title==='碧流河成果图件').images[0],27);
+ const manifest=JSON.parse(fs.readFileSync(path.join(root,'docs/supplement-manifest.json'),'utf8'));
+ // 原始资料目录仅在作者工作站可用；移交机器仍验证包内资源完整性。
+ if(fs.existsSync(manifest.sourceDirectory))for(const input of manifest.inputs){const raw=fs.readFileSync(path.join(manifest.sourceDirectory,input.file));assert.equal(crypto.createHash('sha256').update(raw).digest('hex'),input.sha256);}
+ assert.equal(manifest.assets.length,11);for(const asset of manifest.assets)assert(fs.existsSync(path.join(root,asset.path)));
+});
+
+test('底图、比例展台、专家意见与登记簿切换在离线状态工作',async()=>{
+ const browser=await chromium.launch({channel:'chrome'}),page=await browser.newPage({viewport:{width:1920,height:1080},offline:true,reducedMotion:'reduce'});
+ const errors=[],remote=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(/^https?:/.test(r.url()))remote.push(r.url());});
+ try{
+  await page.goto(url+'#p8');
+  for(const [name,id] of [['卫星 / 正射影像',107],['范围与现势',108],['权属与成果',109],['管制与保护',110]]){
+   await page.getByRole('button',{name,exact:true}).click();assert.equal(await page.locator('.atlas-plane.active img').getAttribute('data-asset'),String(id));
+  }
+  const plane=await page.locator('.atlas-plane.active').boundingBox();assert(plane.height>plane.width,'专题底图须为直立图幅');
+  await page.goto(url+'#p9');assert.equal(await page.locator('.gallery-spread .image-button').count(),1);
+  await page.locator('.gallery-next').click();assert.match(await page.locator('.gallery-caption').innerText(),/英那河/);
+  await page.goto(url+'#p20');
+  for(const i of [2,3]){await page.locator('.gallery-tabs button').nth(i).click();assert.equal(await page.locator('.gallery-spread .image-button').count(),1);}
+  await page.getByRole('button',{name:'2025年12月4日专家论证意见',exact:true}).click();
+  assert.equal(await page.locator('.gallery-spread img').evaluate(i=>getComputedStyle(i).transform),'none','EXIF方向不应再叠加旋转');
+  await page.goto(url+'#p30');
+  for(let i=0;i<6;i++){
+   await page.locator('.gallery-tabs button').nth(i).click();
+   await page.waitForFunction(()=>{const i=document.querySelector('.gallery-spread img');return i.complete&&i.naturalWidth>0;});
+   const dimensions=await page.locator('.gallery-spread img').evaluate(i=>({natural:i.naturalWidth/i.naturalHeight,shown:i.clientWidth/i.clientHeight}));assert(Math.abs(dimensions.natural-dimensions.shown)<.02);
+   assert.equal(await page.locator('.gallery-spread img').getAttribute('data-asset'),String(101+i));
+  }
+  await page.locator('.gallery-spread .image-button').click();await page.waitForFunction(()=>{const i=document.getElementById('original-image');return !i.hidden&&i.complete;});assert.match(await page.locator('#image-title').innerText(),/清流河登记单元图/);
+  assert.deepEqual(errors,[]);assert.deepEqual(remote,[]);
+ }finally{await browser.close();}
+});
+
+test('五河属性、动态流程和人员投入可暂停、分步，触屏保留全部内容',async()=>{
+ const browser=await chromium.launch({channel:'chrome'}),page=await browser.newPage({viewport:{width:1920,height:1080},offline:true});
+ try{
+  await page.goto(url+'#p5');assert.match(await page.locator('.river-attributes').innerText(),/28.4/);assert.match(await page.locator('.river-attributes').innerText(),/7064.42/);
+  await page.getByRole('button',{name:'大沙河 瓦房店市、普兰店区',exact:true}).click();assert.match(await page.locator('.river-attributes').innerText(),/市级[\s\S]*82.4[\s\S]*3141.83[\s\S]*瓦房店市 普兰店区/);
+  await page.goto(url+'#p6');assert.match(await page.locator('.workflow-layout').innerText(),/外业补充调查[\s\S]*划定权属争议区/);
+  await page.locator('#play-button').click();await page.waitForTimeout(1800);await page.locator('#pause-button').click();const frozen=await page.locator('#step-description').innerText();await page.waitForTimeout(1650);assert.equal(await page.locator('#step-description').innerText(),frozen);
+  await page.locator('#step-button').click();assert.match(await page.locator('#step-description').innerText(),/第3步/);
+  await page.goto(url+'#p16');assert.equal(await page.locator('.database-category').count(),5);assert.match(await page.locator('.database-standards').innerText(),/地籍数据库标准[\s\S]*确权登记数据库标准/);
+  await page.goto(url+'#p17');assert.equal(await page.locator('.staff-seat').count(),23);await page.locator('.staff-qualification').nth(3).click();assert.match(await page.locator('#step-description').innerText(),/其他技术人员/);
+  await page.emulateMedia({reducedMotion:'reduce'});await page.waitForFunction(()=>document.getElementById('play-button').disabled);
+  await page.setViewportSize({width:390,height:844});
+  for(const n of [5,6,8,9,16,17,19,20,30]){
+   await page.goto(url+'#p'+n);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),true,'小屏水平越界：'+n);
+   if(n===8){const rect=await page.locator('.atlas-plane.active').boundingBox();assert(rect.x>=0&&rect.x+rect.width<=390&&rect.height>250,'小屏主题底图应在可视范围内且可阅读');}
+  }
+ }finally{await browser.close();}
+});
+
+test('专题图集在切换中暂停立即冻结，快速重选仍正确',async()=>{
+ const browser=await chromium.launch({channel:'chrome'}),page=await browser.newPage({viewport:{width:1920,height:1080},offline:true});
+ try{
+  await page.goto(url+'#p8');
+  await page.getByRole('button',{name:'管制与保护',exact:true}).click();
+  await page.waitForTimeout(60);await page.keyboard.press('p');
+  const matrices=()=>page.locator('.atlas-plane').evaluateAll(nodes=>nodes.map(n=>getComputedStyle(n).transform));
+  const paused=await matrices();await page.waitForTimeout(200);assert.deepEqual(await matrices(),paused);
+  await page.keyboard.press('p');
+  for(const name of ['权属与成果','范围与现势','管制与保护','卫星 / 正射影像'])await page.getByRole('button',{name,exact:true}).click();
+  await page.waitForTimeout(350);assert.equal(await page.locator('.atlas-plane.active img').getAttribute('data-asset'),'107');
+ }finally{await browser.close();}
+});

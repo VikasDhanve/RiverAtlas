@@ -10,10 +10,10 @@ const {pathToFileURL}=require('node:url');
  await page.goto(url+'#p3');await page.waitForTimeout(1300);await page.screenshot({path:path.join(out,'policy-large-clean.png')});
  await page.mouse.move(1820,180);await page.waitForTimeout(1000);await page.screenshot({path:path.join(out,'starfield-right.png')});
  await page.goto(url+'#p2');await page.waitForTimeout(1300);await page.screenshot({path:path.join(out,'documents-clean.png')});
- await page.goto(url+'#p7');await page.waitForTimeout(1600);await page.screenshot({path:path.join(out,'layers-expanded.png')});
- await page.getByRole('button',{name:'权属成果',exact:true}).click();await page.waitForTimeout(700);await page.screenshot({path:path.join(out,'layers-ownership.png')});
+ await page.goto(url+'#p8');await page.waitForTimeout(1600);await page.screenshot({path:path.join(out,'layers-expanded.png')});
+ await page.getByRole('button',{name:'权属与成果',exact:true}).click();await page.waitForTimeout(700);await page.screenshot({path:path.join(out,'layers-ownership.png')});
  await page.mouse.move(1700,400);await page.waitForTimeout(500);await page.screenshot({path:path.join(out,'layers-orbit.png')});
- await page.getByRole('button',{name:'合拢',exact:true}).click();await page.waitForTimeout(800);await page.screenshot({path:path.join(out,'layers-collapsed.png')});
+ await page.getByRole('button',{name:'单图',exact:true}).click();await page.waitForTimeout(800);await page.screenshot({path:path.join(out,'layers-collapsed.png')});
  const video=page.video();await page.close();await context.close();await video.saveAs(path.join(out,'RiverAtlas-v1.4-preview.webm'));
  const mobile=await browser.newPage({viewport:{width:390,height:844},hasTouch:true,isMobile:true,reducedMotion:'reduce',offline:true});
  for(const n of [3,7]){await mobile.goto(url+'#p'+n);await mobile.waitForTimeout(600);await mobile.screenshot({path:path.join(out,'mobile-p'+n+'.png'),fullPage:true});}

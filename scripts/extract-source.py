@@ -25,7 +25,7 @@ with ZipFile(source) as z:
             number = int(re.search(r'image(\d+)', filename).group(1))
             assets.append({'id': number, 'file': filename, 'path': 'assets/originals/' + filename,
                            'business': number >= 5, 'sha256': hashlib.sha256(data).hexdigest(),
-                           'rotation': 180 if number == 31 else 0})
+                           'rotation': 0})
     for i in range(1, 36):
         tree = E.fromstring(z.read(f'ppt/slides/slide{i}.xml'))
         paragraphs = []

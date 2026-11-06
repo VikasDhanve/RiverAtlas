@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-06T07:52:44.824686+00:00",
+  "generatedAt": "2026-11-06T18:21:44+08:00",
   "title": "Design System: RiverAtlas",
   "extensions": {
     "colorMeta": {
@@ -376,8 +376,8 @@
       },
       {
         "name": "layer-shadow",
-        "value": "0 18px 28px #0007",
-        "purpose": "v1.4真实图件裁切的资料分层承托；非配准GIS。"
+        "value": "0 16px 32px #0006",
+        "purpose": "v1.5直立专题底图的前后层次，不是配准GIS。"
       }
     ],
     "motion": [
@@ -418,8 +418,8 @@
       },
       {
         "name": "media-switch",
-        "value": ".85s power3.out; stagger .12s",
-        "purpose": "图件y24px、rotationY7deg、scale .96归位。"
+        "value": ".28s power3.out",
+        "purpose": "单主图x28px、scale .985与9%遮幅过渡，原图比例不变。"
       },
       {
         "name": "media-sequence",
@@ -443,8 +443,8 @@
       },
       {
         "name": "layer-emphasis",
-        "value": ".55s power3.out",
-        "purpose": "v1.4人工选层，展开时所选层额外z18px/x-32px；静态直接切换。"
+        "value": ".28s power3.out",
+        "purpose": "直立专题图前后层次切换，选图居中，背景图轻旋转；暂停即时冻结。"
       },
       {
         "name": "process-line",
@@ -599,34 +599,31 @@
       }
     },
     "atlasLayerScene": {
-      "copyWidth": "380px",
-      "gap": "26px",
-      "perspective": "1450px",
+      "copyWidth": "340px",
+      "gap": "24px",
+      "perspective": "1600px",
       "planeSize": [
-        "720px",
-        "380px"
+        "354px",
+        "510px"
       ],
-      "depthStep": 64,
-      "selectedDepthOffset": 18,
-      "rotationX": 50,
-      "rotationZ": -18,
-      "radius": "4px",
-      "thickness": "8px",
-      "shadow": "0 18px 28px #0007",
-      "titleFontSize": "25px",
-      "bodyFontSize": "22px",
-      "bodyLineHeight": 1.55,
-      "labelFontSize": "25px",
-      "transitionMs": 550,
-      "orbitMs": 300,
+      "selectedDepth": 90,
+      "backgroundRotationY": 16,
+      "radius": "2px",
+      "shadow": "0 16px 32px #0006",
+      "titleFontSize": "24px",
+      "bodyFontSize": "20px",
+      "bodyLineHeight": 1.5,
+      "labelFontSize": "15px",
+      "transitionMs": 280,
       "automaticPlayback": false,
       "sourceAssets": [
-        19,
-        17,
-        18,
-        19
+        107,
+        108,
+        109,
+        110
       ],
-      "georeferencedGIS": false
+      "georeferencedGIS": false,
+      "mobileFit": "translate(-50%,-50%) scale(min(sceneWidth/500,sceneHeight/540))"
     },
     "geographicRiverMap": {
       "library": "Leaflet 1.9.4",
@@ -678,6 +675,27 @@
       "dimLabelOpacity": 0.22,
       "pauseStaticAndReducedMotion": true,
       "registrationBoundary": false
+    },
+    "proportionalGallery": {
+      "paired": false,
+      "thumbnailSize": [
+        "90px",
+        "66px"
+      ],
+      "mobileThumbnailSize": [
+        "68px",
+        "54px"
+      ],
+      "switchMs": 280,
+      "switchEase": "power3.out",
+      "switchProperties": [
+        "clip-path",
+        "opacity",
+        "transform"
+      ],
+      "imageFit": "natural aspect ratio; maximum available width and height",
+      "completeOriginal": true,
+      "cssTransformTransition": false
     }
   },
   "components": [
@@ -764,7 +782,7 @@
   ],
   "narrative": {
     "northStar": "测绘证据台",
-    "overview": "以真实测绘图件、正射影像、正式文书和登记簿形成汇报的视觉依据。深海蓝承担稳定的讲解背景，水系青蓝引导章节、流程与技术重点，白色证据面承接原始图件；图件与正文拥有主要阅读面积，媒体页进一步采用窄讲解栏、双页展台与专注图件。\n\n这是沿用已授权方案并按用户本轮反馈扩展后提取的现行系统。字体继续使用微软雅黑、等线与中文系统后备，全部离线；首页和结束页对原稿装饰山河背景作可控WebGL视觉演绎，业务原件保持原貌。未执行概念seed或独立效果图轮，不据此宣称完整Impeccable流程合规。",
+    "overview": "以真实测绘图件、正射影像、正式文书和登记簿形成汇报的视觉依据。深海蓝承担稳定的讲解背景，水系青蓝引导章节、流程与技术重点，白色证据面承接原始图件；图件与正文拥有主要阅读面积，媒体页进一步采用窄讲解栏、双页展台与专注图件。\n\n这是沿用已授权方案并按用户本轮反馈扩展后提取的现行系统。字体继续使用微软雅黑、等线与中文系统后备，全部离线；首页和结束页对原稿装饰山河背景作可控WebGL视觉演绎，业务原件保持原貌。未执行概念seed或独立效果图轮，不据此宣称完整Impeccable流程合规。 v1.5为32页，单主图按原比例和缩略图导航，专题底图直立展陈；新增流程与人员，数据建库扩充。",
     "keyCharacteristics": [
       "原图、文书和来源构成证据，概念分层清楚标注示意。",
       "深色讲解背景与白色原件阅读面并存。",

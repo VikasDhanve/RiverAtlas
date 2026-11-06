@@ -21,7 +21,7 @@ test('第三页完整政策目录有足够文字宽度，悬停切换、点击�
   assert.match(await page.locator('.policy-choice[aria-current="true"] .policy-choice-name').innerText(),/辽宁省/);
   await page.locator('#slide-title').hover();await page.waitForTimeout(3500);
   assert.match(await page.locator('.policy-choice[aria-current="true"] .policy-choice-name').innerText(),/辽宁省/);
-  assert.equal(await page.locator('#page-count').innerText(),'03 / 30');
+  assert.equal(await page.locator('#page-count').innerText(),'03 / 32');
   await page.getByRole('button',{name:'恢复默认',exact:true}).click();
   assert.match(await page.locator('.policy-choice[aria-current="true"] .policy-choice-name').innerText(),/确权登记规程/);
   const picture=page.locator('.policy-sheet:not([hidden]) img');
@@ -29,7 +29,7 @@ test('第三页完整政策目录有足够文字宽度，悬停切换、点击�
   assert((await picture.boundingBox()).width>before.width*1.3);
   await page.getByRole('button',{name:'查看完整政策文件',exact:true}).click();
   await page.waitForFunction(()=>{const i=document.getElementById('original-image');return !i.hidden&&i.complete&&i.naturalWidth>0;});
-  await page.keyboard.press('Escape');assert.equal(await page.locator('#page-count').innerText(),'03 / 30');
+  await page.keyboard.press('Escape');assert.equal(await page.locator('#page-count').innerText(),'03 / 32');
  }finally{await browser.close();}
 });
 test('五份政策均可在触屏/键盘及减少动态模式选择并打开完整原件',async()=>{
@@ -43,7 +43,7 @@ test('五份政策均可在触屏/键盘及减少动态模式选择并打开完�
    assert.equal(await choice.getAttribute('aria-pressed'),'true');
    await page.getByRole('button',{name:'查看完整政策文件',exact:true}).click();
    await page.waitForFunction(()=>{const i=document.getElementById('original-image');return !i.hidden&&i.complete&&i.naturalWidth>0;});
-   await page.keyboard.press('Escape');assert.equal(await page.locator('#page-count').innerText(),'03 / 30');
+   await page.keyboard.press('Escape');assert.equal(await page.locator('#page-count').innerText(),'03 / 32');
   }
   await page.getByRole('button',{name:'恢复默认',exact:true}).click();
   const target=page.getByRole('button',{name:names[1],exact:true});await target.focus();await page.keyboard.press('Enter');

@@ -1,4 +1,4 @@
-/* 从原稿只读提取，显示时使用textContent。 */
+/* 从原稿只读提取，显示时使用textContent。EXIF方向由浏览器处理。 */
 const RiverAtlasSource = {
   "filename": "大连市自然资源统一确权登记工作市级确权项目汇报-2026-5(1).pptx",
   "sha256": "21524156a84243f1dbc69daf613d0291e466f91e3e6f3d528b236e26489747b5",
@@ -938,7 +938,7 @@ const RiverAtlasSource = {
       "path": "assets/originals/image31.jpeg",
       "business": true,
       "sha256": "8bf8886b5191a031e539365faf30a05a8593f3c918b45f6b6bce4c6c44f85d6a",
-      "rotation": 180
+      "rotation": 0
     },
     {
       "id": 32,
