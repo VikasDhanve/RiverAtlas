@@ -425,3 +425,7 @@ components:
 08页优先顺滑，图件过渡从280ms power3.out改为900ms sine.inOut；这是用户明确要求的演示图件慢速移动。仍仅改变transform/opacity，重选从当前位置续接。所有图件z-index保持auto，用3D深度表达前后关系，避免刚选中就强制遮挡。左侧高亮及时响应；静态/暂停时直接定位，触屏/键盘保留原选择行为。其余缩略图图集的280ms切换与放大镜保持。
 
 导出器复用已安装Lanshu的Excal、draw_text/draw_line、point_at_fraction、draw_glow_dot/pulse_rect、check_outputs；三栏布局按用户参考适配，不套用上游固定架构模板。导出1800×880（含标题）PNG/Excalidraw及80帧20fps GIF，原生SVG是实际演示页面，GIF不承担暂停交互。来源/许可证与复现见docs/三栏流程与顺滑切换验证.md。
+
+## 2026-11-06 v1.8.1 背景可见性微调
+
+背景星点与鼠标连线小幅提亮，星点亮度约增20%—25%，连线透明度/线宽略增；保持440星、650ms淡出及暂停/静态控制。星点alpha由.20+depth×.20变为.26+depth×.22；连线RGB146/204/225，星间/指针/尾迹alpha为.30/.22/.32，宽.8/.7/.85px；近星十字alpha.17、宽.65px。原先参数为历史配置，数量、范围与时间控制不变。

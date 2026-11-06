@@ -579,14 +579,14 @@
         "maxStarLinks": 16,
         "maxPointerLinks": 3,
         "maxLinkDistance": 145,
-        "color": "122,184,209",
-        "starLinkAlpha": 0.22,
-        "pointerLinkAlpha": 0.16,
-        "trailAlpha": 0.26,
+        "color": "146,204,225",
+        "starLinkAlpha": 0.3,
+        "pointerLinkAlpha": 0.22,
+        "trailAlpha": 0.32,
         "lineWidth": [
-          0.55,
-          0.65,
-          0.7
+          0.7,
+          0.8,
+          0.85
         ],
         "trailPoints": 16,
         "fadeMs": 650,
@@ -594,8 +594,8 @@
         "touchPointerEffect": false
       },
       "opacity": {
-        "base": 0.2,
-        "depthFactor": 0.2
+        "base": 0.26,
+        "depthFactor": 0.22
       }
     },
     "atlasLayerScene": {

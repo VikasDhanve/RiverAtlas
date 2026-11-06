@@ -19,27 +19,27 @@ const RiverAtlasStars = (() => {
       while(trail.length&&now-trail[0].time>life)trail.shift();
       for(const star of stars) {
         const px=star.x*(w+40)-20+x*star.depth,py=star.y*(h+30)-15+y*star.depth;
-        ctx.fillStyle='rgba(185,218,237,'+(.20+star.depth*.20)+')';
+        ctx.fillStyle='rgba(185,218,237,'+(.26+star.depth*.22)+')';
         ctx.beginPath();ctx.arc(px,py,star.r,0,Math.PI*2);ctx.fill();
-        if(star.depth===1){ctx.strokeStyle='rgba(145,198,224,.12)';ctx.lineWidth=.55;ctx.beginPath();ctx.moveTo(px-3,py);ctx.lineTo(px+3,py);ctx.moveTo(px,py-3);ctx.lineTo(px,py+3);ctx.stroke();}
+        if(star.depth===1){ctx.strokeStyle='rgba(145,198,224,.17)';ctx.lineWidth=.65;ctx.beginPath();ctx.moveTo(px-3,py);ctx.lineTo(px+3,py);ctx.moveTo(px,py-3);ctx.lineTo(px,py+3);ctx.stroke();}
         if(strength&&pointer){const distance=Math.hypot(px-pointer.x,py-pointer.y);if(distance<190)nearby.push({x:px,y:py,distance});}
       }
-      function line(a,b,alpha,width=.65){
-        ctx.strokeStyle='rgba(122,184,209,'+alpha+')';ctx.lineWidth=width;
+      function line(a,b,alpha,width=.8){
+        ctx.strokeStyle='rgba(146,204,225,'+alpha+')';ctx.lineWidth=width;
         ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
       }
       nearby.sort((a,b)=>a.distance-b.distance);nearby.length=Math.min(12,nearby.length);
       let links=0;
       for(let i=0;i<nearby.length;i++){
-        if(i<3)line(pointer,nearby[i],.16*strength*(1-nearby[i].distance/190),.55);
+        if(i<3)line(pointer,nearby[i],.22*strength*(1-nearby[i].distance/190),.7);
         for(let j=i+1;j<nearby.length&&links<16;j++){
           const distance=Math.hypot(nearby[i].x-nearby[j].x,nearby[i].y-nearby[j].y);
-          if(distance<145){line(nearby[i],nearby[j],.22*strength*(1-distance/145));links++;}
+          if(distance<145){line(nearby[i],nearby[j],.30*strength*(1-distance/145));links++;}
         }
       }
       if(!staticMode)for(let i=1;i<trail.length;i++){
         const fade=Math.max(0,1-(now-trail[i-1].time)/life);
-        line(trail[i-1],trail[i],.26*fade*fade,.7);
+        line(trail[i-1],trail[i],.32*fade*fade,.85);
       }
     }
     function tick() {
