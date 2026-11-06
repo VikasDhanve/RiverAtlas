@@ -10,6 +10,7 @@ const slides=context.slides,pageOf=title=>slides.findIndex(s=>s.title===title)+1
 
 test('新增素材可追溯，32页内容、人员两种统计维度与PDF顺序保持一致',()=>{
  assert.equal(slides.length,32);
+ assert(!slides[8].points.some(([title])=>title==='图面表达'),'第9页移除图面表达及其说明');
  const staff=slides.find(s=>s.layout==='staffing');assert.equal(staff.roles.reduce((sum,r)=>sum+r[1],0)+staff.temporary,23);assert.equal(staff.qualifications.reduce((sum,r)=>sum+r[1],0),23);
  assert.equal(pageOf('人员投入：23人协同实施'),pageOf('数据入库与质量检查')+1);
  assert.deepEqual(Array.from(slides.find(s=>s.title==='南京清流河登记簿样例').images),[101,102,103,104,105,106]);

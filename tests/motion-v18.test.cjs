@@ -19,9 +19,10 @@ test('第六页为三栏完整流程，流光沿路径移动，暂停冻结且�
 test('第八页主图交叉淡化可中断，重选连续且半秒左右完成',async()=>{
  const b=await chromium.launch({channel:'chrome'}),p=await b.newPage({viewport:{width:1920,height:1080},offline:true});
  try{
-  await p.goto(url+'#p8');await p.getByRole('button',{name:'权属与成果',exact:true}).hover();
-  await p.waitForTimeout(180);const plane=p.locator('.atlas-plane[data-layer="2"]');const opacity=()=>plane.evaluate(n=>Number(getComputedStyle(n).opacity));
-  const partial=await opacity();assert(partial>0&&partial<1,'过渡中两图应交叉淡化');
+  await p.goto(url+'#p8');const plane=p.locator('.atlas-plane[data-layer="2"]');const opacity=()=>plane.evaluate(n=>Number(getComputedStyle(n).opacity));
+  await plane.evaluate(n=>{window.fadeSamples=[];new MutationObserver(()=>window.fadeSamples.push(Number(getComputedStyle(n).opacity))).observe(n,{attributes:true,attributeFilter:['style']});});
+  await p.getByRole('button',{name:'权属与成果',exact:true}).hover();await p.waitForTimeout(180);
+  assert(await p.evaluate(()=>window.fadeSamples.some(value=>value>0&&value<1)),'过渡中两图应交叉淡化');
   await p.getByRole('button',{name:'范围与现势',exact:true}).hover();await p.waitForTimeout(70);
   const choice=p.getByRole('button',{name:'权属与成果',exact:true});
   await choice.evaluate(n=>{

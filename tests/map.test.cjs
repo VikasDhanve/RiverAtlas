@@ -6,6 +6,7 @@ test('第五页为离线真实坐标地图，全部与五河选择定位、高�
   await p.goto(url+'#p5');await p.locator('.leaflet-container').waitFor({timeout:2500});
   assert.equal(await p.locator('.river-choice').count(),6);assert.equal(await p.getByRole('button',{name:'全部 五条河流总览',exact:true}).getAttribute('aria-pressed'),'true');
   assert.equal(await p.locator('.river-flow').count(),5);assert.equal(await p.locator('.map-window img').count(),0);
+  assert(await p.locator('.river-channel').evaluateAll(ns=>ns.length===5&&ns.every(n=>parseFloat(getComputedStyle(n).strokeWidth)>3.6)),'五条河流均应比原线宽更清晰');
   const before=await p.locator('.river-channel[data-river="4"]').getAttribute('d');
   await p.getByRole('button',{name:'英那河 庄河市',exact:true}).click();assert.equal(await p.getByRole('button',{name:'英那河 庄河市',exact:true}).getAttribute('aria-pressed'),'true');
   assert.match(await p.locator('.map-controls').innerText(),/英那河.*庄河市/);assert.notEqual(await p.locator('.river-channel[data-river="4"]').getAttribute('d'),before);

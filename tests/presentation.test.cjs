@@ -25,6 +25,9 @@ test('离线入口显示业务名称，键盘翻页、首尾及非法页码均�
     await page.goto(url);
     await page.locator('#slide-title').waitFor();
     assert.match(await page.locator('#slide-title').innerText(), /大连市自然资源/);
+    assert.equal(await page.locator('.brand').innerText(),'自然资源统一确权登记');
+    assert.equal(await page.locator('.brand img').count(),0);
+    assert(Number(await page.locator('.brand').evaluate(n=>getComputedStyle(n).fontWeight))>=700);
     await page.keyboard.press('ArrowRight');
     await page.waitForFunction(() => document.querySelector('#page-count').textContent.includes('02 / 32'));
     await page.keyboard.press('End');

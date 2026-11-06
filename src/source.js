@@ -4,14 +4,6 @@ const RiverAtlasSource = {
   "sha256": "21524156a84243f1dbc69daf613d0291e466f91e3e6f3d528b236e26489747b5",
   "assets": [
     {
-      "id": 1,
-      "file": "image1.png",
-      "path": "assets/originals/image1.png",
-      "business": false,
-      "sha256": "20b2a8e9ba67eb62925edd90cfe1d4b9f4b4b62fd6314eaf90fc1555e3f5511e",
-      "rotation": 0
-    },
-    {
       "id": 4,
       "file": "image4.png",
       "path": "assets/originals/image4.png",

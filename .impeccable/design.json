@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-06T19:42:12+08:00",
+  "generatedAt": "2026-11-06T19:49:53+08:00",
   "title": "Design System: RiverAtlas",
   "extensions": {
     "colorMeta": {
@@ -679,12 +679,12 @@
       ],
       "flightSeconds": 0.85,
       "channel": {
-        "width": 3.6,
+        "width": 5,
         "color": "#64d8ed",
         "opacity": 0.92
       },
       "flow": {
-        "width": 1.8,
+        "width": 2.6,
         "color": "#d5faff",
         "opacity": 0.95,
         "dash": [
@@ -698,7 +698,11 @@
       "dimLabelOpacity": 0.22,
       "pauseStaticAndReducedMotion": true,
       "registrationBoundary": false,
-      "redundantAttributeHeading": false
+      "redundantAttributeHeading": false,
+      "bank": {
+        "width": 13,
+        "opacity": 0.13
+      }
     },
     "proportionalGallery": {
       "paired": false,
@@ -784,6 +788,14 @@
       "haloHalfCycleSeconds": 1.8,
       "skill": "cclank/lanshu-animated-architecture-diagram",
       "editableAndAnimatedExports": true
+    },
+    "headerBrand": {
+      "text": "自然资源统一确权登记",
+      "logo": false,
+      "fontWeight": 700,
+      "desktopFontSize": 22,
+      "mobileFontSize": 16,
+      "homeLink": true
     }
   },
   "components": [

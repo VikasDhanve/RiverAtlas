@@ -29,7 +29,7 @@ test('原稿资料入口和弹窗逻辑移除，运行素材仅保留当前页�
   assert.doesNotMatch(fs.readFileSync(path.join(root,'src/app.js'),'utf8'),/renderSources|function imageGrid|source\.slides/);
   const c={};vm.runInNewContext(fs.readFileSync(path.join(root,'src/source.js'),'utf8')+';this.source=RiverAtlasSource',c);
   assert.equal(c.source.slides,undefined);
-  const removed=[2,3,28,29,30,38,39,40,41,42,43];
+  const removed=[1,2,3,28,29,30,38,39,40,41,42,43];
   for(const id of removed)assert(!c.source.assets.some(a=>a.id===id),'未引用原件仍在运行清单：'+id);
   const manifest=JSON.parse(fs.readFileSync(path.join(root,'docs/source-manifest.json'),'utf8'));
   for(const asset of manifest.assets.filter(a=>removed.includes(a.id)))assert.equal(fs.existsSync(path.join(root,asset.path)),false,'未引用旧图尚未删除：'+asset.path);
