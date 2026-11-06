@@ -17,7 +17,7 @@ test('第六页按原图保留21节点与22条关系，包含全部分支、回�
   const actual=await p.locator('.workflow-route').evaluateAll(ns=>ns.map(n=>n.dataset.from+'>'+n.dataset.to).sort());assert.deepEqual(actual,expected);
   const label=async(from,to)=>p.locator(`.workflow-route[data-from="${from}"][data-to="${to}"]`).getAttribute('data-label');
   assert.equal(await label('verify','mapping'),'成果无异议');assert.equal(await label('verify','supplement'),'权属不清、有争议或成果缺失');assert.equal(await label('supplement','mapping'),'争议解决或成果完善');assert.equal(await label('supplement','dispute'),'争议仍无法解决');
-  const ys=[];for(const id of ['prepare','basemap','preunit','indoor','related','verify','mapping','database','revision'])ys.push((await p.locator(`.workflow-node[data-node="${id}"]`).boundingBox()).y);assert(ys.every((y,i)=>!i||y>ys[i-1]));
+  for(const ids of [['prepare','basemap','preunit'],['indoor','related','verify','mapping'],['database','revision']]){const ys=[];for(const id of ids)ys.push((await p.locator(`.workflow-node[data-node="${id}"]`).boundingBox()).y);assert(ys.every((y,i)=>!i||y>ys[i-1]));}
   assert.equal(await p.locator('.workflow-phase').count(),3);
   await p.getByRole('button',{name:'地籍调查阶段',exact:true}).click();assert.equal(await p.locator('.workflow-phase.is-current').getAttribute('data-phase'),'1');
  }finally{await b.close();}
@@ -64,11 +64,11 @@ test('第八页悬停左右双向切换，动画与左侧高亮保持一致且�
  const b=await chromium.launch({channel:'chrome'}),p=await b.newPage({viewport:{width:1920,height:1080},offline:true});
  try{
   await p.goto(url+'#p8');await p.getByRole('button',{name:'权属与成果',exact:true}).hover();
-  await p.waitForTimeout(350);assert.equal(await p.locator('.atlas-plane.active img').getAttribute('data-asset'),'109');
+  await p.waitForTimeout(1000);assert.equal(await p.locator('.atlas-plane.active img').getAttribute('data-asset'),'109');
   const point=await p.locator('.atlas-plane[data-layer="3"]').evaluate(n=>{
    const r=n.getBoundingClientRect();for(let y=r.top+20;y<r.bottom-10;y+=20)for(let x=r.left+10;x<Math.min(innerWidth,r.right-5);x+=10)if(document.elementFromPoint(x,y)?.closest('.atlas-plane')===n)return{x,y};return null;
   });assert(point,'应有可悬停的背景专题图');await p.mouse.move(point.x,point.y);
   await p.waitForTimeout(400);assert.equal(await p.getByRole('button',{name:'管制与保护',exact:true}).getAttribute('aria-pressed'),'true');
-  await p.locator('#slide-title').hover();await p.waitForTimeout(350);assert.equal(await p.locator('.atlas-plane.active img').getAttribute('data-asset'),'110');
+  await p.locator('#slide-title').hover();await p.waitForTimeout(1000);assert.equal(await p.locator('.atlas-plane.active img').getAttribute('data-asset'),'110');
  }finally{await b.close();}
 });

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-06T19:05:41+08:00",
+  "generatedAt": "2026-11-06T19:18:22+08:00",
   "title": "Design System: RiverAtlas",
   "extensions": {
     "colorMeta": {
@@ -443,8 +443,8 @@
       },
       {
         "name": "layer-emphasis",
-        "value": ".28s power3.out",
-        "purpose": "直立专题图前后层次切换，选图居中，背景图轻旋转；暂停即时冻结。"
+        "value": ".9s sine.inOut",
+        "purpose": "图件慢速平滑续接；不即时改变z-index，保留3D深度排序。"
       },
       {
         "name": "process-line",
@@ -614,7 +614,7 @@
       "bodyFontSize": "20px",
       "bodyLineHeight": 1.5,
       "labelFontSize": "15px",
-      "transitionMs": 280,
+      "transitionMs": 900,
       "automaticPlayback": false,
       "sourceAssets": [
         107,
@@ -626,7 +626,10 @@
       "mobileFit": "translate(-50%,-50%) scale(min(sceneWidth/500,sceneHeight/540))",
       "bidirectionalHoverSelection": true,
       "planeHoverIntentMs": 80,
-      "interruptibleTransition": true
+      "interruptibleTransition": true,
+      "transitionEase": "sine.inOut",
+      "depthOrdering": "preserve-3d; z-index:auto",
+      "retargetFromCurrent": true
     },
     "geographicRiverMap": {
       "library": "Leaflet 1.9.4",
@@ -732,9 +735,9 @@
         0,
         0,
         1800,
-        900
+        780
       ],
-      "mainDirection": "vertical",
+      "mainDirection": "three columns; vertical sequence within each phase",
       "mainNodes": 9,
       "phases": 3,
       "sourceAsset": 111,
@@ -747,10 +750,19 @@
       "playSeconds": 11.8,
       "pathDrawSeconds": 0.7,
       "mobileCanvas": [
-        1120,
-        560
+        1200,
+        520
       ],
-      "pauseStaticAndReducedMotion": true
+      "pauseStaticAndReducedMotion": true,
+      "panelWidths": [
+        400,
+        855,
+        415
+      ],
+      "flowPointSeconds": 3.2,
+      "haloHalfCycleSeconds": 1.8,
+      "skill": "cclank/lanshu-animated-architecture-diagram",
+      "editableAndAnimatedExports": true
     }
   },
   "components": [

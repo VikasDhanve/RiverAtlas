@@ -4,6 +4,7 @@ const root=path.resolve(__dirname,'..'),read=file=>fs.readFileSync(path.join(roo
 const history=JSON.parse(read('docs/source-manifest.json')),context={};
 vm.runInNewContext(['src/source.js','src/supplement.js','src/biliuhe.js','src/content.js'].map(read).join('\n')+';this.slides=RiverAtlasSlides;this.assets=[...RiverAtlasSource.assets,...RiverAtlasSupplement,...RiverAtlasBiliuhe];',context);
 const slides=context.slides,assets=context.assets;
+assert.deepEqual(JSON.parse(JSON.stringify(slides.find(s=>s.layout==='workflow').flow)),JSON.parse(read('docs/workflow-spec.json')),'导出流程必须与演示使用同一完整图结构');
 assert.equal(slides.length,32);assert.equal(history.slides.length,35);
 const mapped=[...new Set(slides.flatMap(s=>s.sources))].sort((a,b)=>a-b);assert.deepEqual(mapped,Array.from({length:35},(_,i)=>i+1));
 const used=new Set([1,4,...slides.flatMap(s=>s.images||[])]),files=new Set();

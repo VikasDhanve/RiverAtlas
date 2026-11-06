@@ -376,13 +376,13 @@
     function paint(animate=true){
       motion?.kill();
       const moving=animate&&!motionOff()&&!paused;
-      motion=moving?gsap.timeline({defaults:{duration:.28,ease:'power3.out'}}):null;
+      motion=moving?gsap.timeline({defaults:{duration:.9,ease:'sine.inOut'}}):null;
       let background=0;
       planes.forEach((plane,i)=>{
         const current=i===selected,slot=[-290,210,330][background];if(!current)background++;
         const values={x:current?0:slot,y:current?0:18,z:current?90:-20-background*10,rotationY:current?0:(slot<0?16:-16),scale:current?1:.84,opacity:current?1:expanded?.62:0};
         plane.classList.toggle('active',current);plane.inert=!current&&!expanded;
-        plane.style.zIndex=String(current?10:4-background);choices[i].setAttribute('aria-pressed',String(current));
+        plane.style.zIndex='auto';choices[i].setAttribute('aria-pressed',String(current));
         if(typeof gsap==='undefined')plane.style.transform=`translate(-50%,-50%) translate(${values.x}px,${values.y}px) scale(${values.scale}) rotateY(${values.rotationY}deg)`;
         else if(moving)motion.to(plane,values,0);
         else gsap.set(plane,values);
@@ -419,21 +419,24 @@
     const layout=el('div','workflow-layout'),viewport=el('div','workflow-viewport');
     const ns='http://www.w3.org/2000/svg';
     function svg(tag,attributes={},text){const n=document.createElementNS(ns,tag);for(const [name,value] of Object.entries(attributes))n.setAttribute(name,String(value));if(text!==undefined)n.textContent=text;return n;}
-    const diagram=svg('svg',{class:'workflow-diagram',viewBox:'0 0 1800 900',role:'group','aria-labelledby':'workflow-svg-title'});
+    const diagram=svg('svg',{class:'workflow-diagram',viewBox:'0 0 1800 780',role:'group','aria-labelledby':'workflow-svg-title'});
     diagram.append(svg('title',{id:'workflow-svg-title'},'自然资源地籍调查实施流程：准备、地籍调查、数据入库'));
     const defs=svg('defs');
+    for(const [id,top,bottom] of [['flow-panel','#10374b','#082435'],['flow-node','#244e65','#12384d'],['flow-header','#10516a','#0b2c40']]){
+      const gradient=svg('linearGradient',{id,x1:0,y1:0,x2:0,y2:1});gradient.append(svg('stop',{offset:0,'stop-color':top}),svg('stop',{offset:1,'stop-color':bottom}));defs.append(gradient);
+    }
+    const grid=svg('pattern',{id:'flow-grid',width:30,height:30,patternUnits:'userSpaceOnUse'});grid.append(svg('path',{d:'M30 0H0V30',fill:'none',stroke:'#5bc6df','stroke-opacity':.045,'stroke-width':1}));defs.append(grid);
     for(const [name,color] of [['main','#79d9e8'],['condition','#dfbd76']]){
       const marker=svg('marker',{id:'flow-arrow-'+name,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse',markerUnits:'strokeWidth'});
       marker.append(svg('path',{d:'M1 1L9 5L1 9',fill:'none',stroke:color,'stroke-width':1.4}));defs.append(marker);
-    }diagram.append(defs);
+    }diagram.append(defs,svg('rect',{width:1800,height:780,fill:'url(#flow-grid)','pointer-events':'none'}));
     const phases=[],signals=[],choices=[];
     s.flow.bands.forEach((band,i)=>{
       const group=svg('g',{class:'workflow-phase','data-phase':i});
-      group.append(svg('rect',{x:8,y:band.y+5,width:1784,height:band.height-10,rx:12}));
-      const center=band.y+band.height/2;
-      group.append(svg('text',{x:64,y:center-60,class:'flow-phase-number'},pad(i+1)));
-      const text=svg('text',{x:64,y:center-8,class:'flow-phase-name'});
-      band.lines.forEach((line,j)=>text.append(svg('tspan',{x:64,dy:j?40:0},line)));group.append(text);phases.push(group);diagram.append(group);
+      group.append(svg('rect',{x:band.x,y:band.y,width:band.w,height:band.height,rx:12,class:'workflow-panel'}));
+      group.append(svg('rect',{x:band.x,y:band.y,width:band.w,height:68,rx:12,class:'workflow-panel-header'}));
+      group.append(svg('text',{x:band.x+28,y:band.y+45,class:'flow-phase-number'},pad(i+1)));
+      group.append(svg('text',{x:band.x+98,y:band.y+45,class:'flow-phase-name'},band.lines[0]));phases.push(group);diagram.append(group);
     });
     const lines=svg('g',{class:'workflow-lines'}),labels=svg('g',{class:'workflow-edge-labels'}),nodeLayer=svg('g',{class:'workflow-nodes'});
     s.flow.edges.forEach(edge=>{
@@ -442,33 +445,54 @@
       lines.append(svg('path',attrs));
       const signal=svg('path',{d:edge.d,class:'workflow-signal '+edge.kind,'data-phase':edge.phase,'data-from':edge.from,'data-to':edge.to});lines.append(signal);signals.push(signal);
       if(edge.labelAt){
-        const [x,y]=edge.labelAt,text=svg('text',{x,y,class:'workflow-edge-label '+edge.kind,'text-anchor':edge.from==='verify'&&edge.to==='mapping'?'end':edge.to==='dispute'?'end':'start'});
+        const [x,y]=edge.labelAt,text=svg('text',{x,y,class:'workflow-edge-label '+edge.kind,'text-anchor':edge.anchor||'middle'});
         (edge.lines||[edge.label]).forEach((line,i)=>text.append(svg('tspan',{x,dy:i?26:0},line)));labels.append(text);
       }
     });
     s.flow.nodes.forEach(node=>{
       const group=svg('g',{class:'workflow-node '+node.kind,transform:`translate(${node.x} ${node.y})`,'data-node':node.id,'data-phase':node.phase,role:'button',tabindex:0,'aria-label':node.label});
-      group.append(svg('rect',{width:node.w,height:node.h,rx:7}));
-      const text=svg('text',{x:node.w/2,y:node.h/2+9,'text-anchor':'middle'});
-      node.lines.forEach((line,i)=>text.append(svg('tspan',{x:node.w/2,dy:i?28:0},line)));group.append(text);
+      if(node.kind==='main')group.append(svg('rect',{x:-5,y:-5,width:node.w+10,height:node.h+10,rx:12,class:'workflow-halo'}));
+      group.append(svg('rect',{width:node.w,height:node.h,rx:9,class:'workflow-node-face'}));
+      const compact=['organization','technical','materials'].includes(node.id),main=node.kind==='main'||node.id==='acceptance';
+      const x=main?66:node.w/2,y=node.id==='prepare'?42:node.h/2+9-(node.lines.length-1)*15;
+      const text=svg('text',{x,y,'text-anchor':main?'start':'middle',class:compact?'workflow-pill-label':''});
+      node.lines.forEach((line,i)=>text.append(svg('tspan',{x,dy:i?30:0},line)));group.append(text);
+      if(main){
+        const iconPaths={database:'M-14-9c0-8 28-8 28 0s-28 8-28 0v20c0 8 28 8 28 0V-9m-28 10c0 8 28 8 28 0',revision:'M-10 6 6-10l6 6L-4 12l-9 2 3-8m4-12h-10v26h24V8',acceptance:'M0-17 15-10v12c0 10-15 17-15 17S-15 12-15 2v-12Zm-7 17 5 5 10-11',mapping:'M-16-3 0-12 16-3 0 6Zm0 9 16 9 16-9m-32 9 16 9 16-9'};
+        const icon=svg('g',{class:'workflow-icon',transform:`translate(32 ${node.id==='prepare'?34:node.h/2})`});
+        icon.append(svg('path',{d:iconPaths[node.id]||'M-10-14H5l7 7v22h-24v-29m17 0v8h7m-18 6H5m-11 7H5'}));group.append(icon);
+      }
       group.addEventListener('click',()=>{stopTimeline();highlightStep(node.phase);});
       group.addEventListener('keydown',event=>{if(['Enter',' '].includes(event.key)){event.preventDefault();event.stopPropagation();stopTimeline();highlightStep(node.phase);}});nodeLayer.append(group);
     });
-    diagram.append(lines,nodeLayer,labels);viewport.append(diagram);
+    const particles=svg('g',{class:'workflow-particles','aria-hidden':'true'}),dots=new Map();
+    for(const path of signals){const dot=svg('g',{class:'workflow-particle '+(path.classList.contains('condition')?'condition':''),opacity:0});dot.append(svg('circle',{r:9,class:'workflow-dot-aura'}),svg('circle',{r:3.2}));dots.set(path,dot);particles.append(dot);}
+    diagram.append(lines,particles,nodeLayer,labels);viewport.append(diagram);
     const footer=el('div','workflow-footer'),tabs=el('div','workflow-phase-controls'),scenario=el('p','workflow-scenario');scenario.setAttribute('aria-live','polite');tabs.setAttribute('role','group');tabs.setAttribute('aria-label','流程阶段');
     s.flow.bands.forEach((band,i)=>{const b=button(band.name,()=>{stopTimeline();highlightStep(i);});choices.push(b);tabs.append(b);});
     const desc=el('p','step-description sr-only');desc.id='step-description';desc.setAttribute('aria-live','polite');
     footer.append(tabs,scenario,desc,button('查看流程原图',()=>openImage(111),'workflow-original'));layout.append(viewport,footer);
-    let animation=null;
+    let animation=null,flowMotion=null;
     workflowView={
       selectStep(index){
-        animation?.kill();scenario.textContent='';phases.forEach((phase,i)=>phase.classList.toggle('is-current',i===index));choices.forEach((b,i)=>b.setAttribute('aria-pressed',String(i===index)));
+        animation?.kill();flowMotion?.kill();for(const dot of dots.values())dot.style.opacity='0';
+        nodeLayer.querySelectorAll('.workflow-halo').forEach(n=>n.style.opacity='0');
+        scenario.textContent='';phases.forEach((phase,i)=>phase.classList.toggle('is-current',i===index));choices.forEach((b,i)=>b.setAttribute('aria-pressed',String(i===index)));
         for(const n of nodeLayer.children)n.classList.toggle('is-current',Number(n.dataset.phase)===index);
         for(const path of signals){path.style.opacity=Number(path.dataset.phase)===index?'1':'0';path.style.strokeDashoffset='0';}
         if(!motionOff()&&!paused){
           animation=gsap.timeline({defaults:{ease:'power2.out'}});
+          flowMotion=gsap.timeline({repeat:-1});
           const active=signals.filter(p=>Number(p.dataset.phase)===index);
-          const draw=(path,time,duration=.7)=>{const length=path.getTotalLength();path.style.strokeDasharray=String(length);animation.set(path,{opacity:1},time).fromTo(path,{strokeDashoffset:length},{strokeDashoffset:0,duration,immediateRender:false},time);};
+          const travel=(target,path,time,duration)=>{
+            const dot=dots.get(path),meter={t:0},length=path.getTotalLength();
+            target.set(dot,{opacity:.95},time).fromTo(meter,{t:0},{t:1,duration,ease:'none',immediateRender:false,onUpdate:()=>{const p=path.getPointAtLength(meter.t*length);dot.setAttribute('transform',`translate(${p.x} ${p.y})`);}},time).set(dot,{opacity:0},time+duration);
+          };
+          const draw=(path,time,duration=.7)=>{const length=path.getTotalLength();path.style.strokeDasharray=String(length);animation.set(path,{opacity:1},time).fromTo(path,{strokeDashoffset:length},{strokeDashoffset:0,duration,immediateRender:false},time);if(path.classList.contains('condition')||(path.dataset.from==='verify'&&path.dataset.to==='mapping'))travel(animation,path,time,duration);};
+          const forks=active.filter(p=>p.classList.contains('condition')||(p.dataset.from==='verify'&&p.dataset.to==='mapping'));
+          active.filter(p=>!forks.includes(p)&&!['organization','technical','materials'].includes(p.dataset.to)).forEach((path,i)=>travel(flowMotion,path,i*.08,3.2));
+          const halos=nodeLayer.querySelectorAll('.workflow-node.is-current .workflow-halo');
+          flowMotion.fromTo(halos,{opacity:.08},{opacity:.48,duration:1.8,ease:'sine.inOut'},0).to(halos,{opacity:.08,duration:1.8,ease:'sine.inOut'},1.8);
           if(index===1){
             const path=(from,to)=>active.find(p=>p.dataset.from===from&&p.dataset.to===to);
             const direct=path('verify','mapping'),out=path('verify','supplement'),solved=path('supplement','mapping'),unresolved=path('supplement','dispute'),dispute=path('dispute','mapping');
@@ -479,7 +503,7 @@
             animation.call(()=>scenario.textContent='争议仍无法解决：划定权属争议区',[],4.2);draw(out,4.2,.55);draw(unresolved,4.8,.55);draw(dispute,5.4,.65);animation.to([out,unresolved,dispute],{opacity:0,duration:.15},6.25);animation.call(()=>scenario.textContent='',[],6.5);
           }else active.forEach((p,i)=>draw(p,i*.065));
         }
-      },pause:()=>animation?.pause(),resume:()=>animation?.resume(),finish:()=>animation?.progress(1).pause(),destroy:()=>animation?.kill()
+      },pause:()=>{animation?.pause();flowMotion?.pause();},resume:()=>{animation?.resume();flowMotion?.resume();},finish:()=>{animation?.progress(1).pause();flowMotion?.pause();for(const dot of dots.values())dot.style.opacity='0';},destroy:()=>{animation?.kill();flowMotion?.kill();}
     };
     return layout;
   }
