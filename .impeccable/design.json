@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-06T19:18:22+08:00",
+  "generatedAt": "2026-11-06T19:33:12+08:00",
   "title": "Design System: RiverAtlas",
   "extensions": {
     "colorMeta": {
@@ -443,8 +443,8 @@
       },
       {
         "name": "layer-emphasis",
-        "value": ".9s sine.inOut",
-        "purpose": "图件慢速平滑续接；不即时改变z-index，保留3D深度排序。"
+        "value": ".52s power2.out; outgoing .24s",
+        "purpose": "固定预览选择与主图交叉淡化分离；仍可见图从当前状态接续。"
       },
       {
         "name": "process-line",
@@ -606,15 +606,13 @@
         "354px",
         "510px"
       ],
-      "selectedDepth": 90,
-      "backgroundRotationY": 16,
       "radius": "2px",
       "shadow": "0 16px 32px #0006",
       "titleFontSize": "24px",
       "bodyFontSize": "20px",
       "bodyLineHeight": 1.5,
       "labelFontSize": "15px",
-      "transitionMs": 900,
+      "transitionMs": 520,
       "automaticPlayback": false,
       "sourceAssets": [
         107,
@@ -623,13 +621,29 @@
         110
       ],
       "georeferencedGIS": false,
-      "mobileFit": "translate(-50%,-50%) scale(min(sceneWidth/500,sceneHeight/540))",
       "bidirectionalHoverSelection": true,
-      "planeHoverIntentMs": 80,
       "interruptibleTransition": true,
-      "transitionEase": "sine.inOut",
-      "depthOrdering": "preserve-3d; z-index:auto",
-      "retargetFromCurrent": true
+      "transitionEase": "power2.out",
+      "retargetFromCurrent": true,
+      "presentation": "fixed preview rail + single hero crossfade",
+      "outgoingMs": 240,
+      "entryY": 12,
+      "entryScale": 0.985,
+      "movingPlaneHitSelection": false,
+      "fixedPreviewSelection": true,
+      "previewSize": [
+        92,
+        116
+      ],
+      "previewGap": 10,
+      "mobileStage": [
+        500,
+        640
+      ],
+      "mobilePreviewSize": [
+        84,
+        80
+      ]
     },
     "geographicRiverMap": {
       "library": "Leaflet 1.9.4",

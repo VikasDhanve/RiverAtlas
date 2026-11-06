@@ -366,53 +366,53 @@
   }
   function renderLayers(s) {
     const layout=el('div','atlas-layers-layout'),list=el('div','atlas-layer-list'),display=el('div','atlas-layer-display');
-    const scene=el('div','atlas-layer-scene'),stack=el('div','atlas-stack'),controls=el('div','atlas-layer-controls');
-    let selected=0,expanded=true,motion=null,hoverTimer=null,lastPointer=null;
-    const planes=[],choices=[];
+    const scene=el('div','atlas-layer-scene'),stack=el('div','atlas-stack'),controls=el('div','atlas-layer-controls'),previews=el('div','atlas-preview-rail');
+    previews.setAttribute('role','group');previews.setAttribute('aria-label','专题图预览');
+    let selected=0,expanded=true,motion=null;
+    const planes=[],choices=[],thumbnails=[];
+    const small=()=>window.innerWidth<768;
     function fit(){
-      const scale=Math.max(.25,Math.min(1,scene.clientWidth/(window.innerWidth<768?500:1040),scene.clientHeight/540));
+      const scale=Math.max(.25,Math.min(1,scene.clientWidth/(small()?500:1040),scene.clientHeight/(small()?640:540)));
       stack.style.transform='translate(-50%,-50%) scale('+scale+')';
+    }
+    function select(index){if(index===selected)return;stopTimeline();highlightStep(index);}
+    function hoverSelect(node,index){
+      node.addEventListener('pointerenter',event=>{if(event.pointerType==='mouse'&&matchMedia('(hover: hover) and (pointer: fine)').matches)select(index);});
     }
     function paint(animate=true){
       motion?.kill();
       const moving=animate&&!motionOff()&&!paused;
-      motion=moving?gsap.timeline({defaults:{duration:.9,ease:'sine.inOut'}}):null;
-      let background=0;
+      motion=moving?gsap.timeline():null;
       planes.forEach((plane,i)=>{
-        const current=i===selected,slot=[-290,210,330][background];if(!current)background++;
-        const values={x:current?0:slot,y:current?0:18,z:current?90:-20-background*10,rotationY:current?0:(slot<0?16:-16),scale:current?1:.84,opacity:current?1:expanded?.62:0};
-        plane.classList.toggle('active',current);plane.inert=!current&&!expanded;
-        plane.style.zIndex='auto';choices[i].setAttribute('aria-pressed',String(current));
-        if(typeof gsap==='undefined')plane.style.transform=`translate(-50%,-50%) translate(${values.x}px,${values.y}px) scale(${values.scale}) rotateY(${values.rotationY}deg)`;
-        else if(moving)motion.to(plane,values,0);
-        else gsap.set(plane,values);
+        const current=i===selected;
+        plane.classList.toggle('active',current);plane.inert=!current;plane.style.zIndex=current?'2':'1';
+        choices[i].setAttribute('aria-pressed',String(current));thumbnails[i].setAttribute('aria-pressed',String(current));
+        const values={x:small()?0:-88,y:0,z:0,rotationY:0,scale:1,opacity:current?1:0};
+        if(typeof gsap==='undefined'){plane.style.transform=`translate(-50%,-50%) translate(${values.x}px,0)`;plane.style.opacity=String(values.opacity);}
+        else if(moving){
+          // Only reset a fully invisible sheet; interruptions continue from the live presentation.
+          if(current&&Number(gsap.getProperty(plane,'opacity'))<.002)gsap.set(plane,{...values,y:12,scale:.985,opacity:0});
+          motion.to(plane,{...values,y:current?0:-8,scale:current?1:1.01,duration:current?.52:.24,ease:'power2.out'},0);
+        }else gsap.set(plane,values);
       });
-      expand.setAttribute('aria-pressed',String(expanded));collapse.setAttribute('aria-pressed',String(!expanded));
+      previews.hidden=!expanded;expand.setAttribute('aria-pressed',String(expanded));collapse.setAttribute('aria-pressed',String(!expanded));
     }
     s.points.forEach(([title,text],i)=>{
-      const choice=button('',()=>{stopTimeline();highlightStep(i);},'atlas-layer-choice');choice.setAttribute('aria-label',title);
-      choice.append(el('span','atlas-layer-index',pad(i+1)),el('h2','',title),el('p','',text));choices.push(choice);list.append(choice);
-      choice.addEventListener('pointerenter',event=>{if(event.pointerType==='mouse'&&matchMedia('(hover: hover) and (pointer: fine)').matches&&i!==selected){clearTimeout(hoverTimer);stopTimeline();highlightStep(i);}});
-      const plane=button('',()=>{if(selected===i)openImage(s.images[i]);else highlightStep(i);},'atlas-plane');plane.dataset.layer=i;
-      plane.setAttribute('aria-label','查看'+title+'图件');
+      const choice=button('',()=>select(i),'atlas-layer-choice');choice.setAttribute('aria-label',title);
+      choice.append(el('span','atlas-layer-index',pad(i+1)),el('h2','',title),el('p','',text));choices.push(choice);list.append(choice);hoverSelect(choice,i);
+      const plane=button('',()=>openImage(s.images[i]),'atlas-plane');plane.dataset.layer=i;plane.setAttribute('aria-label','查看'+title+'图件');
       const box=el('div','atlas-raster-frame'),img=assetImage(s.images[i],'atlas-raster',true);box.append(img);
       plane.append(box,el('span','atlas-plane-label',title));planes.push(plane);stack.append(plane);
+      const thumbnail=button('',()=>select(i),'atlas-preview');thumbnail.dataset.layer=i;thumbnail.setAttribute('aria-label','预览：'+title);
+      const label=el('span','atlas-preview-name');label.append(el('span','',pad(i+1)),el('span','atlas-preview-title',' '+['影像底图','范围现势','权属成果','管制保护'][i]));
+      thumbnail.append(assetImage(s.images[i],'',true),label);hoverSelect(thumbnail,i);thumbnails.push(thumbnail);previews.append(thumbnail);
       if(typeof gsap!=='undefined')gsap.set(plane,{xPercent:-50,yPercent:-50});
     });
-    const expand=button('图集',()=>{expanded=true;paint();},'atlas-mode'),collapse=button('单图',()=>{expanded=false;paint();},'atlas-mode');
+    const expand=button('图集',()=>{expanded=true;paint(false);},'atlas-mode'),collapse=button('单图',()=>{expanded=false;paint(false);},'atlas-mode');
     controls.append(el('span','atlas-unit','大沙河 · 210200331000003'),expand,collapse,button('查看图件',()=>openImage(s.images[selected]),'atlas-open'));
-    scene.append(stack);display.append(scene,controls);layout.append(list,display);
-    scene.addEventListener('pointermove',event=>{
-      if(event.pointerType!=='mouse'||!matchMedia('(hover: hover) and (pointer: fine)').matches)return;
-      if(lastPointer&&Math.hypot(event.clientX-lastPointer.x,event.clientY-lastPointer.y)<3)return;
-      lastPointer={x:event.clientX,y:event.clientY};clearTimeout(hoverTimer);
-      const plane=event.target.closest('.atlas-plane');if(!plane)return;
-      const index=Number(plane.dataset.layer);
-      if(index!==selected)hoverTimer=setTimeout(()=>{stopTimeline();highlightStep(index);},80);
-    });
-    scene.addEventListener('pointerleave',()=>{clearTimeout(hoverTimer);lastPointer=null;});
-    exhibitView={resetLabel:'复位图层',reset:()=>{expanded=true;highlightStep(0);},selectStep:index=>{selected=index;paint();},refit:fit,
-      pause:()=>{clearTimeout(hoverTimer);motion?.pause();},resume:()=>motion?.resume(),finish:()=>{clearTimeout(hoverTimer);motion?.progress(1).pause();},destroy:()=>{clearTimeout(hoverTimer);motion?.kill();}};
+    stack.append(previews);scene.append(stack);display.append(scene,controls);layout.append(list,display);
+    exhibitView={resetLabel:'复位图层',reset:()=>{expanded=true;highlightStep(0);},selectStep:index=>{selected=index;paint();},refit:()=>{fit();paint(false);},
+      pause:()=>motion?.pause(),resume:()=>motion?.resume(),finish:()=>motion?.progress(1).pause(),destroy:()=>motion?.kill()};
     paint(false);return layout;
   }
   function renderWorkflow(s){

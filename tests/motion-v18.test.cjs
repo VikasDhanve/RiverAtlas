@@ -16,22 +16,20 @@ test('第六页为三栏完整流程，流光沿路径移动，暂停冻结且�
  }finally{await b.close();}
 });
 
-test('第八页悬停切换缓慢连续，快速重选从当前位置衔接并最终选中最新图件',async()=>{
+test('第八页主图交叉淡化可中断，重选连续且半秒左右完成',async()=>{
  const b=await chromium.launch({channel:'chrome'}),p=await b.newPage({viewport:{width:1920,height:1080},offline:true});
  try{
-  await p.goto(url+'#p8');const plane=p.locator('.atlas-plane[data-layer="2"]');
-  const center=async()=>{const r=await plane.boundingBox();return r.x+r.width/2;};
-  const initial=await center();await p.getByRole('button',{name:'权属与成果',exact:true}).hover();await p.waitForTimeout(350);const middle=await center();
-  await p.waitForTimeout(700);const final=await center();assert(Math.abs(initial-final)>100);assert(Math.abs(middle-final)>20,'350ms时应仍在顺滑移动');
-  await p.getByRole('button',{name:'范围与现势',exact:true}).hover();await p.waitForTimeout(170);
+  await p.goto(url+'#p8');await p.getByRole('button',{name:'权属与成果',exact:true}).hover();
+  await p.waitForTimeout(180);const plane=p.locator('.atlas-plane[data-layer="2"]');const opacity=()=>plane.evaluate(n=>Number(getComputedStyle(n).opacity));
+  const partial=await opacity();assert(partial>0&&partial<1,'过渡中两图应交叉淡化');
+  await p.getByRole('button',{name:'范围与现势',exact:true}).hover();await p.waitForTimeout(70);
   const choice=p.getByRole('button',{name:'权属与成果',exact:true});
   await choice.evaluate(n=>{
-   const center=()=>{const r=document.querySelector('.atlas-plane[data-layer="2"]').getBoundingClientRect();return r.x+r.width/2;};
-   n.addEventListener('pointerenter',()=>window.retargetBefore=center(),{capture:true,once:true});
-   n.addEventListener('pointerenter',()=>window.retargetAfter=center(),{once:true});
+   const state=()=>{const p=document.querySelector('.atlas-plane[data-layer="2"]'),r=p.getBoundingClientRect();return{y:r.y,opacity:Number(getComputedStyle(p).opacity)};};
+   n.addEventListener('pointerenter',()=>window.retargetBefore=state(),{capture:true,once:true});n.addEventListener('pointerenter',()=>window.retargetAfter=state(),{once:true});
   });
-  await choice.hover();const jump=await p.evaluate(()=>Math.abs(window.retargetAfter-window.retargetBefore));assert(jump<2,'同一次悬停事件内不应瞬间跳到起点或终点');
-  await p.getByRole('button',{name:'管制与保护',exact:true}).hover();await p.waitForTimeout(1100);assert.equal(await p.locator('.atlas-plane.active img').getAttribute('data-asset'),'110');
-  await p.locator('#slide-title').hover();await p.waitForTimeout(300);assert.equal(await p.getByRole('button',{name:'管制与保护',exact:true}).getAttribute('aria-pressed'),'true');
+  await choice.hover();const values=await p.evaluate(()=>[window.retargetBefore,window.retargetAfter]);
+  if(values[0].opacity>.01){assert(Math.abs(values[0].y-values[1].y)<2);assert(Math.abs(values[0].opacity-values[1].opacity)<.02,'重选不应重新从透明起播');}
+  await p.waitForTimeout(650);assert.equal(await opacity(),1);assert.equal(await p.locator('.atlas-plane.active img').getAttribute('data-asset'),'109');
  }finally{await b.close();}
 });

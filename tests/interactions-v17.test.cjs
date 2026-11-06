@@ -65,9 +65,7 @@ test('第八页悬停左右双向切换，动画与左侧高亮保持一致且�
  try{
   await p.goto(url+'#p8');await p.getByRole('button',{name:'权属与成果',exact:true}).hover();
   await p.waitForTimeout(1000);assert.equal(await p.locator('.atlas-plane.active img').getAttribute('data-asset'),'109');
-  const point=await p.locator('.atlas-plane[data-layer="3"]').evaluate(n=>{
-   const r=n.getBoundingClientRect();for(let y=r.top+20;y<r.bottom-10;y+=20)for(let x=r.left+10;x<Math.min(innerWidth,r.right-5);x+=10)if(document.elementFromPoint(x,y)?.closest('.atlas-plane')===n)return{x,y};return null;
-  });assert(point,'应有可悬停的背景专题图');await p.mouse.move(point.x,point.y);
+  await p.getByRole('button',{name:'预览：管制与保护',exact:true}).hover();
   await p.waitForTimeout(400);assert.equal(await p.getByRole('button',{name:'管制与保护',exact:true}).getAttribute('aria-pressed'),'true');
   await p.locator('#slide-title').hover();await p.waitForTimeout(1000);assert.equal(await p.locator('.atlas-plane.active img').getAttribute('data-asset'),'110');
  }finally{await b.close();}
