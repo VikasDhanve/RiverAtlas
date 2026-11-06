@@ -9,7 +9,7 @@ const RiverAtlasStars = (() => {
     let seed=81247,w=0,h=0,x=0,y=0,targetX=0,targetY=0,request=0,paused=false,staticMode=false,pointer=null,lastMove=-Infinity;
     const trail=[],life=650;
     const random=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};
-    const stars=Array.from({length:360},(_,i)=>({x:random(),y:random(),depth:i<260?.3:i<335?.65:1,r:i<260?.45+random()*.35:i<335?.7+random()*.4:1+random()*.35}));
+    const stars=Array.from({length:440},(_,i)=>({x:random(),y:random(),depth:i<320?.3:i<410?.65:1,r:i<320?.45+random()*.35:i<410?.7+random()*.4:1+random()*.35}));
     function draw(now=performance.now()) {
       ctx.clearRect(0,0,w,h);
       const mist=ctx.createRadialGradient(w*.73,h*.24,0,w*.73,h*.24,w*.55);
@@ -19,7 +19,7 @@ const RiverAtlasStars = (() => {
       while(trail.length&&now-trail[0].time>life)trail.shift();
       for(const star of stars) {
         const px=star.x*(w+40)-20+x*star.depth,py=star.y*(h+30)-15+y*star.depth;
-        ctx.fillStyle='rgba(185,218,237,'+(.16+star.depth*.18)+')';
+        ctx.fillStyle='rgba(185,218,237,'+(.20+star.depth*.20)+')';
         ctx.beginPath();ctx.arc(px,py,star.r,0,Math.PI*2);ctx.fill();
         if(star.depth===1){ctx.strokeStyle='rgba(145,198,224,.12)';ctx.lineWidth=.55;ctx.beginPath();ctx.moveTo(px-3,py);ctx.lineTo(px+3,py);ctx.moveTo(px,py-3);ctx.lineTo(px,py+3);ctx.stroke();}
         if(strength&&pointer){const distance=Math.hypot(px-pointer.x,py-pointer.y);if(distance<190)nearby.push({x:px,y:py,distance});}

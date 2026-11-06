@@ -468,8 +468,8 @@
       },
       {
         "name": "map-focus",
-        "value": ".35s power3.out",
-        "purpose": "原栅格图局部查看，非GIS量算。"
+        "value": ".85s Leaflet flyToBounds; paused/static immediate",
+        "purpose": "本地真实坐标河流定位；旧栅格放大已替换，不用于登记边界量算。"
       },
       {
         "name": "landscape-draw",
@@ -554,7 +554,7 @@
       "readerUsesFullHeight": true
     },
     "pointerStarfield": {
-      "stars": 360,
+      "stars": 440,
       "base": "#061a2c",
       "color": "185,218,237",
       "depths": [
@@ -569,9 +569,9 @@
       "pointerDriven": true,
       "pauseAndReducedMotion": true,
       "depthCounts": [
-        260,
-        75,
-        25
+        320,
+        90,
+        30
       ],
       "constellation": {
         "radius": 190,
@@ -592,6 +592,10 @@
         "fadeMs": 650,
         "fade": "quadratic",
         "touchPointerEffect": false
+      },
+      "opacity": {
+        "base": 0.2,
+        "depthFactor": 0.2
       }
     },
     "atlasLayerScene": {
@@ -623,6 +627,57 @@
         19
       ],
       "georeferencedGIS": false
+    },
+    "geographicRiverMap": {
+      "library": "Leaflet 1.9.4",
+      "offline": true,
+      "onlineTiles": false,
+      "crsData": "WGS84",
+      "renderCRS": "EPSG:3857",
+      "rivers": 5,
+      "allButton": true,
+      "sidebarWidth": 280,
+      "gap": 30,
+      "mapRadius": 4,
+      "mapBackground": "#0a2334",
+      "landFill": "#183b47",
+      "regionLabel": 20,
+      "riverLabel": 19,
+      "mobileLabel": [
+        16,
+        15
+      ],
+      "mobileMapMinHeight": 380,
+      "fitPadding": [
+        36,
+        30
+      ],
+      "maxFitZoom": 12,
+      "zoomRange": [
+        8,
+        12.5
+      ],
+      "flightSeconds": 0.85,
+      "channel": {
+        "width": 3.6,
+        "color": "#64d8ed",
+        "opacity": 0.92
+      },
+      "flow": {
+        "width": 1.8,
+        "color": "#d5faff",
+        "opacity": 0.95,
+        "dash": [
+          8,
+          23
+        ],
+        "seconds": 2.6,
+        "offset": -62
+      },
+      "dimOpacity": 0.12,
+      "dimLabelOpacity": 0.22,
+      "pauseStaticAndReducedMotion": true,
+      "registrationBoundary": false
     }
   },
   "components": [

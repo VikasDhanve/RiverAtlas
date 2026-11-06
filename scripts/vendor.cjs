@@ -10,3 +10,11 @@ for (const [source, target] of [['dist/gsap.min.js', 'gsap.min.js'], ['dist/gsap
 }
 fs.writeFileSync(path.join(dest, 'GSAP-LICENSE.txt'), 'GSAP 3.15.1, copyright Webflow / GreenSock.\nOriginal copyright notices are retained in gsap.js and gsap.min.js.\nThe runtime is governed by the Standard No Charge GSAP License, not the MIT license of the skills.\nOfficial terms: https://gsap.com/community/standard-license/\nOfficial installation: https://gsap.com/docs/v3/Installation/\nThis project uses GSAP for a presentation, not a visual animation authoring product.\n');
 console.log('GSAP ' + require('gsap/package.json').version + ' copied locally.');
+
+const leafletRoot = path.dirname(require.resolve('leaflet/package.json'));
+const leafletDest = path.join(dest, 'leaflet');
+fs.mkdirSync(leafletDest, { recursive: true });
+for (const file of ['leaflet.js','leaflet-src.js','leaflet.css','leaflet.js.map']) fs.copyFileSync(path.join(leafletRoot,'dist',file),path.join(leafletDest,file));
+fs.cpSync(path.join(leafletRoot,'dist/images'),path.join(leafletDest,'images'),{recursive:true});
+fs.copyFileSync(path.join(leafletRoot,'LICENSE'),path.join(leafletDest,'LICENSE'));
+console.log('Leaflet '+require('leaflet/package.json').version+' copied locally.');

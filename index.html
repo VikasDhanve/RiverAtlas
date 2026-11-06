@@ -6,6 +6,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <meta name="color-scheme" content="dark light">
   <title>RiverAtlas · 大连市自然资源统一确权登记工作市级确权项目汇报</title>
+  <link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css">
   <link rel="stylesheet" href="src/styles.css">
   <script defer src="assets/vendor/gsap.min.js"></script>
   <script defer src="src/source.js"></script>
@@ -13,6 +14,9 @@
   <script defer src="src/landscape-texture.js"></script>
   <script defer src="src/landscape.js"></script>
   <script defer src="src/stars.js"></script>
+  <script defer src="assets/vendor/leaflet/leaflet.js"></script>
+  <script defer src="src/geography.js"></script>
+  <script defer src="src/river-map.js"></script>
   <script defer src="src/app.js"></script>
 </head>
 <body>
@@ -65,7 +69,7 @@
     <div class="dialog-header"><h2 id="help-title">演示操作</h2><button type="button" data-close="help-dialog">返回汇报</button></div>
     <dl class="shortcuts"><dt>← / → · PageUp / PageDown</dt><dd>上一页 / 下一页</dd><dt>Home / End</dt><dd>封面 / 结束页</dd><dt>S</dt><dd>流程或图层的下一步</dd><dt>P / 空格</dt><dd>暂停 / 继续当前动效</dd><dt>R / F / A</dt><dd>重播 / 全屏 / 静态模式</dd><dt>Esc</dt><dd>关闭原件或弹窗；全屏时退出全屏</dd></dl>
     <p>默认人工翻页。长流程请点击“播放演示”，过程可暂停、重播或跳过。打开原稿资料或切到后台时自动暂停，返回后可手动继续。</p>
-    <p>点击地图河流名称可查看对应局部；点击图面可查看原件。小屏采用纵向阅读，桌面和大屏使用完整演示画布。</p>
+    <p>第五页左侧选择河流可定位并高亮，“全部”显示五河总览。地图可拖拽缩放，获得焦点时方向键平移；“查看原件”打开原稿分布图。小屏采用纵向阅读，桌面和大屏使用完整演示画布。</p>
     <p>首版按既有资料制作。草案、外地样例与实际待确认进度有明确标识，未新增缺失数据。</p>
   </dialog>
   <div id="message" class="message" role="status" aria-live="polite"></div>

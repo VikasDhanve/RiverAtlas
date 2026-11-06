@@ -4,11 +4,12 @@
   "private": true,
   "description": "RiverAtlas · 大连市级确权项目离线交互汇报",
   "scripts": {
-    "test": "node --test tests/presentation.test.cjs tests/revision.test.cjs tests/exhibit.test.cjs tests/policy.test.cjs tests/showcase.test.cjs",
+    "test": "node --test tests/presentation.test.cjs tests/revision.test.cjs tests/exhibit.test.cjs tests/policy.test.cjs tests/showcase.test.cjs tests/map.test.cjs",
     "vendor": "node scripts/vendor.cjs"
   },
   "dependencies": {
-    "gsap": "3.15.1"
+    "gsap": "3.15.1",
+    "leaflet": "1.9.4"
   },
   "devDependencies": {
     "playwright": "1.65.0"

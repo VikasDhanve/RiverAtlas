@@ -6,7 +6,7 @@
   const slides = RiverAtlasSlides;
   const assets = new Map(source.assets.map(a => [a.id, a]));
   const reduceQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-  let pageIndex = parseHash(), currentStep = 0, timeline = null, mapTween = null;
+  let pageIndex = parseHash(), currentStep = 0, timeline = null;
   let landscape = null, activeGallery = null, mediaTween = null, stepTween = null, exhibitView = null;
   let paused = false, manualStatic = false, imageId = null, zoom = 1, fittedWidth = 0, messageTimer;
   const motionOff = () => reduceQuery.matches || manualStatic || typeof gsap === 'undefined';
@@ -280,28 +280,31 @@
     c.append(tabs,process,docs); return c;
   }
   function renderMap(s) {
-    const c = el('div', 'map-layout'), list = el('div', 'river-list'), figure = el('div', 'map-figure');
-    const windowEl = el('div', 'map-window'), img = assetImage(12); windowEl.append(img);
-    function select(i) {
-      const r = s.rivers[i];
-      for (const b of list.children) b.setAttribute('aria-pressed', String(Number(b.dataset.river) === i));
-      img.style.transformOrigin = (r[2] * 100) + '% ' + (r[3] * 100) + '%';
-      mapTween?.kill();
-      if (motionOff() || paused) img.style.transform = 'scale(1.75)';
-      else mapTween = gsap.to(img, { scale: 1.75, duration: .35, ease:'power3.out', overwrite:true });
-      desc.textContent = r[0] + ' · ' + r[1];
-    }
-    s.rivers.forEach((r, i) => {
-      const b = button('', () => select(i), 'river-choice'); b.dataset.river = i;
-      b.append(el('strong', '', r[0]), el('span', '', r[1])); b.setAttribute('aria-pressed', 'false'); list.append(b);
+    const layout=el('div','map-layout'),list=el('div','river-list'),figure=el('div','map-figure');
+    const windowEl=el('div','map-window river-map'),controls=el('div','map-controls'),desc=el('span','','五河空间总览');
+    windowEl.setAttribute('role','region');windowEl.setAttribute('aria-label','五河地理地图');windowEl.tabIndex=0;
+    let view;
+    function select(index){view?.select(index);}
+    const all=button('',()=>select(null),'river-choice river-all');all.dataset.river='all';
+    all.append(el('strong','','全部'),el('span','','五条河流总览'));list.append(all);
+    s.rivers.forEach((river,index)=>{
+      const choice=button('',()=>select(index),'river-choice');choice.dataset.river=String(index);
+      choice.append(el('strong','',river[0]),el('span','',river[1]));list.append(choice);
     });
-    const controls = el('div', 'map-controls'), desc = el('span', '', '五河空间分布图');
-    controls.append(desc, button('恢复全图', () => {
-      mapTween?.kill(); img.style.transform = 'none';
-      for (const b of list.children) b.setAttribute('aria-pressed', 'false');
-      desc.textContent = '五河空间分布图';
-    }), button('查看原件', () => openImage(12)));
-    figure.append(windowEl, controls); c.append(list, figure); return c;
+    function selected(index){
+      for(const choice of list.children)choice.setAttribute('aria-pressed',String(choice.dataset.river===(index===null?'all':String(index))));
+      desc.textContent=index===null?'五河空间总览':s.rivers[index][0]+' · '+s.rivers[index][1];
+    }
+    const original=button('查看原件',()=>openImage(12));original.dataset.asset='12';
+    controls.append(desc,button('恢复全图',()=>select(null)),original);figure.append(windowEl,controls);layout.append(list,figure);selected(null);
+    if(typeof RiverAtlasMap!=='undefined'&&typeof L!=='undefined'&&typeof RiverAtlasGeography!=='undefined'){
+      view=RiverAtlasMap.create(windowEl,{onSelect:selected});
+      exhibitView={...view,resetLabel:'显示全部',reset(){select(null);}};
+    }else{
+      windowEl.append(assetImage(12));desc.textContent='地图资源未加载，已保留原稿分布图';
+      for(const choice of list.children)choice.disabled=true;
+    }
+    return layout;
   }
   function renderLayers(s) {
     const layout=el('div','atlas-layers-layout'), list=el('div','atlas-layer-list'), display=el('div','atlas-layer-display');
@@ -457,7 +460,7 @@
     }
     return copyPoints(s.points);
   }
-  function stopTimeline() { timeline?.kill(); timeline = null; mapTween?.kill(); mapTween = null; mediaTween?.kill(); mediaTween=null; stepTween?.kill(); stepTween=null; }
+  function stopTimeline() { timeline?.kill(); timeline = null; mediaTween?.kill(); mediaTween=null; stepTween?.kill(); stepTween=null; }
   function highlightStep(n) {
     const s = slides[pageIndex], total = s.steps?.length || s.points?.length || 1;
     currentStep = Math.max(0, Math.min(total - 1, n));
@@ -497,6 +500,7 @@
     $('static-button').title = reduceQuery.matches ? '系统已启用减少动态效果，当前静态显示' : '切换静态模式（A）';
     document.body.classList.toggle('static-mode', motionOff());
     starfield?.setState({paused,staticMode:motionOff()});
+    exhibitView?.setState?.({paused,staticMode:motionOff()});
     $('stage').dataset.paused = String(paused);
   }
   function intro(animate, direction = 1) {
@@ -576,13 +580,13 @@
   function togglePause() {
     if (motionOff()) return;
     paused = !paused;
-    if (paused) { timeline?.pause(); mapTween?.pause(); landscape?.pause(); mediaTween?.pause(); stepTween?.pause(); exhibitView?.pause(); }
-    else { timeline?.resume(); mapTween?.resume(); landscape?.resume(); mediaTween?.resume(); stepTween?.resume(); exhibitView?.resume(); }
+    if (paused) { timeline?.pause(); landscape?.pause(); mediaTween?.pause(); stepTween?.pause(); exhibitView?.pause(); }
+    else { timeline?.resume(); landscape?.resume(); mediaTween?.resume(); stepTween?.resume(); exhibitView?.resume(); }
     updateControls();
   }
-  function pauseAll() { paused = true; timeline?.pause(); mapTween?.pause(); landscape?.pause(); mediaTween?.pause(); stepTween?.pause(); exhibitView?.pause(); updateControls(); }
+  function pauseAll() { paused = true; timeline?.pause(); landscape?.pause(); mediaTween?.pause(); stepTween?.pause(); exhibitView?.pause(); updateControls(); }
   function skipAnimation() {
-    timeline?.progress(1).pause(); mapTween?.progress(1).pause(); landscape?.pause(); mediaTween?.progress(1).pause(); stepTween?.progress(1).pause(); exhibitView?.finish?.();
+    timeline?.progress(1).pause(); landscape?.pause(); mediaTween?.progress(1).pause(); stepTween?.progress(1).pause(); exhibitView?.finish?.();
     const s = slides[pageIndex];
     if (s.layout === 'process' || (s.layout === 'layers' && !exhibitView)) highlightStep((s.steps || s.points).length - 1);
   }
@@ -694,6 +698,7 @@
       return;
     }
     if (document.querySelector('dialog[open]') || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if(e.target.closest?.('.leaflet-container')&&['ArrowRight','ArrowLeft','ArrowUp','ArrowDown','+','-','='].includes(e.key))return;
     if (['ArrowRight','PageDown','ArrowLeft','PageUp','Home','End'].includes(e.key)) {
       e.preventDefault();
       const n = e.key === 'Home' ? 0 : e.key === 'End' ? slides.length - 1 : pageIndex + (['ArrowRight','PageDown'].includes(e.key) ? 1 : -1);
