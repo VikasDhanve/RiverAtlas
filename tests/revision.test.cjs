@@ -32,7 +32,7 @@ test('政策单图展陈，现用原稿图像均有主页面展示入口', async
       await page.goto(url+'#p'+n);
       for (const id of await page.locator('#presentation [data-asset]').evaluateAll(nodes=>nodes.map(n=>Number(n.dataset.asset)))) shown.add(id);
     }
-    for (let id=5;id<=37;id++) assert(shown.has(id), '主页面缺少业务图像 '+id);
+    for (let id=5;id<=37;id++) if(![28,29,30].includes(id)) assert(shown.has(id), '主页面缺少业务图像 '+id);
     await page.goto(url+'#p3');
     assert.equal(await page.locator('.policy-choice').count(),5);
     const h=await page.locator('.policy-window').evaluate(n=>n.getBoundingClientRect().height);
@@ -67,7 +67,7 @@ test('无WebGL时背景正常回退，暂停翻页不隐藏正文，多图演示
     await page.locator('#replay-button').click();
     assert.match(await page.locator('.gallery-caption').innerText(),/碧流河地籍调查表封面/);
     await page.locator('#skip-button').click();
-    assert.match(await page.locator('.gallery-caption').innerText(),/碧流河水流资源专题图/);
+    assert.match(await page.locator('.gallery-caption').innerText(),/T26界址点点之记/);
     assert.deepEqual(errors,[]);
   } finally {await browser.close();}
 });

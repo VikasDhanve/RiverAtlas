@@ -1035,5 +1035,19 @@
       "sha256": "2ed249431edba5630d03d583151ea46945dd3aafc47a4fdadf0ffff9b30ddd47",
       "rotation": 0
     }
-  ]
+  ],
+  "runtimeRemovedAssetIds": [
+    2,
+    3,
+    28,
+    29,
+    30,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43
+  ],
+  "runtimeRemovalReason": "2026-11-06用户要求移除原稿资料模块，并清理无页面引用的旧图；原PPT及用户原始目录只读。"
 }

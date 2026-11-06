@@ -24,13 +24,13 @@ with ZipFile(archive, 'w', compression=ZIP_DEFLATED, compresslevel=6) as z:
 with ZipFile(archive) as z:
     bad = z.testzip()
     if bad: raise SystemExit('ZIP校验失败：' + bad)
-    required = ['index.html', 'src/source.js', 'src/content.js', 'assets/vendor/gsap.min.js', 'README.md']
+    required = ['index.html', 'src/source.js', 'src/content.js', 'src/supplement.js', 'src/biliuhe.js', 'assets/vendor/gsap.min.js', 'README.md']
     if not all(n in z.namelist() for n in required): raise SystemExit('缺少必要交付文件')
 manifest = {
     'version': version, 'created': datetime.now().astimezone().isoformat(timespec='seconds'),
     'archive': archive.name, 'bytes': archive.stat().st_size, 'files': len(files),
     'sha256': hashlib.sha256(archive.read_bytes()).hexdigest(),
-    'entry': 'index.html', 'sourcePages': 35, 'presentationPages': 32, 'businessImages': 39, 'supplementImages': 11,
+    'entry': 'index.html', 'sourcePages': 35, 'presentationPages': 32, 'businessImages': 49, 'supplementImages': 19,
     'status': 'RiverAtlas单层工程；待用户体验反馈，不等同正式验收'
 }
 (output / '交付清单.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding='utf-8')

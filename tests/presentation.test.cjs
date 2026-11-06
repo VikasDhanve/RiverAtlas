@@ -40,52 +40,36 @@ test('离线入口显示业务名称，键盘翻页、首尾及非法页码均�
   } finally { await page.close(); }
 });
 
-test('39个业务原件均可离线打开，缩放和关闭后保持原讲解页', async () => {
-  const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, offline: true });
-  const errors = [], remote = [];
-  page.on('pageerror', e => errors.push(e.message));
-  page.on('request', r => { if (/^https?:/.test(r.url())) remote.push(r.url()); });
-  try {
-    await page.goto(url + '#p20');
-    await page.getByRole('button', { name: '原稿资料', exact: true }).click();
-    await page.getByRole('button', { name: '全部39份业务图像', exact: true }).click();
-    const originals = page.locator('#sources-content .source-image');
-    assert.equal(await originals.count(), 39);
-    for (let i = 0; i < 39; i++) {
-      await originals.nth(i).click();
-      await page.waitForFunction(() => {
-        const img = document.getElementById('original-image');
-        return img.complete && img.naturalWidth > 0 && !img.hidden;
-      });
-      assert(await page.locator('#original-image').evaluate(img => img.naturalWidth > 0));
-      if (i === 0) {
-        const before = await page.locator('#original-image').evaluate(img => img.getBoundingClientRect().width);
-        await page.getByRole('button', { name: '放大原件', exact: true }).click();
-        const after = await page.locator('#original-image').evaluate(img => img.getBoundingClientRect().width);
-        assert(after > before * 1.4);
-        await page.getByRole('button', { name: '适应窗口', exact: true }).click();
-      }
-      await page.keyboard.press('Escape');
-      assert.equal(await page.locator('#image-dialog').evaluate(d => d.open), false);
-    }
-    await page.getByRole('button', { name: '返回汇报', exact: true }).click();
-    assert.equal(await page.locator('#page-count').innerText(), '20 / 32');
-    assert.deepEqual(remote, []); assert.deepEqual(errors, []);
-  } finally { await page.close(); }
+test('当前49份业务与流程图像均可离线打开，缩放关闭保持原页',async()=>{
+ const page=await browser.newPage({viewport:{width:1920,height:1080},offline:true,reducedMotion:'reduce'}),seen=new Set(),errors=[],remote=[];
+ page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(/^https?:/.test(r.url()))remote.push(r.url());});
+ async function open(trigger){
+  await trigger.click();await page.waitForFunction(()=>{const i=document.getElementById('original-image');return !i.hidden&&i.complete&&i.naturalWidth>0;});
+  seen.add(await page.locator('#original-image').getAttribute('src'));
+  if(seen.size===1){const before=await page.locator('#original-image').evaluate(i=>i.clientWidth);await page.getByRole('button',{name:'放大原件',exact:true}).click();assert((await page.locator('#original-image').evaluate(i=>i.clientWidth))>before*1.4);await page.getByRole('button',{name:'适应窗口',exact:true}).click();}
+  await page.keyboard.press('Escape');assert.equal(await page.locator('#image-dialog').evaluate(d=>d.open),false);
+ }
+ try{
+  for(let n=1;n<=32;n++){
+   await page.goto(url+'#p'+n);
+   if(n===2)for(const name of ['查看完整原件：中标通知书','查看完整原件：项目合同'])await open(page.getByRole('button',{name,exact:true}));
+   if(n===3)for(let i=0;i<5;i++){await page.locator('.policy-choice').nth(i).click();await open(page.getByRole('button',{name:'查看完整政策文件',exact:true}));}
+   if(n===5)await open(page.getByRole('button',{name:'查看原件',exact:true}));
+   if(n===6)await open(page.getByRole('button',{name:'查看流程原图',exact:true}));
+   if(n===8)for(let i=0;i<4;i++){await page.locator('.atlas-layer-choice').nth(i).click();await open(page.getByRole('button',{name:'查看图件',exact:true}));}
+   if(n===21)await page.getByRole('button',{name:'政策文件',exact:true}).click();
+   for(let i=0;i<await page.locator('.gallery-tabs button').count();i++){await page.locator('.gallery-tabs button').nth(i).click();await open(page.locator('.gallery-spread .image-button'));}
+   assert.equal(await page.locator('#page-count').innerText(),String(n).padStart(2,'0')+' / 32');
+  }
+  assert.equal(seen.size,49);assert.deepEqual(errors,[]);assert.deepEqual(remote,[]);
+ }finally{await page.close();}
 });
 
-test('完整35页转录、全部原始表格和六章目录可查找，空结果有反馈', async () => {
+test('六章目录与32页可查找，空结果有反馈，原稿资料入口已移除', async () => {
   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, reducedMotion: 'reduce' });
   try {
     await page.goto(url + '#p22');
-    await page.getByRole('button', { name: '原稿资料', exact: true }).click();
-    await page.getByRole('button', { name: '全部35页', exact: true }).click();
-    assert.equal(await page.locator('.source-page').count(), 35);
-    assert.equal(await page.locator('[data-source-page="9"] .source-table tr').count(), 6);
-    assert.match(await page.locator('[data-source-page="28"]').innerText(), /地图审核程序/);
-    assert.match(await page.locator('[data-source-page="30"]').innerText(), /210200331000003/);
-    assert.match(await page.locator('[data-source-page="29"]').innerText(), /15个工作日/);
-    await page.keyboard.press('Escape');
+    assert.equal(await page.locator('#sources-button,#sources-dialog').count(),0);
     await page.getByRole('button', { name: '全部页面', exact: true }).click();
     assert.equal(await page.locator('.contents-entry').count(), 32);
     await page.getByRole('searchbox').fill('不存在的标题');
@@ -117,7 +101,7 @@ test('讲解流程支持暂停、继续、逐步、重播、跳过及离页中�
     assert.match(await page.locator('#step-description').innerText(), /第1步/);
     await page.getByRole('button', { name: '下一步', exact: true }).click();
     assert.match(await page.locator('#step-description').innerText(), /第2步/);
-    await page.getByRole('button', { name: '原稿资料', exact: true }).click();
+    await page.getByRole('button', { name: '操作说明', exact: true }).click();
     await page.keyboard.press('Escape');
     assert.equal(await page.locator('#pause-button').getAttribute('aria-pressed'), 'true');
     for (let i = 0; i < 8; i++) await page.keyboard.press('ArrowRight');
@@ -156,8 +140,8 @@ test('全屏能进入并退出，地图聚焦和成果专题能切换', async ()
     await page.getByRole('button', { name: '退出全屏', exact: true }).click();
     await page.waitForFunction(() => !document.fullscreenElement);
     await page.goto(url + '#p19');
-    await page.getByRole('button', { name: '碧流河水流资源专题图', exact: true }).click();
-    assert.equal(await page.locator('.gallery-caption').innerText(), '碧流河水流资源专题图');
+    await page.getByRole('button', { name: '碧流河 · 森林资源专题图', exact: true }).click();
+    assert.equal(await page.locator('.gallery-caption').innerText(), '碧流河 · 森林资源专题图');
   } finally { await page.close(); }
 });
 

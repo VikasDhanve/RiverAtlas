@@ -21,10 +21,6 @@ const { pathToFileURL } = require('node:url');
     await page.getByRole('button', {name:'播放演示',exact:true}).click();
     await page.waitForTimeout(250);
     await page.screenshot({path:path.join(out,'motion-chart-0250.png')});
-    await page.goto(url + '#p22');
-    await page.getByRole('button', {name:'原稿资料',exact:true}).click();
-    await page.screenshot({path:path.join(out,'sources.png')});
-    await page.keyboard.press('Escape');
     await page.goto(url + '#p30');
     await page.locator('.image-button').click();
     await page.waitForFunction(() => { const i=document.getElementById('original-image');return i.complete&&i.naturalWidth>0&&!i.hidden; });
@@ -32,5 +28,5 @@ const { pathToFileURL } = require('node:url');
     await page.screenshot({path:path.join(out,'original-zoom.png')});
     await page.close();
   } finally { await browser.close(); }
-  console.log('Captured motion, source-table and original-zoom evidence.');
+  console.log('Captured motion and original-zoom evidence.');
 })().catch(e=>{console.error(e);process.exitCode=1;});

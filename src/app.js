@@ -4,7 +4,7 @@
   const $ = id => document.getElementById(id);
   const source = RiverAtlasSource;
   const slides = RiverAtlasSlides;
-  const assets = new Map([...source.assets, ...RiverAtlasSupplement].map(a => [a.id, a]));
+  const assets = new Map([...source.assets, ...RiverAtlasSupplement, ...RiverAtlasBiliuhe].map(a => [a.id, a]));
   const reduceQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
   let pageIndex = parseHash(), currentStep = 0, timeline = null;
   let landscape = null, activeGallery = null, mediaTween = null, stepTween = null, exhibitView = null;
@@ -666,38 +666,7 @@
       b.append(el('span', '', pad(i + 1)), el('strong', '', s.title.replaceAll('\n', '')));
       b.setAttribute('aria-current', String(i === pageIndex)); return [b];
     });
-    $('contents-list').replaceChildren(...(nodes.length ? nodes : [el('p', 'source-empty', '没有匹配页面，请尝试其他关键词。')]));
-  }
-  function imageGrid(ids) {
-    const c = el('div', 'source-image-grid');
-    for (const id of ids) {
-      const b = button('', () => openImage(id), 'source-image'); b.setAttribute('aria-label', '查看原件：' + (RiverAtlasCaptions[id] || assets.get(id).caption));
-      const img = assetImage(id); img.loading = 'lazy';
-      b.append(img, el('span', '', RiverAtlasCaptions[id] || assets.get(id).caption)); c.append(b);
-    }
-    return c;
-  }
-  function renderSources(mode = 'current') {
-    for (const [id, value] of [['current-sources','current'],['all-sources','all'],['all-images','images']]) $(id).setAttribute('aria-pressed', String(mode === value));
-    const content = $('sources-content'); content.replaceChildren();
-    if (mode==='current' && slides[pageIndex].note) content.append(el('p','source-explanation',slides[pageIndex].note));
-    if(mode==='current'){
-      const added=(slides[pageIndex].images||[]).filter(id=>id>=100);
-      if(added.length){content.append(el('h3','','2026-11-06新增资料'),imageGrid(added));}
-    }
-    if (mode === 'images') {
-      content.append(imageGrid(source.assets.filter(a => a.business).map(a => a.id))); return;
-    }
-    const pages = mode === 'all' ? source.slides : source.slides.filter(s => slides[pageIndex].sources.includes(s.page));
-    for (const s of pages) {
-      const section = el('section', 'source-page'); section.dataset.sourcePage = s.page;
-      section.append(el('h3', '', '原稿第' + s.page + '页'));
-      if (!s.paragraphs.length && !s.tables.length) section.append(el('p', 'source-empty', '本页信息主要由原始图像表达。'));
-      for (const p of s.paragraphs) section.append(el('p', 'source-paragraph', p));
-      for (const rows of s.tables) { const wrap = el('div', 'source-table-wrap'); wrap.append(renderTable({ rows }, 'source-table')); section.append(wrap); }
-      if (s.images.length) section.append(imageGrid(s.images));
-      content.append(section);
-    }
+    $('contents-list').replaceChildren(...(nodes.length ? nodes : [el('p', 'contents-empty', '没有匹配页面，请尝试其他关键词。')]));
   }
   function fitOriginal() {
     const img = $('original-image');
@@ -735,10 +704,6 @@
   $('next-button').addEventListener('click', () => showPage(pageIndex + 1));
   $('contents-button').addEventListener('click', () => { $('contents-search').value = ''; renderContents(); openDialog('contents-dialog'); });
   $('contents-search').addEventListener('input', renderContents);
-  $('sources-button').addEventListener('click', () => { renderSources(); openDialog('sources-dialog'); });
-  $('current-sources').addEventListener('click', () => renderSources());
-  $('all-sources').addEventListener('click', () => renderSources('all'));
-  $('all-images').addEventListener('click', () => renderSources('images'));
   $('help-button').addEventListener('click', () => openDialog('help-dialog'));
   $('fullscreen-button').addEventListener('click', toggleFullscreen);
   $('play-button').addEventListener('click', playDemonstration);
