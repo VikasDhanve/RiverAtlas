@@ -10,7 +10,7 @@ test('第三页去掉重复标题和提示，纸面高度增加；其他页不�
  const page=await browser.newPage({viewport:{width:1920,height:1080},offline:true,reducedMotion:'reduce'});
  try{
   await page.goto(url+'#p3');
-  assert.match(await page.title(),/RiverAtlas Showcase/);
+  assert.match(await page.title(),/RiverAtlas/);
   assert.equal(await page.locator('.policy-page-title,.policy-page-meta,.policy-selection-state,.policy-reader-hint').count(),0);
   assert((await page.locator('.policy-sheet:not([hidden])').boundingBox()).height>620);
   for(const n of [2,3,7,15,19]){

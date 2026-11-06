@@ -14,7 +14,7 @@ const {pathToFileURL}=require('node:url');
  await page.getByRole('button',{name:'权属成果',exact:true}).click();await page.waitForTimeout(700);await page.screenshot({path:path.join(out,'layers-ownership.png')});
  await page.mouse.move(1700,400);await page.waitForTimeout(500);await page.screenshot({path:path.join(out,'layers-orbit.png')});
  await page.getByRole('button',{name:'合拢',exact:true}).click();await page.waitForTimeout(800);await page.screenshot({path:path.join(out,'layers-collapsed.png')});
- const video=page.video();await page.close();await context.close();await video.saveAs(path.join(out,'RiverAtlasShowcase-v1.4-preview.webm'));
+ const video=page.video();await page.close();await context.close();await video.saveAs(path.join(out,'RiverAtlas-v1.4-preview.webm'));
  const mobile=await browser.newPage({viewport:{width:390,height:844},hasTouch:true,isMobile:true,reducedMotion:'reduce',offline:true});
  for(const n of [3,7]){await mobile.goto(url+'#p'+n);await mobile.waitForTimeout(600);await mobile.screenshot({path:path.join(out,'mobile-p'+n+'.png'),fullPage:true});}
  await browser.close();console.log('Clean presentation, pointer starfield and populated 3D layers captured.');
