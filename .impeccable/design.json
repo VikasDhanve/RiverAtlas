@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-06T19:33:12+08:00",
+  "generatedAt": "2026-11-06T19:42:12+08:00",
   "title": "Design System: RiverAtlas",
   "extensions": {
     "colorMeta": {
@@ -643,7 +643,10 @@
       "mobilePreviewSize": [
         84,
         80
-      ]
+      ],
+      "sharedLoupe": true,
+      "loupeZoom": 2.5,
+      "rasterElementMatchesVisibleAspectRatio": true
     },
     "geographicRiverMap": {
       "library": "Leaflet 1.9.4",
@@ -740,7 +743,11 @@
           "resize",
           "touch"
         ]
-      }
+      },
+      "hoverThumbnailSelection": true,
+      "hoverFineMouseOnly": true,
+      "hoverStopsPlayback": true,
+      "sameSelectionDoesNotReplay": true
     },
     "implementationWorkflow": {
       "nodes": 21,

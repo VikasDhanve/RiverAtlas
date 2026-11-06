@@ -128,7 +128,11 @@
     }
     ids.forEach((id, i) => {
       const label = RiverAtlasCaptions[id] || assets.get(id).caption;
-      const b = button('', () => { stopTimeline(); select(id); });
+      const b = button('', () => { stopTimeline(); if(active!==id)select(id); });
+      b.addEventListener('pointerenter',event=>{
+        if(event.pointerType!=='mouse'||!matchMedia('(hover: hover) and (pointer: fine)').matches)return;
+        stopTimeline();if(active!==id)select(id);
+      });
       b.append(assetImage(id,'gallery-thumbnail',true),el('span','gallery-tab-number',pad(i+1)));
       b.dataset.asset = id; b.title = label; b.setAttribute('aria-label', label); tabs.append(b);
     });
@@ -380,6 +384,7 @@
       node.addEventListener('pointerenter',event=>{if(event.pointerType==='mouse'&&matchMedia('(hover: hover) and (pointer: fine)').matches)select(index);});
     }
     function paint(animate=true){
+      hideLoupe();
       motion?.kill();
       const moving=animate&&!motionOff()&&!paused;
       motion=moving?gsap.timeline():null;
@@ -402,6 +407,7 @@
       choice.append(el('span','atlas-layer-index',pad(i+1)),el('h2','',title),el('p','',text));choices.push(choice);list.append(choice);hoverSelect(choice,i);
       const plane=button('',()=>openImage(s.images[i]),'atlas-plane');plane.dataset.layer=i;plane.setAttribute('aria-label','查看'+title+'图件');
       const box=el('div','atlas-raster-frame'),img=assetImage(s.images[i],'atlas-raster',true);box.append(img);
+      plane.addEventListener('pointermove',event=>{if(i===selected)moveLoupe(event,img);});plane.addEventListener('pointerleave',hideLoupe);
       plane.append(box,el('span','atlas-plane-label',title));planes.push(plane);stack.append(plane);
       const thumbnail=button('',()=>select(i),'atlas-preview');thumbnail.dataset.layer=i;thumbnail.setAttribute('aria-label','预览：'+title);
       const label=el('span','atlas-preview-name');label.append(el('span','',pad(i+1)),el('span','atlas-preview-title',' '+['影像底图','范围现势','权属成果','管制保护'][i]));
