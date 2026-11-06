@@ -554,7 +554,7 @@
       "readerUsesFullHeight": true
     },
     "pointerStarfield": {
-      "stars": 207,
+      "stars": 360,
       "base": "#061a2c",
       "color": "185,218,237",
       "depths": [
@@ -567,7 +567,32 @@
       "canvasWidthCap": 1920,
       "idleAnimation": false,
       "pointerDriven": true,
-      "pauseAndReducedMotion": true
+      "pauseAndReducedMotion": true,
+      "depthCounts": [
+        260,
+        75,
+        25
+      ],
+      "constellation": {
+        "radius": 190,
+        "nearbyNodes": 12,
+        "maxStarLinks": 16,
+        "maxPointerLinks": 3,
+        "maxLinkDistance": 145,
+        "color": "122,184,209",
+        "starLinkAlpha": 0.22,
+        "pointerLinkAlpha": 0.16,
+        "trailAlpha": 0.26,
+        "lineWidth": [
+          0.55,
+          0.65,
+          0.7
+        ],
+        "trailPoints": 16,
+        "fadeMs": 650,
+        "fade": "quadratic",
+        "touchPointerEffect": false
+      }
     },
     "atlasLayerScene": {
       "copyWidth": "380px",
