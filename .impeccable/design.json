@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-06T18:21:44+08:00",
+  "generatedAt": "2026-11-06T19:05:41+08:00",
   "title": "Design System: RiverAtlas",
   "extensions": {
     "colorMeta": {
@@ -623,7 +623,10 @@
         110
       ],
       "georeferencedGIS": false,
-      "mobileFit": "translate(-50%,-50%) scale(min(sceneWidth/500,sceneHeight/540))"
+      "mobileFit": "translate(-50%,-50%) scale(min(sceneWidth/500,sceneHeight/540))",
+      "bidirectionalHoverSelection": true,
+      "planeHoverIntentMs": 80,
+      "interruptibleTransition": true
     },
     "geographicRiverMap": {
       "library": "Leaflet 1.9.4",
@@ -674,7 +677,8 @@
       "dimOpacity": 0.12,
       "dimLabelOpacity": 0.22,
       "pauseStaticAndReducedMotion": true,
-      "registrationBoundary": false
+      "registrationBoundary": false,
+      "redundantAttributeHeading": false
     },
     "proportionalGallery": {
       "paired": false,
@@ -695,7 +699,58 @@
       ],
       "imageFit": "natural aspect ratio; maximum available width and height",
       "completeOriginal": true,
-      "cssTransformTransition": false
+      "cssTransformTransition": false,
+      "loupe": {
+        "zoom": 2.5,
+        "widthRange": [
+          280,
+          480
+        ],
+        "heightRatio": 0.68,
+        "footerHeight": 32,
+        "entryMs": 160,
+        "pointer": "fine mouse with actual movement",
+        "viewportClamped": true,
+        "interceptsPointer": false,
+        "staticPauseReducedMotionEntry": false,
+        "clearOn": [
+          "leave",
+          "selection",
+          "page",
+          "dialog",
+          "blur",
+          "scroll",
+          "resize",
+          "touch"
+        ]
+      }
+    },
+    "implementationWorkflow": {
+      "nodes": 21,
+      "relations": 22,
+      "viewBox": [
+        0,
+        0,
+        1800,
+        900
+      ],
+      "mainDirection": "vertical",
+      "mainNodes": 9,
+      "phases": 3,
+      "sourceAsset": 111,
+      "conditionScenarios": "direct, supplemented-and-resolved, unresolved-dispute; sequential",
+      "phaseStartsSeconds": [
+        0,
+        2.4,
+        9.2
+      ],
+      "playSeconds": 11.8,
+      "pathDrawSeconds": 0.7,
+      "mobileCanvas": [
+        1120,
+        560
+      ],
+      "pauseStaticAndReducedMotion": true
     }
   },
   "components": [

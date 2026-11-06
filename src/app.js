@@ -7,8 +7,10 @@
   const assets = new Map([...source.assets, ...RiverAtlasSupplement, ...RiverAtlasBiliuhe].map(a => [a.id, a]));
   const reduceQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
   let pageIndex = parseHash(), currentStep = 0, timeline = null;
-  let landscape = null, activeGallery = null, mediaTween = null, stepTween = null, exhibitView = null;
+  let landscape = null, activeGallery = null, mediaTween = null, stepTween = null, exhibitView = null, workflowView=null;
   let paused = false, manualStatic = false, imageId = null, zoom = 1, fittedWidth = 0, messageTimer;
+  let loupe=null,loupeImage=null,loupeMark=null,loupeFrame=0,loupeTarget=null,loupePoint=null;
+  let lastMousePoint=null;const loupeMoves=new WeakSet();
   const motionOff = () => reduceQuery.matches || manualStatic || typeof gsap === 'undefined';
   const starfield=typeof RiverAtlasStars==='undefined'?null:RiverAtlasStars.create();
   const pad = n => String(n).padStart(2, '0');
@@ -60,6 +62,38 @@
     img.addEventListener('error', () => notify('图像加载失败，请保留完整assets配套目录并重新打开。'));
     return img;
   }
+  function hideLoupe(){
+    cancelAnimationFrame(loupeFrame);loupeFrame=0;loupeTarget=null;loupePoint=null;
+    loupe?.remove();loupe=null;loupeImage=null;loupeMark=null;
+  }
+  function moveLoupe(event,img){
+    if(event.pointerType!=='mouse'||!loupeMoves.has(event)||!matchMedia('(hover: hover) and (pointer: fine)').matches||document.querySelector('dialog[open]')||!img.naturalWidth)return;
+    loupeTarget=img;loupePoint={x:event.clientX,y:event.clientY};
+    if(!loupe){
+      loupe=el('div','media-loupe');loupe.id='media-loupe';loupe.setAttribute('aria-hidden','true');
+      const surface=el('div','media-loupe-surface'),windowEl=el('div','media-loupe-window'),footer=el('div','media-loupe-footer');
+      loupeImage=el('img');loupeImage.alt='';loupeImage.src=img.currentSrc||img.src;
+      loupeMark=el('span','media-loupe-reticle');windowEl.append(loupeImage,loupeMark);
+      footer.append(el('span','',img.alt),el('strong','','2.5×'));surface.append(windowEl,footer);loupe.append(surface);document.body.append(loupe);
+    }
+    if(loupeFrame)return;
+    loupeFrame=requestAnimationFrame(()=>{
+      loupeFrame=0;if(!loupe||!loupeTarget?.isConnected||!loupePoint)return;
+      const rect=loupeTarget.getBoundingClientRect(),point=loupePoint;
+      const width=Math.max(280,Math.min(480,300*(Number(getComputedStyle(document.documentElement).getPropertyValue('--stage-scale'))||1)));
+      const height=Math.round(width*.68),totalHeight=height+32,magnification=2.5;
+      loupe.style.width=width+'px';loupe.style.setProperty('--loupe-height',height+'px');
+      const left=Math.max(12,Math.min(innerWidth-width-12,point.x+width+32<innerWidth?point.x+28:point.x-width-28));
+      const top=Math.max(12,Math.min(innerHeight-totalHeight-12,point.y-totalHeight*.42));
+      loupe.style.transform=`translate3d(${left}px,${top}px,0)`;
+      const x=Math.max(0,Math.min(rect.width,point.x-rect.left)),y=Math.max(0,Math.min(rect.height,point.y-rect.top));
+      const scaledWidth=rect.width*magnification,scaledHeight=rect.height*magnification;
+      const offsetX=Math.max(Math.min(0,width-scaledWidth),Math.min(0,width/2-x*magnification));
+      const offsetY=Math.max(Math.min(0,height-scaledHeight),Math.min(0,height/2-y*magnification));
+      loupeImage.style.width=scaledWidth+'px';loupeImage.style.height=scaledHeight+'px';loupeImage.style.transform=`translate3d(${offsetX}px,${offsetY}px,0)`;
+      loupeMark.style.transform=`translate(${x*magnification+offsetX}px,${y*magnification+offsetY}px)`;
+    });
+  }
   function gallery(ids) {
     const c = el('div', 'gallery'), spread = el('div', 'gallery-spread');
     const caption = el('p', 'gallery-caption'), tabs = el('div', 'gallery-tabs');
@@ -72,6 +106,7 @@
       sheet.style.width=img.naturalWidth*scale+'px';sheet.style.height=img.naturalHeight*scale+'px';
     }
     function select(id, animate = true) {
+      hideLoupe();
       const direction=ids.indexOf(id)>=ids.indexOf(active)?1:-1;
       active = id;
       mediaTween?.progress(1).kill();
@@ -79,7 +114,9 @@
         const b = button('', () => openImage(asset), 'image-button');
         if ([24,25,26,33,34].includes(asset)) b.classList.add('photo-surface');
         b.dataset.asset = asset; b.setAttribute('aria-label', '查看原件：' + (RiverAtlasCaptions[asset] || assets.get(asset).caption));
-        const img=assetImage(asset,'',true);img.addEventListener('load',fit);b.append(img);return b;
+        const img=assetImage(asset,'',true);img.addEventListener('load',fit);
+        b.addEventListener('pointermove',event=>moveLoupe(event,img));b.addEventListener('pointerleave',hideLoupe);
+        b.append(img);return b;
       }));
       caption.textContent = RiverAtlasCaptions[id] || assets.get(id).caption;
       for (const b of tabs.children) b.setAttribute('aria-pressed', String(Number(b.dataset.asset) === id));
@@ -298,9 +335,9 @@
       attributes.replaceChildren();
       if(index===null){
         const table=renderTable({heads:['河流','长度 / km','面积 / 公顷','涉及县区'],rows:s.rivers.map((r,i)=>[r[0],s.riverAttributes[i][1],s.riverAttributes[i][2],s.riverAttributes[i][3]])},'river-attribute-table');
-        attributes.append(el('h2','','五河属性 · 均为市级'),table);
+        attributes.append(table);
       }else{
-        const [level,length,area,county]=s.riverAttributes[index];attributes.append(el('h2','',s.rivers[index][0]+' · '+level));
+        const [,length,area,county]=s.riverAttributes[index];
         const values=el('dl','river-attribute-values');for(const [name,value] of [['长度 / km',length],['面积 / 公顷',area],['涉及县区',county]])values.append(el('dt','',name),el('dd','',value));attributes.append(values);
       }
     }
@@ -330,14 +367,14 @@
   function renderLayers(s) {
     const layout=el('div','atlas-layers-layout'),list=el('div','atlas-layer-list'),display=el('div','atlas-layer-display');
     const scene=el('div','atlas-layer-scene'),stack=el('div','atlas-stack'),controls=el('div','atlas-layer-controls');
-    let selected=0,expanded=true,motion=null;
+    let selected=0,expanded=true,motion=null,hoverTimer=null,lastPointer=null;
     const planes=[],choices=[];
     function fit(){
       const scale=Math.max(.25,Math.min(1,scene.clientWidth/(window.innerWidth<768?500:1040),scene.clientHeight/540));
       stack.style.transform='translate(-50%,-50%) scale('+scale+')';
     }
     function paint(animate=true){
-      motion?.progress(1).kill();
+      motion?.kill();
       const moving=animate&&!motionOff()&&!paused;
       motion=moving?gsap.timeline({defaults:{duration:.28,ease:'power3.out'}}):null;
       let background=0;
@@ -355,6 +392,7 @@
     s.points.forEach(([title,text],i)=>{
       const choice=button('',()=>{stopTimeline();highlightStep(i);},'atlas-layer-choice');choice.setAttribute('aria-label',title);
       choice.append(el('span','atlas-layer-index',pad(i+1)),el('h2','',title),el('p','',text));choices.push(choice);list.append(choice);
+      choice.addEventListener('pointerenter',event=>{if(event.pointerType==='mouse'&&matchMedia('(hover: hover) and (pointer: fine)').matches&&i!==selected){clearTimeout(hoverTimer);stopTimeline();highlightStep(i);}});
       const plane=button('',()=>{if(selected===i)openImage(s.images[i]);else highlightStep(i);},'atlas-plane');plane.dataset.layer=i;
       plane.setAttribute('aria-label','查看'+title+'图件');
       const box=el('div','atlas-raster-frame'),img=assetImage(s.images[i],'atlas-raster',true);box.append(img);
@@ -364,30 +402,86 @@
     const expand=button('图集',()=>{expanded=true;paint();},'atlas-mode'),collapse=button('单图',()=>{expanded=false;paint();},'atlas-mode');
     controls.append(el('span','atlas-unit','大沙河 · 210200331000003'),expand,collapse,button('查看图件',()=>openImage(s.images[selected]),'atlas-open'));
     scene.append(stack);display.append(scene,controls);layout.append(list,display);
+    scene.addEventListener('pointermove',event=>{
+      if(event.pointerType!=='mouse'||!matchMedia('(hover: hover) and (pointer: fine)').matches)return;
+      if(lastPointer&&Math.hypot(event.clientX-lastPointer.x,event.clientY-lastPointer.y)<3)return;
+      lastPointer={x:event.clientX,y:event.clientY};clearTimeout(hoverTimer);
+      const plane=event.target.closest('.atlas-plane');if(!plane)return;
+      const index=Number(plane.dataset.layer);
+      if(index!==selected)hoverTimer=setTimeout(()=>{stopTimeline();highlightStep(index);},80);
+    });
+    scene.addEventListener('pointerleave',()=>{clearTimeout(hoverTimer);lastPointer=null;});
     exhibitView={resetLabel:'复位图层',reset:()=>{expanded=true;highlightStep(0);},selectStep:index=>{selected=index;paint();},refit:fit,
-      pause:()=>motion?.pause(),resume:()=>motion?.resume(),finish:()=>motion?.progress(1).pause(),destroy:()=>motion?.kill()};
+      pause:()=>{clearTimeout(hoverTimer);motion?.pause();},resume:()=>motion?.resume(),finish:()=>{clearTimeout(hoverTimer);motion?.progress(1).pause();},destroy:()=>{clearTimeout(hoverTimer);motion?.kill();}};
     paint(false);return layout;
   }
   function renderWorkflow(s){
-    const layout=el('div','workflow-layout'),phases=el('div','workflow-phases');
-    s.phases.forEach((phase,i)=>{
-      const lane=el('section','workflow-phase');lane.dataset.workflowStep=i;
-      const heading=button('',()=>{stopTimeline();highlightStep(i);},'workflow-heading');heading.append(el('span','',pad(i+1)),el('h2','',phase.name));lane.append(heading);
-      phase.nodes.forEach(([title,details],index)=>{
-        if(index)lane.append(el('div','workflow-vertical-link'));
-        const node=el('div','workflow-node');node.append(el('h3','',title));
-        if(details.length){const branches=el('div','workflow-details');details.forEach(text=>branches.append(el('span','',text)));node.append(branches);}
-        lane.append(node);
-      });phases.append(lane);
+    const layout=el('div','workflow-layout'),viewport=el('div','workflow-viewport');
+    const ns='http://www.w3.org/2000/svg';
+    function svg(tag,attributes={},text){const n=document.createElementNS(ns,tag);for(const [name,value] of Object.entries(attributes))n.setAttribute(name,String(value));if(text!==undefined)n.textContent=text;return n;}
+    const diagram=svg('svg',{class:'workflow-diagram',viewBox:'0 0 1800 900',role:'group','aria-labelledby':'workflow-svg-title'});
+    diagram.append(svg('title',{id:'workflow-svg-title'},'自然资源地籍调查实施流程：准备、地籍调查、数据入库'));
+    const defs=svg('defs');
+    for(const [name,color] of [['main','#79d9e8'],['condition','#dfbd76']]){
+      const marker=svg('marker',{id:'flow-arrow-'+name,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse',markerUnits:'strokeWidth'});
+      marker.append(svg('path',{d:'M1 1L9 5L1 9',fill:'none',stroke:color,'stroke-width':1.4}));defs.append(marker);
+    }diagram.append(defs);
+    const phases=[],signals=[],choices=[];
+    s.flow.bands.forEach((band,i)=>{
+      const group=svg('g',{class:'workflow-phase','data-phase':i});
+      group.append(svg('rect',{x:8,y:band.y+5,width:1784,height:band.height-10,rx:12}));
+      const center=band.y+band.height/2;
+      group.append(svg('text',{x:64,y:center-60,class:'flow-phase-number'},pad(i+1)));
+      const text=svg('text',{x:64,y:center-8,class:'flow-phase-name'});
+      band.lines.forEach((line,j)=>text.append(svg('tspan',{x:64,dy:j?40:0},line)));group.append(text);phases.push(group);diagram.append(group);
     });
-    const loop=el('section','workflow-exceptions');loop.append(el('h2','','核实与补充调查闭环'));
-    const line=el('div','workflow-exception-line');
-    for(const text of ['权属不清、有争议或成果缺失','外业补充调查','争议解决或成果完善','成果上图'])line.append(el('span','',text));
-    const unresolved=el('p','workflow-unresolved','争议仍无法解决：划定权属争议区，再进入成果上图。成果无异议时直接上图。');
-    loop.append(line,unresolved);
-    const footer=el('div','workflow-footer'),desc=el('p','step-description');desc.id='step-description';desc.setAttribute('aria-live','polite');
-    footer.append(desc,button('查看流程原图',()=>openImage(111),'workflow-original'));
-    layout.append(phases,loop,footer);return layout;
+    const lines=svg('g',{class:'workflow-lines'}),labels=svg('g',{class:'workflow-edge-labels'}),nodeLayer=svg('g',{class:'workflow-nodes'});
+    s.flow.edges.forEach(edge=>{
+      const attrs={d:edge.d,class:'workflow-route '+edge.kind,'data-from':edge.from,'data-to':edge.to,'data-label':edge.label,'data-phase':edge.phase};
+      if(edge.kind!=='branch')attrs['marker-end']='url(#flow-arrow-'+(edge.kind==='condition'?'condition':'main')+')';
+      lines.append(svg('path',attrs));
+      const signal=svg('path',{d:edge.d,class:'workflow-signal '+edge.kind,'data-phase':edge.phase,'data-from':edge.from,'data-to':edge.to});lines.append(signal);signals.push(signal);
+      if(edge.labelAt){
+        const [x,y]=edge.labelAt,text=svg('text',{x,y,class:'workflow-edge-label '+edge.kind,'text-anchor':edge.from==='verify'&&edge.to==='mapping'?'end':edge.to==='dispute'?'end':'start'});
+        (edge.lines||[edge.label]).forEach((line,i)=>text.append(svg('tspan',{x,dy:i?26:0},line)));labels.append(text);
+      }
+    });
+    s.flow.nodes.forEach(node=>{
+      const group=svg('g',{class:'workflow-node '+node.kind,transform:`translate(${node.x} ${node.y})`,'data-node':node.id,'data-phase':node.phase,role:'button',tabindex:0,'aria-label':node.label});
+      group.append(svg('rect',{width:node.w,height:node.h,rx:7}));
+      const text=svg('text',{x:node.w/2,y:node.h/2+9,'text-anchor':'middle'});
+      node.lines.forEach((line,i)=>text.append(svg('tspan',{x:node.w/2,dy:i?28:0},line)));group.append(text);
+      group.addEventListener('click',()=>{stopTimeline();highlightStep(node.phase);});
+      group.addEventListener('keydown',event=>{if(['Enter',' '].includes(event.key)){event.preventDefault();event.stopPropagation();stopTimeline();highlightStep(node.phase);}});nodeLayer.append(group);
+    });
+    diagram.append(lines,nodeLayer,labels);viewport.append(diagram);
+    const footer=el('div','workflow-footer'),tabs=el('div','workflow-phase-controls'),scenario=el('p','workflow-scenario');scenario.setAttribute('aria-live','polite');tabs.setAttribute('role','group');tabs.setAttribute('aria-label','流程阶段');
+    s.flow.bands.forEach((band,i)=>{const b=button(band.name,()=>{stopTimeline();highlightStep(i);});choices.push(b);tabs.append(b);});
+    const desc=el('p','step-description sr-only');desc.id='step-description';desc.setAttribute('aria-live','polite');
+    footer.append(tabs,scenario,desc,button('查看流程原图',()=>openImage(111),'workflow-original'));layout.append(viewport,footer);
+    let animation=null;
+    workflowView={
+      selectStep(index){
+        animation?.kill();scenario.textContent='';phases.forEach((phase,i)=>phase.classList.toggle('is-current',i===index));choices.forEach((b,i)=>b.setAttribute('aria-pressed',String(i===index)));
+        for(const n of nodeLayer.children)n.classList.toggle('is-current',Number(n.dataset.phase)===index);
+        for(const path of signals){path.style.opacity=Number(path.dataset.phase)===index?'1':'0';path.style.strokeDashoffset='0';}
+        if(!motionOff()&&!paused){
+          animation=gsap.timeline({defaults:{ease:'power2.out'}});
+          const active=signals.filter(p=>Number(p.dataset.phase)===index);
+          const draw=(path,time,duration=.7)=>{const length=path.getTotalLength();path.style.strokeDasharray=String(length);animation.set(path,{opacity:1},time).fromTo(path,{strokeDashoffset:length},{strokeDashoffset:0,duration,immediateRender:false},time);};
+          if(index===1){
+            const path=(from,to)=>active.find(p=>p.dataset.from===from&&p.dataset.to===to);
+            const direct=path('verify','mapping'),out=path('verify','supplement'),solved=path('supplement','mapping'),unresolved=path('supplement','dispute'),dispute=path('dispute','mapping');
+            const forks=[direct,out,solved,unresolved,dispute];forks.forEach(p=>p.style.opacity='0');
+            active.filter(p=>!forks.includes(p)).forEach((p,i)=>draw(p,i*.045));
+            animation.call(()=>scenario.textContent='成果无异议：直接上图',[],1.15);draw(direct,1.15,.65);animation.to(direct,{opacity:0,duration:.15},1.95);
+            animation.call(()=>scenario.textContent='补充调查：争议解决或成果完善',[],2.2);draw(out,2.2,.55);draw(solved,2.8,.65);animation.to([out,solved],{opacity:0,duration:.15},3.85);
+            animation.call(()=>scenario.textContent='争议仍无法解决：划定权属争议区',[],4.2);draw(out,4.2,.55);draw(unresolved,4.8,.55);draw(dispute,5.4,.65);animation.to([out,unresolved,dispute],{opacity:0,duration:.15},6.25);animation.call(()=>scenario.textContent='',[],6.5);
+          }else active.forEach((p,i)=>draw(p,i*.065));
+        }
+      },pause:()=>animation?.pause(),resume:()=>animation?.resume(),finish:()=>animation?.progress(1).pause(),destroy:()=>animation?.kill()
+    };
+    return layout;
   }
   function renderDatabase(s){
     const layout=el('div','database-layout'),standards=el('div','database-standards');
@@ -532,11 +626,9 @@
       });
     }
     exhibitView?.selectStep?.(currentStep);
-    document.querySelectorAll('[data-workflow-step]').forEach((node,i)=>{node.classList.toggle('is-current',i===currentStep);node.querySelector('button').setAttribute('aria-pressed',String(i===currentStep));});
+    workflowView?.selectStep(currentStep);
     document.querySelectorAll('[data-staff-step]').forEach((node,i)=>{node.classList.toggle('is-current',i===currentStep);node.setAttribute('aria-pressed',String(i===currentStep));});
     if(stepTween){
-      const workflowNodes=document.querySelectorAll('.workflow-phase.is-current .workflow-node');
-      if(workflowNodes.length)stepTween.fromTo(workflowNodes,{opacity:.45,x:9},{opacity:1,x:0,duration:.28,stagger:.06,clearProps:'transform,opacity'},0);
       const staffSeats=document.querySelectorAll('.staff-qualification.is-current .staff-seat');
       if(staffSeats.length)stepTween.fromTo(staffSeats,{opacity:.4},{opacity:1,duration:.25,stagger:.035},0);
     }
@@ -561,6 +653,7 @@
     $('replay-button').disabled = !exhibitView && motionOff();
     $('static-button').title = reduceQuery.matches ? '系统已启用减少动态效果，当前静态显示' : '切换静态模式（A）';
     document.body.classList.toggle('static-mode', motionOff());
+    document.body.classList.toggle('motion-paused',paused);
     starfield?.setState({paused,staticMode:motionOff()});
     exhibitView?.setState?.({paused,staticMode:motionOff()});
     $('stage').dataset.paused = String(paused);
@@ -583,15 +676,16 @@
     const planes = document.querySelectorAll('.layer-plane');
     if (planes.length) timeline.fromTo(planes,{ opacity:0, x:90 },{ opacity:1, x:0, duration:1.2, stagger:.18 },.25);
     if (document.querySelector('.area-fill')) timeline.fromTo('.area-fill',{scaleX:0},{scaleX:1,duration:1.4,stagger:.16,ease:'power2.inOut'},.25);
-    const workflow=document.querySelector('.workflow-phases');
-    if(workflow)timeline.fromTo(workflow.children,{opacity:.45,x:18},{opacity:1,x:0,duration:.65,stagger:.12},.15);
+    const workflow=document.querySelector('.workflow-diagram');
+    if(workflow)timeline.fromTo(workflow,{opacity:.6},{opacity:1,duration:.65},.15);
     const seats=document.querySelectorAll('.staff-seat');
     if(seats.length)timeline.fromTo(seats,{opacity:.2,scale:.9},{opacity:1,scale:1,duration:.45,stagger:.035},.25);
   }
   function showPage(index, { animate = true, keyboard = false } = {}) {
+    hideLoupe();
     const next = Math.max(0, Math.min(slides.length - 1, Math.trunc(index)));
     const direction = next >= pageIndex ? 1 : -1;
-    stopTimeline(); landscape?.destroy(); exhibitView?.destroy(); exhibitView=null; landscape=null; activeGallery=null; pageIndex = next; currentStep = 0;
+    stopTimeline(); landscape?.destroy(); exhibitView?.destroy();workflowView?.destroy();workflowView=null; exhibitView=null; landscape=null; activeGallery=null; pageIndex = next; currentStep = 0;
     const s = slides[pageIndex], slide = el('article', 'slide');
     if (s.layout === 'cover' || s.layout === 'closing') {
       slide.classList.add('cover-slide'); if (s.layout === 'closing') slide.classList.add('closing-slide');
@@ -634,12 +728,15 @@
       timeline=gsap.timeline();
       g.ids.slice(1).forEach((id,i)=>timeline.call(()=>g.select(id),[],(i+1)*3.2));
       timeline.to({}, {duration:3.2}, (g.ids.length-1)*3.2);
-    } else if (['process','layers','workflow','database','staffing'].includes(s.layout)) {
+    } else if(s.layout==='workflow'){
+      highlightStep(0);timeline=gsap.timeline();timeline.call(()=>highlightStep(1),[],2.4).call(()=>highlightStep(2),[],9.2).to({},{duration:2.6},9.2);
+    } else if (['process','layers','database','staffing'].includes(s.layout)) {
       const count = s.steps?.length || s.points.length;
+      const interval=s.layout==='workflow'?3:1.5;
       highlightStep(0);
       timeline = gsap.timeline({ onComplete: () => highlightStep(count - 1) });
-      for (let i = 1; i < count; i++) timeline.call(() => highlightStep(i), [], i * 1.5);
-      timeline.to({}, { duration: 1.5 }, (count - 1) * 1.5);
+      for (let i = 1; i < count; i++) timeline.call(() => highlightStep(i), [], i * interval);
+      timeline.to({}, { duration: interval }, (count - 1) * interval);
     } else if (s.layout === 'chart') {
       timeline = gsap.timeline(); timeline.fromTo('.area-fill', { scaleX: 0 }, { scaleX: 1, duration: .9, ease: 'power3.out' });
     } else intro(true);
@@ -647,17 +744,18 @@
   function togglePause() {
     if (motionOff()) return;
     paused = !paused;
-    if (paused) { timeline?.pause(); landscape?.pause(); mediaTween?.pause(); stepTween?.pause(); exhibitView?.pause(); }
-    else { timeline?.resume(); landscape?.resume(); mediaTween?.resume(); stepTween?.resume(); exhibitView?.resume(); }
+    if (paused) { timeline?.pause(); landscape?.pause(); mediaTween?.pause(); stepTween?.pause(); exhibitView?.pause();workflowView?.pause(); }
+    else { timeline?.resume(); landscape?.resume(); mediaTween?.resume(); stepTween?.resume(); exhibitView?.resume();workflowView?.resume(); }
     updateControls();
   }
-  function pauseAll() { paused = true; timeline?.pause(); landscape?.pause(); mediaTween?.pause(); stepTween?.pause(); exhibitView?.pause(); updateControls(); }
+  function pauseAll() { hideLoupe();paused = true; timeline?.pause(); landscape?.pause(); mediaTween?.pause(); stepTween?.pause(); exhibitView?.pause();workflowView?.pause(); updateControls(); }
   function skipAnimation() {
     timeline?.progress(1).pause(); landscape?.pause(); mediaTween?.progress(1).pause(); stepTween?.progress(1).pause(); exhibitView?.finish?.();
     const s = slides[pageIndex];
     if (['process','workflow','database','staffing'].includes(s.layout) || (s.layout === 'layers' && !exhibitView)) highlightStep((s.steps || s.points).length - 1);
+    workflowView?.finish();
   }
-  function openDialog(id) { pauseAll(); const d = $(id); if (!d.open) d.showModal(); }
+  function openDialog(id) { hideLoupe();pauseAll(); const d = $(id); if (!d.open) d.showModal(); }
   function renderContents() {
     const q = $('contents-search').value.trim().toLocaleLowerCase();
     const nodes = slides.flatMap((s, i) => {
@@ -678,6 +776,7 @@
     $('zoom-level').textContent = zoom === 1 ? '适应窗口' : Math.round(zoom * 100) + '%';
   }
   function openImage(id) {
+    hideLoupe();
     const a = assets.get(id); if (!a) { notify('原件不存在。'); return; }
     pauseAll(); imageId = id; zoom = 1;
     const img = $('original-image'); img.hidden = true;
@@ -719,7 +818,16 @@
   $('zoom-reset').addEventListener('click', () => { zoom = 1; fitOriginal(); $('image-scroll').scrollTo(0, 0); });
   document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => $(b.dataset.close).close()));
   window.addEventListener('hashchange', () => { const n = parseHash(); if (n !== pageIndex) showPage(n, { animate:false }); });
-  window.addEventListener('resize', () => { fitStage(); landscape?.resize(); exhibitView?.refit(); activeGallery?.refit(); if ($('image-dialog').open) fitOriginal(); });
+  window.addEventListener('resize', () => { hideLoupe();fitStage(); landscape?.resize(); exhibitView?.refit(); activeGallery?.refit(); if ($('image-dialog').open) fitOriginal(); });
+  window.addEventListener('scroll',hideLoupe,{passive:true});
+  window.addEventListener('blur',hideLoupe);
+  document.addEventListener('pointermove',event=>{
+    if(event.pointerType!=='mouse'){hideLoupe();return;}
+    if(!lastMousePoint||Math.hypot(event.clientX-lastMousePoint.x,event.clientY-lastMousePoint.y)>.5)loupeMoves.add(event);
+    lastMousePoint={x:event.clientX,y:event.clientY};
+  },{capture:true,passive:true});
+  document.addEventListener('pointerdown',event=>{if(event.pointerType!=='mouse')hideLoupe();},{passive:true});
+  document.addEventListener('pointercancel',hideLoupe,{passive:true});
   document.addEventListener('visibilitychange', () => { if (document.hidden) pauseAll(); });
   document.addEventListener('fullscreenchange', () => {
     $('fullscreen-button').setAttribute('aria-pressed', String(Boolean(document.fullscreenElement)));

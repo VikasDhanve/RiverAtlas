@@ -51,9 +51,9 @@ test('五河属性、动态流程和人员投入可暂停、分步，触屏保�
  const browser=await chromium.launch({channel:'chrome'}),page=await browser.newPage({viewport:{width:1920,height:1080},offline:true});
  try{
   await page.goto(url+'#p5');assert.match(await page.locator('.river-attributes').innerText(),/28.4/);assert.match(await page.locator('.river-attributes').innerText(),/7064.42/);
-  await page.getByRole('button',{name:'大沙河 瓦房店市、普兰店区',exact:true}).click();assert.match(await page.locator('.river-attributes').innerText(),/市级[\s\S]*82.4[\s\S]*3141.83[\s\S]*瓦房店市 普兰店区/);
-  await page.goto(url+'#p6');assert.match(await page.locator('.workflow-layout').innerText(),/外业补充调查[\s\S]*划定权属争议区/);
-  await page.locator('#play-button').click();await page.waitForTimeout(1800);await page.locator('#pause-button').click();const frozen=await page.locator('#step-description').innerText();await page.waitForTimeout(1650);assert.equal(await page.locator('#step-description').innerText(),frozen);
+  await page.getByRole('button',{name:'大沙河 瓦房店市、普兰店区',exact:true}).click();assert.match(await page.locator('.river-attributes').innerText(),/82.4[\s\S]*3141.83[\s\S]*瓦房店市 普兰店区/);
+  await page.goto(url+'#p6');assert.match(await page.locator('.workflow-layout').textContent(),/外业补充调查[\s\S]*划定权属争议区/);
+  await page.locator('#play-button').click();await page.waitForFunction(()=>document.querySelector('.workflow-phase.is-current')?.dataset.phase==='1');await page.locator('#pause-button').click();const frozen=await page.locator('#step-description').innerText();await page.waitForTimeout(1650);assert.equal(await page.locator('#step-description').innerText(),frozen);
   await page.locator('#step-button').click();assert.match(await page.locator('#step-description').innerText(),/第3步/);
   await page.goto(url+'#p16');assert.equal(await page.locator('.database-category').count(),5);assert.match(await page.locator('.database-standards').innerText(),/地籍数据库标准[\s\S]*确权登记数据库标准/);
   await page.goto(url+'#p17');assert.equal(await page.locator('.staff-seat').count(),23);await page.locator('.staff-qualification').nth(3).click();assert.match(await page.locator('#step-description').innerText(),/其他技术人员/);

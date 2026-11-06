@@ -447,6 +447,37 @@ body.static-mode button { transition: none; }
 .document-pin-state:empty { display: none; }
 
 #starfield { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+.workflow-layout { height: 100%; display: grid; grid-template-rows: minmax(0,1fr) 38px; gap: 10px; }
+.workflow-viewport { min-height: 0; min-width: 0; overflow: hidden; }
+.workflow-diagram { display: block; width: 100%; height: 100%; }
+.workflow-phase > rect { fill: #0d293b; fill-opacity: .45; stroke: #2e4e63; stroke-width: 1; }
+.workflow-phase.is-current > rect { fill: #11374c; fill-opacity: .64; stroke: #567c91; }
+.flow-phase-number { fill: #9dbacb; font-size: 23px; font-variant-numeric: tabular-nums; }
+.flow-phase-name { fill: #c4dce7; font-size: 31px; font-weight: 550; }.workflow-phase.is-current .flow-phase-name { fill: #92e1ec; }
+.workflow-route,.workflow-signal { fill: none; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.workflow-route { stroke: #6898ae; stroke-width: 1.5; }.workflow-route.branch { stroke: #4b7289; stroke-width: 1.2; }
+.workflow-route.condition { stroke: #a68b57; }
+.workflow-signal { pointer-events: none; stroke: #88e2ee; stroke-width: 2.2; opacity: 0; }.workflow-signal.condition { stroke: #e1bf7d; }
+.workflow-node { cursor: pointer; }
+.workflow-node rect { fill: #0e2c41; stroke: #4b7289; stroke-width: 1.2; }
+.workflow-node.main rect { fill: #143e55; stroke: #76b8ca; stroke-width: 1.5; }
+.workflow-node.exception rect { fill: #283c41; stroke: #b49a66; }
+.workflow-node text { fill: #e1eef4; font-size: 26px; font-weight: 400; pointer-events: none; }
+.workflow-node.main text { font-weight: 550; font-size: 27px; }
+.workflow-node.is-current.main rect { fill: #205269; stroke: #b0ecf4; }
+.workflow-edge-label { fill: #c1dce8; font-size: 23px; paint-order: stroke; stroke: #0b2639; stroke-width: 8px; stroke-linejoin: round; }
+.workflow-edge-label.condition { fill: #e2c690; }
+.workflow-node:focus-visible { outline: none; }.workflow-node:focus-visible rect { stroke: #e5fbff; stroke-width: 4; }
+.workflow-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.workflow-phase-controls { display: flex; gap: 10px; }.workflow-phase-controls button,.workflow-original { border: 1px solid #486e84; padding: 7px 14px; font-size: 16px; }
+.workflow-phase-controls button[aria-pressed="true"] { background: #1c485e; color: #b5edf5; }
+@media (hover: hover) and (pointer: fine) { .workflow-node:hover rect { fill: #225269; stroke: #d1f2f7; } }
+@media (max-width: 767px) {
+  .workflow-layout { height: auto; grid-template-rows: auto auto; }
+  .workflow-viewport { width: 100%; overflow: auto; min-height: 560px; border-radius: 6px; }
+  .workflow-diagram { width: 1120px; height: 560px; max-width: none; }
+  .workflow-footer { flex-wrap: wrap; gap: 12px; }.workflow-phase-controls { gap: 5px; }.workflow-phase-controls button { font-size: 13px; padding: 8px; }
+}
 .stage { z-index: 1; background: transparent; }
 .atlas-layers-layout { height: 100%; display: grid; grid-template-columns: 380px minmax(0,1fr); gap: 26px; }
 .atlas-layer-list { display: flex; flex-direction: column; justify-content: center; gap: 9px; }
@@ -494,6 +525,18 @@ body.static-mode button { transition: none; }
 .gallery-previous,.gallery-next { padding: 6px; width: 32px; height: 44px; flex: 0 0 32px; }
 .gallery-tools svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.7; }
 .gallery-caption { min-height: 24px; }
+@media (hover: hover) and (pointer: fine) { .gallery-spread .image-button { cursor: zoom-in; } }
+.media-loupe { position: fixed; left: 0; top: 0; z-index: 20; pointer-events: none; contain: layout style; }
+.media-loupe-surface { overflow: hidden; border-radius: 10px; box-shadow: 0 18px 44px #00101db3; background: #102e42; animation: loupe-arrive 160ms var(--ease-out); }
+.media-loupe-window { position: relative; height: var(--loupe-height); overflow: hidden; background: white; }
+.media-loupe-window img { position: absolute; left: 0; top: 0; max-width: none; object-fit: fill; transform-origin: top left; }
+.media-loupe-footer { display: flex; justify-content: space-between; align-items: center; gap: 18px; height: 32px; padding: 0 12px; color: #d2eaf2; font-size: 13px; }
+.media-loupe-footer span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.media-loupe-footer strong { color: #9be5ef; font-weight: 550; }
+.media-loupe-reticle { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+.media-loupe-reticle::before,.media-loupe-reticle::after { content: ''; position: absolute; background: #24738b; box-shadow: 0 1px 2px #fff; }
+.media-loupe-reticle::before { width: 14px; height: 1px; left: -7px; }.media-loupe-reticle::after { width: 1px; height: 14px; top: -7px; }
+@keyframes loupe-arrive { from { opacity: .35; transform: scale(.97); } to { opacity: 1; transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .media-loupe-surface { animation: none; } }
 .technical-slide { padding: 22px 40px 18px; }
 .technical-slide h1 { font-size: 43px; }
 .technical-slide .slide-lead { font-size: 22px; margin-bottom: 18px; }
@@ -504,8 +547,8 @@ body.static-mode button { transition: none; }
 .atlas-layer-choice h2 { font-size: 24px; }
 .atlas-layer-choice p { font-size: 20px; line-height: 1.5; text-wrap: initial; }
 .atlas-layer-scene { overflow: hidden; perspective: 1600px; }
-.atlas-stack { width: 1040px; height: 540px; left: 50%; top: 50%; transform: translate(-50%,-50%); transform-style: preserve-3d; }
-.atlas-plane { inset: auto; left: 50%; top: 50%; width: 354px; height: 510px; background: #fff; padding: 0; border-radius: 2px; box-shadow: 0 16px 32px #0006; transform-style: flat; }
+.atlas-stack { width: 1040px; height: 540px; left: 50%; top: 50%; transform: translate(-50%,-50%); transform-style: preserve-3d; pointer-events: none; }
+.atlas-plane { inset: auto; left: 50%; top: 50%; width: 354px; height: 510px; background: #fff; padding: 0; border-radius: 2px; box-shadow: 0 16px 32px #0006; transform-style: flat; pointer-events: auto; }
 .atlas-plane::before { display: none; }
 .atlas-plane.active { outline: none; }
 .atlas-raster-frame { position: absolute; inset: 0; border-radius: 2px; }
@@ -514,8 +557,7 @@ body.static-mode button { transition: none; }
 .atlas-unit { font-size: 15px; color: var(--muted); margin-right: auto; }
 .atlas-layer-controls { padding-top: 12px; gap: 8px; }
 .atlas-layer-controls button { font-size: 16px; padding: 7px 12px; }
-.river-attributes { min-height: 112px; display: grid; grid-template-columns: 210px minmax(0,1fr); gap: 16px; align-items: center; border-top: 1px solid #365066; padding-top: 10px; }
-.river-attributes h2 { margin: 0; color: var(--water); font-size: 21px; font-weight: 550; }
+.river-attributes { min-height: 112px; display: grid; grid-template-columns: minmax(0,1fr); gap: 16px; align-items: center; border-top: 1px solid #365066; padding-top: 10px; }
 .river-attribute-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 16px; }
 .river-attribute-table th { font-size: 13px; font-weight: 400; color: var(--muted); text-align: left; padding: 2px 10px; }
 .river-attribute-table td { padding: 2px 10px; }
@@ -524,29 +566,6 @@ body.static-mode button { transition: none; }
 .river-attribute-values dd { margin: 0; font-size: 27px; font-variant-numeric: tabular-nums; }
 .river-attribute-values dt:last-of-type { grid-column: 1; }
 .river-attribute-values dd:last-child { grid-column: 2 / 5; font-size: 21px; }
-.workflow-layout { display: grid; grid-template-rows: minmax(0,1fr) auto auto; height: 100%; gap: 14px; }
-.workflow-phases { display: grid; grid-template-columns: .9fr 1.5fr .85fr; gap: 40px; min-height: 0; }
-.workflow-phase { position: relative; border-top: 1px solid #3d5e72; padding-top: 10px; }
-.workflow-phase:not(:last-child)::after { content: ''; position: absolute; top: 32px; right: -30px; width: 18px; height: 18px; border-top: 1px solid #8fbdcc; border-right: 1px solid #8fbdcc; transform: rotate(45deg); }
-.workflow-heading { display: flex; align-items: baseline; gap: 14px; width: 100%; text-align: left; padding: 4px 0 14px; border-radius: 0; }
-.workflow-heading span { color: #93b3c3; font-size: 18px; }
-.workflow-heading h2 { margin: 0; font-size: 28px; font-weight: 550; }
-.workflow-phase.is-current .workflow-heading h2 { color: var(--water); }
-.workflow-node { padding: 9px 14px; background: #102e43; border-radius: 4px; }
-.workflow-node h3 { font-size: 22px; font-weight: 550; margin: 0; line-height: 1.4; }
-.workflow-details { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 6px; }
-.workflow-details span { font-size: 16px; line-height: 1.5; color: #bbd3df; }
-.workflow-vertical-link { width: 1px; height: 13px; background: #537f96; margin-left: 29px; }
-.workflow-phase.is-current .workflow-vertical-link { background: #a1e9f2; }
-.workflow-exceptions { padding: 12px 18px; background: #122f42; border-radius: 4px; }
-.workflow-exceptions h2 { margin: 0 0 10px; color: var(--water); font-size: 19px; font-weight: 550; }
-.workflow-exception-line { display: flex; align-items: center; gap: 30px; justify-content: space-between; }
-.workflow-exception-line span { position: relative; font-size: 20px; }
-.workflow-exception-line span:not(:last-child)::after { content: ''; position: absolute; width: 9px; height: 9px; top: 8px; right: -23px; border-top: 1px solid #97bfce; border-right: 1px solid #97bfce; transform: rotate(45deg); }
-.workflow-unresolved { color: #c3d6df; font-size: 16px; margin: 10px 0 0; }
-.workflow-footer { display: flex; gap: 24px; justify-content: space-between; align-items: center; }
-.workflow-footer .step-description { font-size: 16px; text-align: left; }
-.workflow-original { border-color: #42667c; font-size: 15px; padding: 7px 12px; white-space: nowrap; }
 .database-layout { height: 100%; display: grid; grid-template-rows: auto minmax(0,1fr) 145px; gap: 22px; }
 .database-standards { display: flex; flex-wrap: wrap; gap: 8px 18px; padding-bottom: 14px; border-bottom: 1px solid #365066; font-size: 21px; }
 .database-standards strong { color: var(--water); font-weight: 550; }
@@ -600,9 +619,11 @@ body.static-mode button { transition: none; }
   .gallery-caption { font-size: 15px; }
   .atlas-layers-layout { grid-template-columns: 1fr; gap: 18px; }.atlas-layer-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }.atlas-layer-choice { padding: 12px; }.atlas-layer-index { display: none; }.atlas-layer-choice h2 { font-size: 18px; }.atlas-layer-choice p { font-size: 14px; }
   .atlas-layer-display { height: 440px; min-height: 440px; }.atlas-layer-controls { flex-wrap: wrap; justify-content: center; }.atlas-unit { flex: 0 0 100%; text-align: center; font-size: 13px; }
-  .river-attributes { grid-template-columns: 1fr; gap: 12px; min-height: 0; padding-top: 16px; }.river-attributes h2 { font-size: 19px; }.river-attribute-table { font-size: 15px; }.river-attribute-table td { padding: 5px; }.river-attribute-table th { padding: 5px; }
+  .river-attributes { grid-template-columns: 1fr; gap: 12px; min-height: 0; padding-top: 16px; }.river-attribute-table { font-size: 15px; }.river-attribute-table td { padding: 5px; }.river-attribute-table th { padding: 5px; }
   .river-attribute-values { grid-template-columns: 1fr 1fr; gap: 12px; }.river-attribute-values dt { font-size: 14px; }.river-attribute-values dd { font-size: 23px; }.river-attribute-values dt:last-of-type { grid-column: 1; }.river-attribute-values dd:last-child { grid-column: 2; font-size: 18px; }
-  .workflow-layout { height: auto; gap: 20px; }.workflow-phases { grid-template-columns: 1fr; gap: 26px; }.workflow-phase:not(:last-child)::after { display: none; }.workflow-heading h2 { font-size: 24px; }.workflow-node h3 { font-size: 20px; }.workflow-details span { font-size: 16px; }.workflow-exception-line { flex-direction: column; align-items: flex-start; gap: 20px; }.workflow-exception-line span { font-size: 18px; }.workflow-exception-line span:not(:last-child)::after { right: auto; left: 20px; top: 29px; transform: rotate(135deg); }.workflow-footer { flex-wrap: wrap; gap: 12px; }
   .database-layout { height: auto; grid-template-rows: auto auto auto; gap: 26px; }.database-standards { font-size: 18px; }.database-organization { grid-template-columns: 1fr; gap: 26px; }.database-foundation p { font-size: 19px; }.database-unit::before,.database-unit::after { display: none; }.database-unit h2 { font-size: 27px; }.database-category p { font-size: 19px; }.database-layout .process-nodes { grid-template-columns: 1fr 1fr; gap: 12px; }.database-layout .process-node { min-height: 150px; padding: 14px; }.database-layout .process-node h2 { font-size: 21px; }.database-layout .process-node p { font-size: 17px; }
   .staff-layout { height: auto; grid-template-columns: 1fr; gap: 35px; }.staff-layout h2 { font-size: 24px; margin-bottom: 20px; }.staff-leaders { gap: 16px; }.staff-role span { font-size: 17px; }.staff-role strong { font-size: 23px; }.staff-branches { gap: 12px; }.staff-branch h3 { font-size: 19px; }.staff-branch .staff-role { display: block; }.staff-branch .staff-role span { display: block; font-size: 15px; margin-bottom: 4px; }.staff-temporary { gap: 14px; padding: 14px; flex-wrap: wrap; }.staff-temporary span { font-size: 18px; }.staff-temporary span:last-child { margin-left: 0; }.staff-total { font-size: 16px; line-height: 1.6; }.staff-qualifications { padding: 0; border: 0; }.staff-qualification-label { font-size: 20px; }.staff-seat { width: 26px; }
 }
+
+.static-mode .media-loupe-surface,.motion-paused .media-loupe-surface { animation: none; }
+.workflow-scenario { margin: 0 0 0 auto; color: #dfc58e; font-size: 16px; line-height: 1.5; }.workflow-scenario:empty { display: none; }
