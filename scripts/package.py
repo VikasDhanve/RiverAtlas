@@ -9,6 +9,7 @@ output = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else root / 'dist'
 if output == root: raise SystemExit('导出目录不能是工程根目录')
 output.mkdir(parents=True, exist_ok=True)
 version = json.loads((root / 'package.json').read_text(encoding='utf-8'))['version']
+source = json.loads((root / 'docs/source-manifest-1107.json').read_text(encoding='utf-8'))
 archive = output / ('RiverAtlas-v' + version + '.zip')
 allowed = {'.impeccable/design.json'}
 files = []
@@ -30,7 +31,7 @@ manifest = {
     'version': version, 'created': datetime.now().astimezone().isoformat(timespec='seconds'),
     'archive': archive.name, 'bytes': archive.stat().st_size, 'files': len(files),
     'sha256': hashlib.sha256(archive.read_bytes()).hexdigest(),
-    'entry': 'index.html', 'sourcePages': 35, 'presentationPages': 32, 'businessImages': 49, 'supplementImages': 19,
+    'entry': 'index.html', 'sourcePages': len(source['slides']), 'presentationPages': source['presentationPageCount'], 'businessImages': len(source['runtimeAssets']) - 1,
     'status': 'RiverAtlas单层工程；待用户体验反馈，不等同正式验收'
 }
 (output / '交付清单.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding='utf-8')

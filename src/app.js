@@ -619,6 +619,7 @@
       return c;
     }
     if (s.layout === 'audit') return renderTable(s.table, 'audit-table');
+    if (s.layout === 'summary') return copyPoints(s.points, 'summary-layout');
     if (s.layout === 'requirements') return copyPoints(s.points, 'requirements-grid');
     if (s.layout === 'register') return copyPoints(s.points, 'register-layout');
     if (s.layout === 'checklist') {

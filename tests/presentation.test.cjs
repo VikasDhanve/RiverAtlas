@@ -31,17 +31,17 @@ test('离线入口显示业务名称，键盘翻页、首尾及非法页码均�
     assert.equal(await page.locator('.brand').evaluate(n=>getComputedStyle(n).fontSize),'32px');
     assert(Number(await page.locator('.brand').evaluate(n=>getComputedStyle(n).fontWeight))>=700);
     await page.keyboard.press('ArrowRight');
-    await page.waitForFunction(() => document.querySelector('#page-count').textContent.includes('02 / 32'));
+    await page.waitForFunction(() => document.querySelector('#page-count').textContent.includes('02 / 34'));
     await page.keyboard.press('End');
-    assert.equal(await page.locator('#page-count').innerText(), '32 / 32');
+    assert.equal(await page.locator('#page-count').innerText(), '34 / 34');
     await page.keyboard.press('ArrowRight');
-    assert.equal(await page.locator('#page-count').innerText(), '32 / 32');
+    assert.equal(await page.locator('#page-count').innerText(), '34 / 34');
     await page.keyboard.press('Home');
-    assert.equal(await page.locator('#page-count').innerText(), '01 / 32');
+    assert.equal(await page.locator('#page-count').innerText(), '01 / 34');
     await page.goto(url + '#p9999');
-    assert.equal(await page.locator('#page-count').innerText(), '32 / 32');
+    assert.equal(await page.locator('#page-count').innerText(), '34 / 34');
     await page.goto(url + '#<img%20src=x%20onerror=alert(1)>');
-    assert.equal(await page.locator('#page-count').innerText(), '01 / 32');
+    assert.equal(await page.locator('#page-count').innerText(), '01 / 34');
   } finally { await page.close(); }
 });
 
@@ -55,34 +55,34 @@ test('当前49份业务与流程图像均可离线打开，缩放关闭保持原
   await page.keyboard.press('Escape');assert.equal(await page.locator('#image-dialog').evaluate(d=>d.open),false);
  }
  try{
-  for(let n=1;n<=32;n++){
+  for(let n=1;n<=34;n++){
    await page.goto(url+'#p'+n);
-   if(n===2)for(const name of ['查看完整原件：中标通知书','查看完整原件：项目合同'])await open(page.getByRole('button',{name,exact:true}));
-   if(n===3)for(let i=0;i<5;i++){await page.locator('.policy-choice').nth(i).click();await open(page.getByRole('button',{name:'查看完整政策文件',exact:true}));}
-   if(n===5)await open(page.getByRole('button',{name:'查看原件',exact:true}));
+   if(n===5)for(const name of ['查看完整原件：中标通知书','查看完整原件：项目合同'])await open(page.getByRole('button',{name,exact:true}));
+   if(n===4)for(let i=0;i<5;i++){await page.locator('.policy-choice').nth(i).click();await open(page.getByRole('button',{name:'查看完整政策文件',exact:true}));}
+   if(n===3)await open(page.getByRole('button',{name:'查看原件',exact:true}));
    if(n===6)await open(page.getByRole('button',{name:'查看流程原图',exact:true}));
    if(n===8)for(let i=0;i<4;i++){await page.locator('.atlas-layer-choice').nth(i).click();await open(page.getByRole('button',{name:'查看图件',exact:true}));}
-   if(n===21)await page.getByRole('button',{name:'政策文件',exact:true}).click();
+   if(n===22)await page.getByRole('button',{name:'政策文件',exact:true}).click();
    for(let i=0;i<await page.locator('.gallery-tabs button').count();i++){await page.locator('.gallery-tabs button').nth(i).click();await open(page.locator('.gallery-spread .image-button'));}
-   assert.equal(await page.locator('#page-count').innerText(),String(n).padStart(2,'0')+' / 32');
+   assert.equal(await page.locator('#page-count').innerText(),String(n).padStart(2,'0')+' / 34');
   }
-  assert.equal(seen.size,49);assert.deepEqual(errors,[]);assert.deepEqual(remote,[]);
+  assert.equal(seen.size,42);assert.deepEqual(errors,[]);assert.deepEqual(remote,[]);
  }finally{await page.close();}
 });
 
-test('六章目录与32页可查找，空结果有反馈，原稿资料入口已移除', async () => {
+test('六章目录与34页可查找，空结果有反馈，原稿资料入口已移除', async () => {
   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, reducedMotion: 'reduce' });
   try {
-    await page.goto(url + '#p22');
+    await page.goto(url + '#p23');
     assert.equal(await page.locator('#sources-button,#sources-dialog').count(),0);
     await page.getByRole('button', { name: '全部页面', exact: true }).click();
-    assert.equal(await page.locator('.contents-entry').count(), 32);
+    assert.equal(await page.locator('.contents-entry').count(), 34);
     await page.getByRole('searchbox').fill('不存在的标题');
     assert.match(await page.locator('#contents-list').innerText(), /没有匹配页面/);
     await page.getByRole('searchbox').fill('内部审核分工（一）');
     await page.locator('.contents-entry').click();
-    assert.equal(await page.locator('#page-count').innerText(), '22 / 32');
-    for (const [chapter, expected] of [['项目实施','06 / 32'],['专家论证','20 / 32'],['项目审核','21 / 32'],['项目公告','26 / 32'],['项目登簿','29 / 32'],['项目概况','01 / 32']]) {
+    assert.equal(await page.locator('#page-count').innerText(), '23 / 34');
+    for (const [chapter, expected] of [['调查过程','06 / 34'],['专家论证','21 / 34'],['项目审核','22 / 34'],['项目公告','28 / 34'],['项目登簿','31 / 34'],['项目概况','01 / 34']]) {
       await page.getByRole('button', { name: chapter, exact: true }).click();
       assert.equal(await page.locator('#page-count').innerText(), expected);
     }
@@ -92,7 +92,7 @@ test('六章目录与32页可查找，空结果有反馈，原稿资料入口已
 test('讲解流程支持暂停、继续、逐步、重播、跳过及离页中断', async () => {
   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, reducedMotion: 'no-preference' });
   try {
-    await page.goto(url + '#p16');
+    await page.goto(url + '#p18');
     await page.getByRole('button', { name: '播放演示', exact: true }).click();
     await page.waitForTimeout(1700);
     await page.getByRole('button', { name: '暂停', exact: true }).click();
@@ -110,7 +110,7 @@ test('讲解流程支持暂停、继续、逐步、重播、跳过及离页中�
     await page.keyboard.press('Escape');
     assert.equal(await page.locator('#pause-button').getAttribute('aria-pressed'), 'true');
     for (let i = 0; i < 8; i++) await page.keyboard.press('ArrowRight');
-    assert.equal(await page.locator('#page-count').innerText(), '24 / 32');
+    assert.equal(await page.locator('#page-count').innerText(), '26 / 34');
     assert.equal(await page.locator('#slide-title').count(), 1);
   } finally { await page.close(); }
 });
@@ -118,7 +118,7 @@ test('讲解流程支持暂停、继续、逐步、重播、跳过及离页中�
 test('静态模式与系统减少动态效果保留全部内容，流程可直接分步', async () => {
   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, reducedMotion: 'reduce' });
   try {
-    await page.goto(url + '#p21');
+    await page.goto(url + '#p22');
     assert.equal(await page.locator('#static-button').getAttribute('aria-pressed'), 'true');
     assert.equal(await page.locator('#play-button').isDisabled(), true);
     await page.getByRole('button', { name: '下一步', exact: true }).click();
@@ -136,7 +136,7 @@ test('静态模式与系统减少动态效果保留全部内容，流程可直�
 test('全屏能进入并退出，地图聚焦和成果专题能切换', async () => {
   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, reducedMotion: 'reduce' });
   try {
-    await page.goto(url + '#p5');
+    await page.goto(url + '#p3');
     await page.getByRole('button', { name: '英那河 庄河市', exact: true }).click();
     assert.match(await page.locator('.map-controls').innerText(), /英那河.*庄河市/);
     await page.getByRole('button', { name: '恢复全图', exact: true }).click();
@@ -144,13 +144,13 @@ test('全屏能进入并退出，地图聚焦和成果专题能切换', async ()
     await page.waitForFunction(() => Boolean(document.fullscreenElement));
     await page.getByRole('button', { name: '退出全屏', exact: true }).click();
     await page.waitForFunction(() => !document.fullscreenElement);
-    await page.goto(url + '#p19');
-    await page.getByRole('button', { name: '碧流河 · 森林资源专题图', exact: true }).click();
-    assert.equal(await page.locator('.gallery-caption').innerText(), '碧流河 · 森林资源专题图');
+    await page.goto(url + '#p17');
+    await page.getByRole('button', { name: '碧流河 · 水流资源专题图', exact: true }).click();
+    assert.equal(await page.locator('.gallery-caption').innerText(), '碧流河 · 水流资源专题图');
   } finally { await page.close(); }
 });
 
-test('桌面、大屏及小屏全部32页无内容越界，按需保存画面证据', async () => {
+test('桌面、大屏及小屏全部34页无内容越界，按需保存画面证据', async () => {
   const capture = process.env.RIVER_ATLAS_CAPTURE === '1';
   const captureDir = path.join(root, '.impeccable/review'); fs.mkdirSync(captureDir, { recursive: true });
   const failures = [], errors = [];
@@ -159,7 +159,7 @@ test('桌面、大屏及小屏全部32页无内容越界，按需保存画面证
     const page = await browser.newPage({ viewport: { width, height }, reducedMotion:'reduce' });
     page.on('pageerror', e => errors.push(e.message));
     try {
-      for (let p = 1; p <= 32; p++) {
+      for (let p = 1; p <=34; p++) {
         await page.goto(url + '#p' + p);
         await page.locator('#slide-title').waitFor();
         await page.evaluate(async () => { await Promise.all([...document.querySelectorAll('#presentation img')].map(i => i.decode().catch(() => {}))); });

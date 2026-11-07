@@ -9,7 +9,7 @@ test('第三页去掉重复标题和提示，纸面高度增加；其他页不�
  const browser=await chromium.launch({channel:'chrome'});
  const page=await browser.newPage({viewport:{width:1920,height:1080},offline:true,reducedMotion:'reduce'});
  try{
-  await page.goto(url+'#p3');
+  await page.goto(url+'#p4');
   assert.match(await page.title(),/RiverAtlas/);
   assert.equal(await page.locator('.policy-page-title,.policy-page-meta,.policy-selection-state,.policy-reader-hint').count(),0);
   assert((await page.locator('.policy-sheet:not([hidden])').boundingBox()).height>620);
@@ -52,7 +52,7 @@ test('星空只响应鼠标视差，暂停和静态时保持画面，静止后�
  const browser=await chromium.launch({channel:'chrome'});
  const page=await browser.newPage({viewport:{width:1920,height:1200},offline:true});
  try{
-  await page.goto(url+'#p3');await page.locator('#starfield').waitFor({timeout:2000});
+  await page.goto(url+'#p4');await page.locator('#starfield').waitFor({timeout:2000});
   await page.mouse.move(40,10);await page.waitForTimeout(1000);
   const capture=()=>page.screenshot({clip:{x:0,y:0,width:1920,height:50}});
   const first=await capture();
@@ -70,7 +70,7 @@ test('鼠标移动时浮现浅色连线，停下后线条淡出且不持续绘�
  const browser=await chromium.launch({channel:'chrome'});
  const page=await browser.newPage({viewport:{width:1920,height:1080},offline:true,reducedMotion:'no-preference'});
  try{
-  await page.goto(url+'#p3');await page.mouse.move(500,500);await page.waitForTimeout(1100);
+  await page.goto(url+'#p4');await page.mouse.move(500,500);await page.waitForTimeout(1100);
   const ink=()=>page.locator('#starfield').evaluate(c=>{
    const a=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let value=0;
    for(let i=0;i<a.length;i+=4)if(a[i]>90)value+=a[i]*a[i+3];

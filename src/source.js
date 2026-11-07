@@ -1,7 +1,7 @@
-/* 当前页面引用的原PPT图像目录；历史转录仅保留docs来源清单，不加载到演示。 */
+/* 当前页面使用的图像；1107原图字节保留，历史来源另存docs。 */
 const RiverAtlasSource = {
-  "filename": "大连市自然资源统一确权登记工作市级确权项目汇报-2026-5(1).pptx",
-  "sha256": "21524156a84243f1dbc69daf613d0291e466f91e3e6f3d528b236e26489747b5",
+  "filename": "大连市自然资源统一确权登记工作市级确权项目汇报-2026-5.1(1).pptx",
+  "sha256": "993c0bd3cc02532914d459ed0ae37282a054fe1ebd79c2fa4f0f82623f8adc18",
   "assets": [
     {
       "id": 4,
@@ -172,14 +172,6 @@ const RiverAtlasSource = {
       "rotation": 0
     },
     {
-      "id": 25,
-      "file": "image25.jpeg",
-      "path": "assets/originals/image25.jpeg",
-      "business": true,
-      "sha256": "9a4e6867ebdb1d8033fc476050f58b572f43f583d04aa9d5b389352729b0d2c7",
-      "rotation": 0
-    },
-    {
       "id": 26,
       "file": "image26.jpeg",
       "path": "assets/originals/image26.jpeg",
@@ -201,14 +193,6 @@ const RiverAtlasSource = {
       "path": "assets/originals/image31.jpeg",
       "business": true,
       "sha256": "8bf8886b5191a031e539365faf30a05a8593f3c918b45f6b6bce4c6c44f85d6a",
-      "rotation": 0
-    },
-    {
-      "id": 32,
-      "file": "image32.GIF",
-      "path": "assets/originals/image32.GIF",
-      "business": true,
-      "sha256": "cdb8f5638f25d350c031d22d6d3288997b838b05d701f84ce44c95ea8503336f",
       "rotation": 0
     },
     {
@@ -250,6 +234,110 @@ const RiverAtlasSource = {
       "business": true,
       "sha256": "f2ffe600594eb82e6f6f9513a23d3e1eebf53c895e5cc726cf872bb8e08d0846",
       "rotation": 0
+    },
+    {
+      "id": 101,
+      "path": "assets/revision-1107/image38.jpeg",
+      "caption": "南京清流河 · 自然资源登记簿绿色封面（外地样例）",
+      "source": "大连市自然资源统一确权登记工作市级确权项目汇报-2026-5.1(1).pptx",
+      "sha256": "1b8dca095c79a8b363ef5b48d51ff19117a6865ed03400a68c89d30c2abcc0a8"
+    },
+    {
+      "id": 102,
+      "path": "assets/revision-1107/image39.jpeg",
+      "caption": "南京清流河 · 清流河登记信息（外地样例）",
+      "source": "大连市自然资源统一确权登记工作市级确权项目汇报-2026-5.1(1).pptx",
+      "sha256": "fc79fccf3589ea0660ddf242e759244c3800cf7a27d6ddbae5246eb03fdc06a1"
+    },
+    {
+      "id": 103,
+      "path": "assets/revision-1107/image40.png",
+      "caption": "南京清流河 · 权属状况信息（外地样例）",
+      "source": "大连市自然资源统一确权登记工作市级确权项目汇报-2026-5.1(1).pptx",
+      "sha256": "2b7f314125bf5e3d675eadac95f3082002c3f87a54f7e673a9a82b752f224e7e"
+    },
+    {
+      "id": 104,
+      "path": "assets/revision-1107/image41.png",
+      "caption": "南京清流河 · 自然状况信息（外地样例）",
+      "source": "大连市自然资源统一确权登记工作市级确权项目汇报-2026-5.1(1).pptx",
+      "sha256": "1c8a102cf97efe4b29fe688a16aa1701bc2dea2ca4e4aefa89f70a673e288389"
+    },
+    {
+      "id": 105,
+      "path": "assets/revision-1107/image42.png",
+      "caption": "南京清流河 · 自然状况信息续表（外地样例）",
+      "source": "大连市自然资源统一确权登记工作市级确权项目汇报-2026-5.1(1).pptx",
+      "sha256": "fa3b70a6f5b07d45bcf0a74eaba7ea3047d53531bc5fa2de4b817e37fda3171e"
+    },
+    {
+      "id": 106,
+      "path": "assets/revision-1107/image43.png",
+      "caption": "南京清流河 · 清流河登记单元图（外地样例）",
+      "source": "大连市自然资源统一确权登记工作市级确权项目汇报-2026-5.1(1).pptx",
+      "sha256": "2ed249431edba5630d03d583151ea46945dd3aafc47a4fdadf0ffff9b30ddd47"
+    },
+    {
+      "id": 107,
+      "path": "assets/revision-1107/image14.png",
+      "caption": "大沙河 · 工作底图（1107）",
+      "source": "大连市自然资源统一确权登记工作市级确权项目汇报-2026-5.1(1).pptx",
+      "sha256": "923d6cf01b08dee4fd0003d652c6cdc938836e1348c6e5ad8afe38e30b0c5b56"
+    },
+    {
+      "id": 108,
+      "path": "assets/supplement/asset-108.png",
+      "displayPath": "assets/supplement/asset-108-view.png",
+      "caption": "大沙河 · 范围与现势",
+      "source": "大沙河登记单元（210200331000003）底图三调.pdf",
+      "page": 1,
+      "rotation": 0
+    },
+    {
+      "id": 109,
+      "path": "assets/supplement/asset-109.png",
+      "displayPath": "assets/supplement/asset-109-view.png",
+      "caption": "大沙河 · 权属与成果",
+      "source": "大沙河登记单元（210200331000003）底图权属.pdf",
+      "page": 1,
+      "rotation": 0
+    },
+    {
+      "id": 110,
+      "path": "assets/supplement/asset-110.png",
+      "displayPath": "assets/supplement/asset-110-view.png",
+      "caption": "大沙河 · 管制与保护",
+      "source": "大沙河登记单元（210200331000003）底图公共管制.pdf",
+      "page": 1,
+      "rotation": 0
+    },
+    {
+      "id": 111,
+      "path": "assets/revision-1107/image13.png",
+      "caption": "自然资源确权登记工作流程（1107）",
+      "source": "大连市自然资源统一确权登记工作市级确权项目汇报-2026-5.1(1).pptx",
+      "sha256": "dc8a59f8f893f05ac91256c099bcd7d48a66245354d41b167c4139a9904b93a2"
+    },
+    {
+      "id": 301,
+      "path": "assets/revision-1107/image28.png",
+      "caption": "碧流河 · 登记单元图",
+      "source": "大连市自然资源统一确权登记工作市级确权项目汇报-2026-5.1(1).pptx",
+      "sha256": "c914fa1f34a18cfd9f70fb07af0ca8b79193eb67857e439416faa5fa3200b14e"
+    },
+    {
+      "id": 302,
+      "path": "assets/revision-1107/image29.png",
+      "caption": "碧流河 · 权属界线专题图",
+      "source": "大连市自然资源统一确权登记工作市级确权项目汇报-2026-5.1(1).pptx",
+      "sha256": "bc6fabbe060e84b1553520f45ce0d1ef44e3267d22a2f8c0f598821e884529e8"
+    },
+    {
+      "id": 303,
+      "path": "assets/revision-1107/image30.png",
+      "caption": "碧流河 · 水流资源专题图",
+      "source": "大连市自然资源统一确权登记工作市级确权项目汇报-2026-5.1(1).pptx",
+      "sha256": "3d47121ff85c1c89d00a6b21e5021fce171d62db4fb08e9e8165d469c17e2acd"
     }
   ]
 };

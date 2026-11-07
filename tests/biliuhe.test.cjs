@@ -5,15 +5,15 @@ const {chromium}=require('playwright');
 const path=require('node:path'),fs=require('node:fs'),vm=require('node:vm'),crypto=require('node:crypto');
 const {pathToFileURL}=require('node:url');
 const root=path.resolve(__dirname,'..'),url=pathToFileURL(path.join(root,'index.html')).href;
-test('碧流河成果保留调查表首张，新增八PDF且界址点点之记最后，九张均可离线查看',async()=>{
+test('1107版碧流河三张成果图与调查表均可离线查看',async()=>{
  const browser=await chromium.launch({channel:'chrome'}),page=await browser.newPage({viewport:{width:1920,height:1080},offline:true,reducedMotion:'reduce'});
  const errors=[],remote=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(/^https?:/.test(r.url()))remote.push(r.url());});
  try{
-  await page.goto(url+'#p19');assert.equal(await page.locator('.gallery-tabs button').count(),9);
-  assert.equal(await page.locator('.gallery-spread img').getAttribute('data-asset'),'27');
+  await page.goto(url+'#p17');assert.equal(await page.locator('.gallery-tabs button').count(),4);
+  assert.equal(await page.locator('.gallery-spread img').getAttribute('data-asset'),'301');
   const names=await page.locator('.gallery-tabs button').evaluateAll(ns=>ns.map(n=>n.getAttribute('aria-label')));
-  assert.match(names[0],/调查表/);assert.match(names.at(-1),/T26.*界址点点之记/);
-  for(let i=0;i<9;i++){
+  assert.match(names[0],/登记单元图/);assert.match(names.at(-1),/调查表/);
+  for(let i=0;i<4;i++){
    await page.locator('.gallery-tabs button').nth(i).click();await page.locator('.gallery-spread .image-button').click();
    await page.waitForFunction(()=>{const i=document.getElementById('original-image');return !i.hidden&&i.complete&&i.naturalWidth>0;});
    assert.equal(await page.locator('#image-title').innerText(),names[i]);await page.keyboard.press('Escape');
@@ -25,7 +25,7 @@ test('碧流河成果保留调查表首张，新增八PDF且界址点点之记�
 test('原稿资料入口和弹窗逻辑移除，运行素材仅保留当前页面引用',async()=>{
  const browser=await chromium.launch({channel:'chrome'}),page=await browser.newPage({viewport:{width:1920,height:1080},offline:true,reducedMotion:'reduce'});
  try{
-  await page.goto(url+'#p19');assert.equal(await page.locator('#sources-button,#sources-dialog,#sources-content').count(),0);
+  await page.goto(url+'#p17');assert.equal(await page.locator('#sources-button,#sources-dialog,#sources-content').count(),0);
   assert.doesNotMatch(fs.readFileSync(path.join(root,'src/app.js'),'utf8'),/renderSources|function imageGrid|source\.slides/);
   const c={};vm.runInNewContext(fs.readFileSync(path.join(root,'src/source.js'),'utf8')+';this.source=RiverAtlasSource',c);
   assert.equal(c.source.slides,undefined);

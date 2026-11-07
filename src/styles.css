@@ -23,7 +23,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-vis
 .brand { display: inline-flex; gap: 12px; align-items: center; color: var(--ink); text-decoration: none; white-space: nowrap; font-size: 32px; font-weight: 700; }
 .brand-mark { width: 1em; height: 1em; flex: 0 0 1em; }
 #chapter-nav { display: flex; margin-left: auto; gap: 6px; }
-.chapter-button { font-size: 20px; padding: 12px 16px; border-radius: 0; color: var(--muted); position: relative; }
+.chapter-button { font-size: 18px; padding: 12px; border-radius: 0; color: var(--muted); position: relative; }
 .chapter-button[aria-current="true"] { color: var(--water); }
 .chapter-button[aria-current="true"]::after { content: ""; position: absolute; bottom: -12px; left: 16px; right: 16px; height: 2px; background: var(--water); }
 .plain-button { font-size: 18px; border-color: var(--line); }
@@ -641,3 +641,9 @@ body.static-mode button { transition: none; }
 
 .static-mode .media-loupe-surface,.motion-paused .media-loupe-surface { animation: none; }
 .workflow-scenario { margin: 0 0 0 auto; color: #dfc58e; font-size: 16px; line-height: 1.5; }.workflow-scenario:empty { display: none; }
+
+.summary-layout { display: grid; gap: 24px; align-content: center; height: 100%; }
+.summary-layout .copy-point { border-top: 1px solid var(--line); padding-top: 20px; }
+.summary-layout h2 { font-size: 29px; margin: 0 0 10px; color: var(--water); }
+.summary-layout p { font-size: 23px; line-height: 1.65; margin: 0; max-width: 1270px; }
+@media (max-width: 767px) { .summary-layout { height: auto; gap: 24px; } }

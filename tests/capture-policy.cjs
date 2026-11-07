@@ -6,7 +6,7 @@ const {pathToFileURL}=require('node:url');
  const out=path.resolve('.impeccable/review/policy');fs.mkdirSync(out,{recursive:true});
  const browser=await chromium.launch({channel:'chrome'});
  const context=await browser.newContext({viewport:{width:1920,height:1080},offline:true,recordVideo:{dir:path.join(out,'video'),size:{width:1280,height:720}}});
- const page=await context.newPage();const url=pathToFileURL(path.resolve('index.html')).href+'#p3';
+ const page=await context.newPage();const url=pathToFileURL(path.resolve('index.html')).href+'#p4';
  await page.goto(url);await page.waitForTimeout(1200);await page.screenshot({path:path.join(out,'overview.png')});
  console.log(await page.locator('.policy-directory,.policy-window').evaluateAll(nodes=>nodes.map(n=>({name:n.className,width:n.getBoundingClientRect().width,height:n.getBoundingClientRect().height}))));
  const province=page.getByRole('button',{name:'《辽宁省自然资源统一确权登记工作总体方案》',exact:true});
