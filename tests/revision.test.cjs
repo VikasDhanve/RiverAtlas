@@ -28,7 +28,7 @@ test('政策单图展陈，现用原稿图像均有主页面展示入口', async
   const page = await browser.newPage({ viewport: {width:1920,height:1080}, reducedMotion:'reduce', offline:true });
   const shown = new Set();
   try {
-    for (let n=1;n<=34;n++) {
+    for (let n=1;n<=30;n++) {
       await page.goto(url+'#p'+n);
       for (const id of await page.locator('#presentation [data-asset]').evaluateAll(nodes=>nodes.map(n=>Number(n.dataset.asset)))) shown.add(id);
     }
@@ -40,7 +40,7 @@ test('政策单图展陈，现用原稿图像均有主页面展示入口', async
     assert((await page.locator('.policy-directory').boundingBox()).width>=700);
     assert.equal(await page.locator('#play-button').isDisabled(),true);
     await page.screenshot({ path:'.impeccable/review/policy-large.png' });
-    await page.goto(url+'#p22');
+    await page.goto(url+'#p20');
     await page.getByRole('button',{name:'政策文件',exact:true}).click();
     assert.equal(await page.locator('.gallery-spread .image-button').count(),1);
   } finally { await browser.close(); }
@@ -60,14 +60,14 @@ test('无WebGL时背景正常回退，暂停翻页不隐藏正文，多图演示
     await page.locator('#pause-button').click();
     await page.keyboard.press('ArrowRight');
     assert.equal(await page.locator('.slide-heading').evaluate(n=>getComputedStyle(n).opacity),'1');
-    await page.goto(url+'#p17'); await page.locator('#play-button').click();
+    await page.goto(url+'#p15'); await page.locator('#play-button').click();
     await page.waitForTimeout(3400); await page.locator('#pause-button').click();
     const caption=await page.locator('.gallery-caption').innerText();
     await page.waitForTimeout(3300); assert.equal(await page.locator('.gallery-caption').innerText(),caption);
     await page.locator('#replay-button').click();
     assert.match(await page.locator('.gallery-caption').innerText(),/碧流河.*登记单元图/);
     await page.locator('#skip-button').click();
-    assert.match(await page.locator('.gallery-caption').innerText(),/碧流河地籍调查表封面/);
+    assert.match(await page.locator('.gallery-caption').innerText(),/碧流河.*水流资源专题图/);
     assert.deepEqual(errors,[]);
   } finally {await browser.close();}
 });

@@ -273,8 +273,7 @@
         "ppt/media/image20.jpeg"
       ],
       "presentationPages": [
-        11,
-        12
+        11
       ]
     },
     {
@@ -294,7 +293,7 @@
         "ppt/media/image21.jpeg"
       ],
       "presentationPages": [
-        13
+        12
       ]
     },
     {
@@ -318,7 +317,7 @@
         "ppt/media/image25.png"
       ],
       "presentationPages": [
-        14
+        13
       ]
     },
     {
@@ -333,7 +332,7 @@
         "ppt/media/image27.jpeg"
       ],
       "presentationPages": [
-        15
+        14
       ]
     },
     {
@@ -352,7 +351,7 @@
       ],
       "images": [],
       "presentationPages": [
-        16
+        15
       ]
     },
     {
@@ -366,7 +365,7 @@
         "ppt/media/image30.png"
       ],
       "presentationPages": [
-        17
+        15
       ]
     },
     {
@@ -385,7 +384,7 @@
       ],
       "images": [],
       "presentationPages": [
-        18
+        16
       ]
     },
     {
@@ -420,8 +419,7 @@
         "ppt/media/image31.png"
       ],
       "presentationPages": [
-        17,
-        19
+        17
       ]
     },
     {
@@ -441,7 +439,7 @@
       ],
       "images": [],
       "presentationPages": [
-        20
+        18
       ]
     },
     {
@@ -458,7 +456,7 @@
         "ppt/media/image32.jpeg"
       ],
       "presentationPages": [
-        21
+        19
       ]
     },
     {
@@ -470,7 +468,7 @@
         "ppt/media/image33.png"
       ],
       "presentationPages": [
-        21
+        19
       ]
     },
     {
@@ -482,7 +480,7 @@
         "ppt/media/image34.jpeg"
       ],
       "presentationPages": [
-        21
+        19
       ]
     },
     {
@@ -495,8 +493,7 @@
         "ppt/media/image36.png"
       ],
       "presentationPages": [
-        22,
-        25
+        20
       ]
     },
     {
@@ -532,7 +529,7 @@
       ],
       "images": [],
       "presentationPages": [
-        23
+        21
       ]
     },
     {
@@ -554,7 +551,7 @@
       ],
       "images": [],
       "presentationPages": [
-        24
+        21
       ]
     },
     {
@@ -564,7 +561,7 @@
       ],
       "images": [],
       "presentationPages": [
-        25
+        22
       ]
     },
     {
@@ -593,8 +590,7 @@
       ],
       "images": [],
       "presentationPages": [
-        26,
-        27
+        23
       ]
     },
     {
@@ -614,7 +610,7 @@
       ],
       "images": [],
       "presentationPages": [
-        28
+        24
       ]
     },
     {
@@ -664,7 +660,7 @@
       ],
       "images": [],
       "presentationPages": [
-        29
+        25
       ]
     },
     {
@@ -676,7 +672,7 @@
         "ppt/media/image37.png"
       ],
       "presentationPages": [
-        30
+        26
       ]
     },
     {
@@ -693,7 +689,7 @@
       ],
       "images": [],
       "presentationPages": [
-        31
+        27
       ]
     },
     {
@@ -705,7 +701,7 @@
         "ppt/media/image38.jpeg"
       ],
       "presentationPages": [
-        32
+        28
       ]
     },
     {
@@ -717,7 +713,7 @@
         "ppt/media/image39.jpeg"
       ],
       "presentationPages": [
-        32
+        28
       ]
     },
     {
@@ -729,7 +725,7 @@
         "ppt/media/image40.png"
       ],
       "presentationPages": [
-        32
+        28
       ]
     },
     {
@@ -741,7 +737,7 @@
         "ppt/media/image41.png"
       ],
       "presentationPages": [
-        32
+        28
       ]
     },
     {
@@ -753,7 +749,7 @@
         "ppt/media/image42.png"
       ],
       "presentationPages": [
-        32
+        28
       ]
     },
     {
@@ -765,7 +761,7 @@
         "ppt/media/image43.png"
       ],
       "presentationPages": [
-        32
+        28
       ]
     },
     {
@@ -786,7 +782,7 @@
       ],
       "images": [],
       "presentationPages": [
-        33
+        29
       ]
     },
     {
@@ -800,7 +796,7 @@
       ],
       "images": [],
       "presentationPages": [
-        34
+        30
       ]
     }
   ],
@@ -1229,7 +1225,7 @@
     }
   ],
   "sourceDirectory": "D:\\WorkSpace Management\\项目管理\\集团技术支持\\测绘院汇报材料编制【测绘院&孙颖20261106】\\原始汇报材料素材（1107）",
-  "presentationPageCount": 34,
+  "presentationPageCount": 33,
   "runtimeAssets": [
     {
       "id": 4,
@@ -1511,33 +1507,6 @@
       "caption": "大沙河 · 工作底图（1107）",
       "source": "大连市自然资源统一确权登记工作市级确权项目汇报-2026-5.1(1).pptx",
       "sha256": "923d6cf01b08dee4fd0003d652c6cdc938836e1348c6e5ad8afe38e30b0c5b56"
-    },
-    {
-      "id": 108,
-      "path": "assets/supplement/asset-108.png",
-      "displayPath": "assets/supplement/asset-108-view.png",
-      "caption": "大沙河 · 范围与现势",
-      "source": "大沙河登记单元（210200331000003）底图三调.pdf",
-      "page": 1,
-      "rotation": 0
-    },
-    {
-      "id": 109,
-      "path": "assets/supplement/asset-109.png",
-      "displayPath": "assets/supplement/asset-109-view.png",
-      "caption": "大沙河 · 权属与成果",
-      "source": "大沙河登记单元（210200331000003）底图权属.pdf",
-      "page": 1,
-      "rotation": 0
-    },
-    {
-      "id": 110,
-      "path": "assets/supplement/asset-110.png",
-      "displayPath": "assets/supplement/asset-110-view.png",
-      "caption": "大沙河 · 管制与保护",
-      "source": "大沙河登记单元（210200331000003）底图公共管制.pdf",
-      "page": 1,
-      "rotation": 0
     },
     {
       "id": 111,

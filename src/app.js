@@ -86,8 +86,12 @@
       const left=Math.max(12,Math.min(innerWidth-width-12,point.x+width+32<innerWidth?point.x+28:point.x-width-28));
       const top=Math.max(12,Math.min(innerHeight-totalHeight-12,point.y-totalHeight*.42));
       loupe.style.transform=`translate3d(${left}px,${top}px,0)`;
-      const x=Math.max(0,Math.min(rect.width,point.x-rect.left)),y=Math.max(0,Math.min(rect.height,point.y-rect.top));
-      const scaledWidth=rect.width*magnification,scaledHeight=rect.height*magnification;
+      const cover=getComputedStyle(loupeTarget).objectFit==='cover';
+      const imageScale=cover?Math.max(rect.width/loupeTarget.naturalWidth,rect.height/loupeTarget.naturalHeight):1;
+      const imageWidth=cover?loupeTarget.naturalWidth*imageScale:rect.width,imageHeight=cover?loupeTarget.naturalHeight*imageScale:rect.height;
+      const x=Math.max(0,Math.min(rect.width,point.x-rect.left))+(imageWidth-rect.width)/2;
+      const y=Math.max(0,Math.min(rect.height,point.y-rect.top))+(imageHeight-rect.height)/2;
+      const scaledWidth=imageWidth*magnification,scaledHeight=imageHeight*magnification;
       const offsetX=Math.max(Math.min(0,width-scaledWidth),Math.min(0,width/2-x*magnification));
       const offsetY=Math.max(Math.min(0,height-scaledHeight),Math.min(0,height/2-y*magnification));
       loupeImage.style.width=scaledWidth+'px';loupeImage.style.height=scaledHeight+'px';loupeImage.style.transform=`translate3d(${offsetX}px,${offsetY}px,0)`;
@@ -154,6 +158,40 @@
     const c = el('div', 'gallery-layout'); c.dataset.focus='false';
     c.append(copyPoints(s.points), gallery(s.images)); return c;
   }
+  function renderDocumentBoard(s) {
+    const layout=el('div','gallery-layout'),board=el('div','document-board'),documents=[];
+    if(s.interaction==='source-board'){
+      layout.classList.add('source-board-layout');layout.dataset.board=s.board;
+      board.dataset.count=String(s.images.length);
+    }
+    board.classList.toggle('single-document',s.images.length===1);
+    function fit(){
+      for(const {windowEl,control,img} of documents){
+        const reference=s.board==='photos'?documents[0].img:img;
+        if(!reference.naturalWidth||!windowEl.clientHeight)continue;
+        if(s.board==='expert'&&control.classList.contains('photo-surface')){
+          control.style.width=windowEl.clientWidth+'px';control.style.height=windowEl.clientHeight+'px';continue;
+        }
+        const scale=Math.min(windowEl.clientWidth/reference.naturalWidth,windowEl.clientHeight/reference.naturalHeight);
+        control.style.width=reference.naturalWidth*scale+'px';control.style.height=reference.naturalHeight*scale+'px';
+      }
+    }
+    for(const id of s.images){
+      const label=RiverAtlasCaptions[id]||assets.get(id).caption,figure=el('figure','document-figure');
+      const windowEl=el('div','document-window'),control=button('',()=>openImage(id),'image-button'),img=assetImage(id);
+      control.dataset.asset=id;control.setAttribute('aria-label','查看原件：'+label);
+      if([24,26,33,34].includes(id))control.classList.add('photo-surface');
+      img.addEventListener('load',fit);control.addEventListener('pointermove',event=>moveLoupe(event,img));control.addEventListener('pointerleave',hideLoupe);
+      control.append(img);windowEl.append(control);figure.append(windowEl,el('figcaption','',label));board.append(figure);
+      documents.push({windowEl,control,img});
+    }
+    if(s.board==='announcement-sample')layout.append(board);
+    if(s.table)layout.append(renderTable(s.table,'audit-table'));
+    else if(s.points?.length)layout.append(copyPoints(s.points));
+    if(s.board!=='announcement-sample')layout.append(board);
+    exhibitView={refit:fit,resetLabel:'恢复原图',reset:()=>{hideLoupe();fit();}};
+    return layout;
+  }
   function renderPolicyLibrary(s) {
     const layout=el('div','policy-library'), directory=el('div','policy-directory');
     const reader=el('section','policy-reader');
@@ -165,7 +203,7 @@
       {id:10,name:'《辽宁省自然资源统一确权登记工作总体方案》',title:'辽宁省总体方案',detail:'自然资源统一确权登记工作总体方案'},
       {id:11,name:'《大连市自然资源统一确权登记工作总体方案》',title:'大连市总体方案',detail:'自然资源统一确权登记工作总体方案'}
     ];
-    let active=9,pinned=null,motion=null,zoomTween=null,disposed=false;
+    let active=9,motion=null,zoomTween=null,disposed=false;
     const controls=new Map(), sheets=new Map();
     function fit() {
       const sheet=sheets.get(active); if(!sheet)return;
@@ -186,8 +224,7 @@
       motion?.kill();zoomTween?.kill();active=id;
       for(const item of entries) {
         const b=controls.get(item.id),sheet=sheets.get(item.id);sheet.hidden=item.id!==id;
-        b.setAttribute('aria-current',String(item.id===id));b.setAttribute('aria-pressed',String(item.id===pinned));
-        b.querySelector('.policy-pin-mark').textContent=item.id===pinned?'已固定':'';
+        b.setAttribute('aria-current',String(item.id===id));b.setAttribute('aria-pressed',String(item.id===id));
       }
       const sheet=sheets.get(id);fit();
       if(typeof gsap!=='undefined') {
@@ -199,12 +236,12 @@
     for(const [title,items] of [['国家规范',entries.slice(0,3)],['省市方案',entries.slice(3)]]) {
       const group=el('section','policy-group');group.append(el('h2','',title));
       for(const item of items) {
-        const b=button('',()=>{pinned=pinned===item.id?null:item.id;select(item.id);},'policy-choice');
+        const b=button('',()=>select(item.id),'policy-choice');
         const text=el('span','policy-choice-text');text.append(el('span','policy-choice-name',item.name));
         if(item.id===9)text.append(el('span','policy-standard','TD/T 1112—2025'));
-        b.append(text,el('span','policy-pin-mark'));b.dataset.asset=item.id;b.setAttribute('aria-label',item.name);
-        b.addEventListener('pointerenter',()=>{if(pinned===null&&matchMedia('(hover: hover) and (pointer: fine)').matches)select(item.id);});
-        b.addEventListener('focus',()=>{if(pinned===null)select(item.id,false);});
+        b.append(text);b.dataset.asset=item.id;b.setAttribute('aria-label',item.name);
+        b.addEventListener('pointerenter',()=>{if(matchMedia('(hover: hover) and (pointer: fine)').matches)select(item.id);});
+        b.addEventListener('focus',()=>select(item.id,false));
         controls.set(item.id,b);group.append(b);
       }
       directory.append(group);
@@ -225,9 +262,7 @@
     footer.append(button('查看完整政策文件',()=>openImage(active),'policy-original'));
     reader.append(windowEl,footer);
     layout.append(directory,reader);
-    layout.addEventListener('pointerleave',()=>{if(pinned===null)select(9);});
-    layout.addEventListener('focusout',event=>{if(!layout.contains(event.relatedTarget)&&pinned===null)select(9,false);});
-    exhibitView={resetLabel:'恢复默认',reset:()=>{pinned=null;select(9);},refit:fit,pause:()=>{motion?.pause();zoomTween?.pause();},resume:()=>{motion?.resume();zoomTween?.resume();},finish:()=>{motion?.progress(1).pause();zoomTween?.progress(1).pause();},destroy:()=>{disposed=true;motion?.kill();zoomTween?.kill();}};
+    exhibitView={resetLabel:'恢复默认',reset:()=>select(9),refit:fit,pause:()=>{motion?.pause();zoomTween?.pause();},resume:()=>{motion?.resume();zoomTween?.resume();},finish:()=>{motion?.progress(1).pause();zoomTween?.progress(1).pause();},destroy:()=>{disposed=true;motion?.kill();zoomTween?.kill();}};
     select(9,false);return layout;
   }
   function renderDocumentExhibit(s) {
@@ -423,9 +458,10 @@
   }
   function renderWorkflow(s){
     const layout=el('div','workflow-layout'),viewport=el('div','workflow-viewport');
+    const horizontalScale=1.22,elevations=new Map();let activePhase=0;
     const ns='http://www.w3.org/2000/svg';
     function svg(tag,attributes={},text){const n=document.createElementNS(ns,tag);for(const [name,value] of Object.entries(attributes))n.setAttribute(name,String(value));if(text!==undefined)n.textContent=text;return n;}
-    const diagram=svg('svg',{class:'workflow-diagram',viewBox:'0 0 1800 780',role:'group','aria-labelledby':'workflow-svg-title'});
+    const diagram=svg('svg',{class:'workflow-diagram',viewBox:'0 0 '+1800*horizontalScale+' 780',role:'group','aria-labelledby':'workflow-svg-title'});
     diagram.append(svg('title',{id:'workflow-svg-title'},'自然资源地籍调查实施流程：准备、地籍调查、数据入库'));
     const defs=svg('defs');
     for(const [id,top,bottom] of [['flow-panel','#10374b','#082435'],['flow-node','#244e65','#12384d'],['flow-header','#10516a','#0b2c40']]){
@@ -439,6 +475,7 @@
     const phases=[],signals=[],choices=[];
     s.flow.bands.forEach((band,i)=>{
       const group=svg('g',{class:'workflow-phase','data-phase':i});
+      group.append(svg('rect',{x:band.x+8,y:band.y+10,width:band.w,height:band.height,rx:12,class:'workflow-panel-depth'}));
       group.append(svg('rect',{x:band.x,y:band.y,width:band.w,height:band.height,rx:12,class:'workflow-panel'}));
       group.append(svg('rect',{x:band.x,y:band.y,width:band.w,height:68,rx:12,class:'workflow-panel-header'}));
       group.append(svg('text',{x:band.x+28,y:band.y+45,class:'flow-phase-number'},pad(i+1)));
@@ -468,31 +505,59 @@
         const icon=svg('g',{class:'workflow-icon',transform:`translate(32 ${node.id==='prepare'?34:node.h/2})`});
         icon.append(svg('path',{d:iconPaths[node.id]||'M-10-14H5l7 7v22h-24v-29m17 0v8h7m-18 6H5m-11 7H5'}));group.append(icon);
       }
+      const surface=svg('g',{class:'workflow-node-surface'});
+      for(const child of [...group.children])surface.append(child);
+      surface.insertBefore(svg('rect',{width:node.w,height:node.h,rx:9,class:'workflow-node-arrival'}),surface.querySelector('text'));
+      group.append(svg('rect',{width:node.w+4,height:node.h+7,rx:9,fill:'transparent','pointer-events':'all','aria-hidden':'true'}),svg('rect',{x:4,y:7,width:node.w,height:node.h,rx:9,class:'workflow-node-depth'}),surface);
+      group.addEventListener('pointerenter',event=>{if(event.pointerType==='mouse'&&!motionOff()&&!paused)elevate(surface,-7);});
+      group.addEventListener('pointerleave',()=>{if(!motionOff()&&!paused)elevate(surface,node.phase===activePhase?-3:0);});
       group.addEventListener('click',()=>{stopTimeline();highlightStep(node.phase);});
       group.addEventListener('keydown',event=>{if(['Enter',' '].includes(event.key)){event.preventDefault();event.stopPropagation();stopTimeline();highlightStep(node.phase);}});nodeLayer.append(group);
     });
     const particles=svg('g',{class:'workflow-particles','aria-hidden':'true'}),dots=new Map();
-    for(const path of signals){const dot=svg('g',{class:'workflow-particle '+(path.classList.contains('condition')?'condition':''),opacity:0});dot.append(svg('circle',{r:9,class:'workflow-dot-aura'}),svg('circle',{r:3.2}));dots.set(path,dot);particles.append(dot);}
-    diagram.append(lines,particles,nodeLayer,labels);viewport.append(diagram);
+    for(const path of signals){const dot=svg('g',{class:'workflow-particle '+(path.classList.contains('condition')?'condition':''),opacity:0});dot.append(svg('ellipse',{cx:-10,rx:15,ry:2.5,class:'workflow-trail'}),svg('circle',{r:10,class:'workflow-dot-aura'}),svg('circle',{r:4}));dots.set(path,dot);particles.append(dot);}
+    diagram.append(lines,particles,nodeLayer,labels);
+    const scene=svg('g',{class:'workflow-scene',transform:'scale('+horizontalScale+' 1)'});
+    for(const child of [...diagram.children])if(!['title','defs'].includes(child.tagName))scene.append(child);
+    scene.querySelectorAll('text').forEach(text=>{const x=Number(text.getAttribute('x')||0);text.setAttribute('transform','translate('+x+' 0) scale('+1/horizontalScale+' 1) translate('+-x+' 0)');});
+    scene.querySelectorAll('.workflow-icon').forEach(icon=>icon.setAttribute('transform',icon.getAttribute('transform')+' scale('+1/horizontalScale+' 1)'));
+    diagram.append(scene);viewport.append(diagram);
     const footer=el('div','workflow-footer'),tabs=el('div','workflow-phase-controls'),scenario=el('p','workflow-scenario');scenario.setAttribute('aria-live','polite');tabs.setAttribute('role','group');tabs.setAttribute('aria-label','流程阶段');
-    s.flow.bands.forEach((band,i)=>{const b=button(band.name,()=>{stopTimeline();highlightStep(i);});choices.push(b);tabs.append(b);});
+    const choosePhase=i=>{stopTimeline();if(currentStep!==i)highlightStep(i);};
+    s.flow.bands.forEach((band,i)=>{
+      const b=button(band.name,()=>choosePhase(i));
+      b.addEventListener('pointerenter',event=>{if(event.pointerType==='mouse'&&matchMedia('(hover:hover) and (pointer:fine)').matches)choosePhase(i);});
+      b.addEventListener('focus',()=>choosePhase(i));choices.push(b);tabs.append(b);
+    });
     const desc=el('p','step-description sr-only');desc.id='step-description';desc.setAttribute('aria-live','polite');
     footer.append(tabs,scenario,desc,button('查看流程原图',()=>openImage(111),'workflow-original'));layout.append(viewport,footer);
-    let animation=null,flowMotion=null;
+    let animation=null,flowMotion=null,motionPhase=-1;
+    function elevate(surface,y,animate=true){
+      elevations.get(surface)?.kill();
+      if(animate&&!motionOff()&&!paused)elevations.set(surface,gsap.to(surface,{y,duration:.22,ease:'power3.out'}));
+      else if(typeof gsap!=='undefined')gsap.set(surface,{y});
+      else surface.setAttribute('transform','translate(0 '+y+')');
+    }
+    function refreshDepth(){for(const node of nodeLayer.children)elevate(node.querySelector('.workflow-node-surface'),node.matches(':hover')&&!motionOff()&&!paused?-7:Number(node.dataset.phase)===activePhase?-3:0);}
     workflowView={
       selectStep(index){
-        animation?.kill();flowMotion?.kill();for(const dot of dots.values())dot.style.opacity='0';
+        activePhase=index;refreshDepth();
+        animation?.kill();flowMotion?.kill();animation=null;flowMotion=null;motionPhase=-1;for(const dot of dots.values())dot.style.opacity='0';
+        nodeLayer.querySelectorAll('.workflow-node-arrival').forEach(n=>n.style.opacity='0');
         nodeLayer.querySelectorAll('.workflow-halo').forEach(n=>n.style.opacity='0');
         scenario.textContent='';phases.forEach((phase,i)=>phase.classList.toggle('is-current',i===index));choices.forEach((b,i)=>b.setAttribute('aria-pressed',String(i===index)));
         for(const n of nodeLayer.children)n.classList.toggle('is-current',Number(n.dataset.phase)===index);
         for(const path of signals){path.style.opacity=Number(path.dataset.phase)===index?'1':'0';path.style.strokeDashoffset='0';}
         if(!motionOff()&&!paused){
+          motionPhase=index;
           animation=gsap.timeline({defaults:{ease:'power2.out'}});
           flowMotion=gsap.timeline({repeat:-1});
           const active=signals.filter(p=>Number(p.dataset.phase)===index);
           const travel=(target,path,time,duration)=>{
-            const dot=dots.get(path),meter={t:0},length=path.getTotalLength();
-            target.set(dot,{opacity:.95},time).fromTo(meter,{t:0},{t:1,duration,ease:'none',immediateRender:false,onUpdate:()=>{const p=path.getPointAtLength(meter.t*length);dot.setAttribute('transform',`translate(${p.x} ${p.y})`);}},time).set(dot,{opacity:0},time+duration);
+            const dot=dots.get(path),meter={t:0},length=path.getTotalLength();let previous=null;
+            target.call(()=>previous=null,[],time).set(dot,{opacity:.95},time).fromTo(meter,{t:0},{t:1,duration,ease:'none',immediateRender:false,onUpdate:()=>{const p=path.getPointAtLength(meter.t*length),angle=previous?Math.atan2(p.y-previous.y,p.x-previous.x)*180/Math.PI:0;dot.setAttribute('transform',`translate(${p.x} ${p.y}) rotate(${angle})`);previous=p;}},time).set(dot,{opacity:0},time+duration);
+            const arrival=nodeLayer.querySelector('[data-node="'+path.dataset.to+'"] .workflow-node-arrival');
+            if(arrival)target.fromTo(arrival,{opacity:.2},{opacity:0,duration:.45,ease:'power2.out',immediateRender:false},time+duration);
           };
           const draw=(path,time,duration=.7)=>{const length=path.getTotalLength();path.style.strokeDasharray=String(length);animation.set(path,{opacity:1},time).fromTo(path,{strokeDashoffset:length},{strokeDashoffset:0,duration,immediateRender:false},time);if(path.classList.contains('condition')||(path.dataset.from==='verify'&&path.dataset.to==='mapping'))travel(animation,path,time,duration);};
           const forks=active.filter(p=>p.classList.contains('condition')||(p.dataset.from==='verify'&&p.dataset.to==='mapping'));
@@ -509,7 +574,7 @@
             animation.call(()=>scenario.textContent='争议仍无法解决：划定权属争议区',[],4.2);draw(out,4.2,.55);draw(unresolved,4.8,.55);draw(dispute,5.4,.65);animation.to([out,unresolved,dispute],{opacity:0,duration:.15},6.25);animation.call(()=>scenario.textContent='',[],6.5);
           }else active.forEach((p,i)=>draw(p,i*.065));
         }
-      },pause:()=>{animation?.pause();flowMotion?.pause();},resume:()=>{animation?.resume();flowMotion?.resume();},finish:()=>{animation?.progress(1).pause();flowMotion?.pause();for(const dot of dots.values())dot.style.opacity='0';},destroy:()=>{animation?.kill();flowMotion?.kill();}
+      },pause:()=>{animation?.pause();flowMotion?.pause();for(const motion of elevations.values())motion.pause();},resume:()=>{if(motionPhase!==activePhase){workflowView.selectStep(activePhase);return;}animation?.resume();flowMotion?.resume();refreshDepth();},finish:()=>{animation?.progress(1).pause();flowMotion?.pause();for(const motion of elevations.values())motion.progress(1).pause();for(const dot of dots.values())dot.style.opacity='0';nodeLayer.querySelectorAll('.workflow-node-arrival').forEach(n=>n.style.opacity='0');},destroy:()=>{animation?.kill();flowMotion?.kill();for(const motion of elevations.values())motion.kill();}
     };
     return layout;
   }
@@ -558,8 +623,38 @@
     desc.id = 'step-description'; desc.setAttribute('aria-live', 'polite');
     c.append(track, nodes, desc); return c;
   }
+  function renderNotice(s) {
+    const d=s.document,article=el('article','notice-document'),table=el('table','notice-table'),body=el('tbody');
+    article.setAttribute('aria-label','大沙河首次登记公告草案全文');
+    article.append(el('h2','notice-document-title',d.heading),el('p','notice-document-subtitle',d.subtitle),el('p','notice-document-intro',d.intro));
+    table.append(el('caption','sr-only','大沙河自然资源登记信息'));
+    const columns=el('colgroup');
+    for(const width of [17,13,16,11,15,28]){const column=el('col');column.style.width=width+'%';columns.append(column);}
+    table.append(columns);
+    for(const cells of d.rows){
+      const row=el('tr');
+      for(const data of cells){
+        const cell=el(data.header?'th':'td','',data.text);
+        if(data.colSpan)cell.colSpan=data.colSpan;
+        if(data.rowSpan)cell.rowSpan=data.rowSpan;
+        if(data.header)cell.scope=data.rowSpan?'rowgroup':'row';
+        row.append(cell);
+      }
+      body.append(row);
+    }
+    table.append(body);
+    const window=el('div','notice-table-window');window.tabIndex=0;window.setAttribute('role','region');window.setAttribute('aria-label','登记信息表；窄屏可左右滚动查看全部六列');
+    window.addEventListener('keydown',event=>{
+      if(window.scrollWidth<=window.clientWidth||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+      event.preventDefault();event.stopPropagation();
+      window.scrollLeft=event.key==='Home'?0:event.key==='End'?window.scrollWidth:window.scrollLeft+(event.key==='ArrowRight'?160:-160);
+    });
+    window.append(table);article.append(el('p','notice-scroll-hint','左右滑动查看完整登记信息表'),window);
+    const footer=el('div','notice-document-footer');
+    d.footer.forEach(text=>footer.append(el('p','',text)));article.append(footer);return article;
+  }
   function renderChart(s) {
-    const c = el('div', 'chart-layout'); c.append(copyPoints(s.points));
+    const c = el('div', 'chart-layout'),copy=copyPoints(s.points);c.append(copy);
     const chart = el('div', 'area-chart'), heading = el('h2', 'chart-title', '自然资源类型构成');
     heading.append(el('span', '', '单位：公顷')); chart.append(heading);
     for (const [name, value, color] of s.chart) {
@@ -585,12 +680,117 @@
     }
     t.append(body); return t;
   }
+  function renderAudit(s) {
+    const table=renderTable(s.table,'audit-table audit-focus-table'),rows=[...table.tBodies[0].rows],choices=[];
+    const status=el('caption','sr-only');status.setAttribute('aria-live','polite');table.prepend(status);
+    let pinned=-1;
+    function select(index){
+      rows.forEach((row,i)=>{row.classList.toggle('is-current',i===index);row.classList.toggle('is-pinned',i===pinned);
+        choices[i].setAttribute('aria-current',String(i===index));choices[i].setAttribute('aria-pressed',String(i===pinned));
+        choices[i].setAttribute('aria-label',(i===pinned?'取消固定讲解：':'固定讲解：')+s.table.rows[i][0]);choices[i].tabIndex=i===(index<0?0:index)?0:-1;
+      });
+      status.textContent=index<0?'已恢复全部审核分工。':(index===pinned?'已固定讲解：':'当前讲解：')+s.table.rows[index][0]+'。';
+    }
+    function reset(){pinned=-1;select(-1);}
+    rows.forEach((row,i)=>{
+      const control=el('button','audit-row-control');control.type='button';control.setAttribute('aria-describedby','audit-help');
+      control.append(el('span','',s.table.rows[i][0]),el('span','audit-pin','已固定'));row.cells[0].replaceChildren(control);choices.push(control);
+      row.addEventListener('pointerenter',event=>{if(event.pointerType!=='touch')select(i);});
+      control.addEventListener('focus',()=>select(i));
+      row.addEventListener('click',()=>{control.focus({preventScroll:true});pinned=pinned===i?-1:i;select(i);});
+    });
+    table.addEventListener('pointerleave',()=>{const focused=choices.findIndex(control=>control.matches(':focus-visible'));select(focused<0?pinned:focused);});
+    table.addEventListener('focusout',event=>{if(!table.contains(event.relatedTarget))select(pinned);});
+    table.addEventListener('keydown',event=>{
+      if(event.altKey||event.ctrlKey||event.metaKey)return;
+      const index=choices.indexOf(event.target);if(index<0)return;
+      const next={ArrowDown:(index+1)%rows.length,ArrowUp:(index+rows.length-1)%rows.length,Home:0,End:rows.length-1}[event.key];
+      if(next!==undefined){event.preventDefault();event.stopPropagation();choices[next].focus();}
+      if(event.key==='Escape'){event.preventDefault();event.stopPropagation();reset();}
+    });
+    exhibitView={resetLabel:'清除聚焦',reset};reset();return table;
+  }
+  function renderRegistration(s) {
+    const layout=el('div','registration-combined'),context=el('section','registration-context');
+    const choices=[],panels=[],methods=[],count=s.points.length;
+    const marker=el('div','review-selection'),progress=el('p','review-position');marker.setAttribute('aria-hidden','true');progress.setAttribute('aria-live','polite');
+    let selected=-1,selectedMethod=-1,motion=null,markerMotion=null,methodMotion=null;
+    function moveMarker(animate=false){
+      const control=choices[selected];if(!control?.offsetWidth)return;markerMotion?.kill();
+      marker.style.width=control.offsetWidth+'px';marker.style.height=control.offsetHeight+'px';
+      const position={x:control.offsetLeft,y:control.offsetTop};
+      if(animate&&!motionOff()&&!paused)markerMotion=gsap.to(marker,{...position,duration:.3,ease:'power3.out'});
+      else if(typeof gsap!=='undefined')gsap.set(marker,position);
+      else marker.style.transform='translate('+position.x+'px,'+position.y+'px)';
+    }
+    function select(index,animate=true){
+      const next=Math.max(0,Math.min(count-1,index));if(selected===next)return;
+      const direction=next>=selected?1:-1;selected=next;currentStep=next;motion?.kill();
+      choices.forEach((control,i)=>{control.classList.toggle('is-current',i===next);control.setAttribute('aria-pressed',String(i===next));});
+      panels.forEach((panel,i)=>{panel.hidden=i!==next;panel.style.opacity='1';panel.style.transform='none';panel.style.clipPath='none';});
+      progress.textContent=pad(next+1)+' / '+pad(count);moveMarker(animate);
+      if(animate&&!motionOff()&&!paused)motion=gsap.fromTo(panels[next],{opacity:.5,y:direction*12,clipPath:'inset(0 0 8% 0)'},{opacity:1,y:0,clipPath:'inset(0 0 0 0)',duration:.32,ease:'power3.out',clearProps:'opacity,transform,clipPath'});
+    }
+    function selectMethod(index,animate=true){
+      if(selectedMethod===index)return;selectedMethod=index;methodMotion?.kill();
+      methods.forEach((control,i)=>{control.classList.toggle('is-current',i===index);control.setAttribute('aria-pressed',String(i===index));control.lastElementChild.style.opacity='1';});
+      if(animate&&!motionOff()&&!paused)methodMotion=gsap.fromTo(methods[index].lastElementChild,{opacity:.5},{opacity:1,duration:.24,ease:'power2.out',clearProps:'opacity'});
+    }
+    function bindChoice(control,index,selectItem){
+      control.addEventListener('pointerenter',event=>{if(event.pointerType==='mouse'&&matchMedia('(hover:hover) and (pointer:fine)').matches)selectItem(index);});
+      control.addEventListener('focus',()=>selectItem(index,false));
+    }
+    const subject=el('section','registration-subject');subject.append(el('h2','','登记机构'),el('p','registration-duty',s.subject),el('p','registration-consultation',s.consultation));
+    const form=el('section','registration-form');form.setAttribute('aria-label','审核形式与适用条件');form.append(el('h2','','审核形式'));
+    s.methods.forEach((p,i)=>{const control=button('',()=>selectMethod(i),'registration-method');control.setAttribute('aria-label',p[0]);control.append(el('span','registration-method-title',p[0]),el('span','registration-method-text',p[1]));methods.push(control);bindChoice(control,i,selectMethod);form.append(control);});
+    context.append(subject,form);
+    const review=el('div','registration-review'),nav=el('section','review-directory'),options=el('div','review-options'),reader=el('section','review-reader');
+    nav.append(el('h2','','七项审核要点'));options.setAttribute('role','group');options.setAttribute('aria-label','登簿审核要点');options.append(marker);reader.setAttribute('aria-label','审核条款原文');
+    s.points.forEach((p,i)=>{
+      const letter=String.fromCharCode(97+i),control=button('',()=>select(i),'review-choice');control.setAttribute('aria-label',p[0]);control.append(el('span','review-letter',letter),el('span','review-choice-title',p[0]));choices.push(control);bindChoice(control,i,select);options.append(control);
+      const panel=el('section','review-clause');panel.setAttribute('aria-label',p[0]);panel.append(el('span','review-clause-letter','审核条款 '+letter.toUpperCase()),el('h2','',p[0]),el('p','review-clause-text',p[1]));panels.push(panel);reader.append(panel);
+    });
+    options.addEventListener('keydown',event=>{
+      if(event.altKey||event.ctrlKey||event.metaKey)return;const index=choices.indexOf(event.target);if(index<0)return;
+      const next={ArrowDown:(index+1)%count,ArrowUp:(index+count-1)%count,Home:0,End:count-1}[event.key];
+      if(next!==undefined){event.preventDefault();event.stopPropagation();choices[next].focus();}
+    });
+    nav.append(options);const tools=el('div','review-reader-tools');tools.append(button('上一项',()=>select((selected+count-1)%count)),progress,button('下一项',()=>select((selected+1)%count)));
+    reader.append(el('p','review-basis','依据《自然资源确权登记规程》'),tools);review.append(nav,reader);layout.append(context,review);
+    exhibitView={resetLabel:'恢复首项',reset:()=>{select(0);selectMethod(0);},selectStep:n=>select(n),refit:()=>moveMarker(),pause:()=>{motion?.pause();markerMotion?.pause();methodMotion?.pause();},resume:()=>{motion?.resume();markerMotion?.resume();methodMotion?.resume();},finish:()=>{motion?.progress(1).pause();markerMotion?.progress(1).pause();methodMotion?.progress(1).pause();},destroy:()=>{motion?.kill();markerMotion?.kill();methodMotion?.kill();}};
+    select(0,false);selectMethod(0,false);return layout;
+  }
+  function renderSummary(s) {
+    const layout=el('div','summary-focus'),controls=[],rows=[];
+    function select(index){
+      currentStep=index;
+      controls.forEach((control,i)=>{control.setAttribute('aria-pressed',String(i===index));control.tabIndex=i===index?0:-1;rows[i].classList.toggle('is-current',i===index);});
+    }
+    s.points.forEach(([title,text],index)=>{
+      const row=el('section','summary-row'),control=button('',()=>select(index),'summary-choice');
+      const paragraph=el('p','',text);paragraph.id='summary-text-'+index;control.setAttribute('aria-describedby',paragraph.id);control.append(el('h2','',title));
+      control.addEventListener('focus',()=>select(index));
+      row.addEventListener('pointerenter',event=>{if(event.pointerType==='mouse')select(index);});
+      controls.push(control);rows.push(row);row.append(control,paragraph);layout.append(row);
+    });
+    layout.addEventListener('keydown',event=>{
+      if(event.altKey||event.ctrlKey||event.metaKey)return;
+      const index=controls.indexOf(event.target);if(index<0)return;
+      const next={ArrowDown:(index+1)%controls.length,ArrowUp:(index+controls.length-1)%controls.length,Home:0,End:controls.length-1}[event.key];
+      if(next!==undefined){event.preventDefault();event.stopPropagation();controls[next].focus();}
+    });
+    exhibitView={resetLabel:'恢复首项',reset:()=>select(0),selectStep:select};select(0);return layout;
+  }
   function renderBody(s) {
+    if(s.interaction==='summary-focus')return renderSummary(s);
+    if(s.interaction==='audit-focus')return renderAudit(s);
+    if(s.interaction?.startsWith('registration-'))return renderRegistration(s);
     if (s.layout === 'workflow') return renderWorkflow(s);
     if (s.layout === 'database') return renderDatabase(s);
     if (s.layout === 'staffing') return renderStaffing(s);
     if (s.interaction === 'document-exhibit') return renderDocumentExhibit(s);
     if (s.interaction === 'policy-library') return renderPolicyLibrary(s);
+    if (['document-board','source-board'].includes(s.interaction)) return renderDocumentBoard(s);
     if (s.layout === 'gallery' || s.layout === 'expert') {
       return mediaLayout(s);
     }
@@ -631,6 +831,7 @@
       number.append(el('span', '', '公告期不少于'), el('strong', '', '15'), el('span', '', '个工作日'));
       c.append(number, copyPoints(s.points)); return c;
     }
+    if (s.layout === 'notice') return renderNotice(s);
     if (s.layout === 'chart') return renderChart(s);
     if (s.layout === 'status') {
       const c = el('div', 'status-layout'), conclusion = el('section', 'status-conclusion');
@@ -672,14 +873,15 @@
     }
   }
   function updateControls() {
+    const manualView=Boolean(exhibitView);
     $('pause-button').textContent = paused ? '继续' : '暂停';
     $('pause-button').setAttribute('aria-pressed', String(paused));
     $('static-button').setAttribute('aria-pressed', String(motionOff()));
     $('static-button').disabled = reduceQuery.matches;
-    $('play-button').disabled = motionOff() || Boolean(exhibitView);
-    $('play-button').title = exhibitView ? '本页由鼠标或点击控制，不自动播放' : '';
-    $('skip-button').disabled = Boolean(exhibitView);
-    $('replay-button').textContent = exhibitView ? (exhibitView.resetLabel || '恢复全览') : '重播';
+    $('play-button').disabled = motionOff() || manualView;
+    $('play-button').title = manualView ? '本页由鼠标或点击控制，不自动播放' : '';
+    $('skip-button').disabled = manualView;
+    $('replay-button').textContent = manualView ? (exhibitView.resetLabel || '恢复全览') : '重播';
     $('pause-button').disabled = motionOff();
     $('replay-button').disabled = !exhibitView && motionOff();
     $('static-button').title = reduceQuery.matches ? '系统已启用减少动态效果，当前静态显示' : '切换静态模式（A）';
@@ -716,8 +918,9 @@
     hideLoupe();
     const next = Math.max(0, Math.min(slides.length - 1, Math.trunc(index)));
     const direction = next >= pageIndex ? 1 : -1;
-    stopTimeline(); landscape?.destroy(); exhibitView?.destroy();workflowView?.destroy();workflowView=null; exhibitView=null; landscape=null; activeGallery=null; pageIndex = next; currentStep = 0;
+    stopTimeline(); landscape?.destroy(); exhibitView?.destroy?.();workflowView?.destroy();workflowView=null; exhibitView=null; landscape=null; activeGallery=null; pageIndex = next; currentStep = 0;
     const s = slides[pageIndex], slide = el('article', 'slide');
+    slide.dataset.layout=s.layout;
     if (s.layout === 'cover' || s.layout === 'closing') {
       slide.classList.add('cover-slide'); if (s.layout === 'closing') slide.classList.add('closing-slide');
       const cover = assetImage(4, 'cover-image'), shade = el('div', 'cover-shade'), copy = el('div', 'cover-content');
@@ -727,12 +930,20 @@
     } else {
       const heading = el('div', 'slide-heading'), title = el('h1', '', s.title); title.id = 'slide-title'; title.tabIndex = -1;
       heading.append(title); if (s.status) heading.append(el('span', 'status-label', s.status));
+      if(s.interaction==='audit-focus'){
+        const help=el('p','audit-help');help.id='audit-help';
+        help.append(el('span','audit-help-pointer','悬停聚焦 · 点击固定 · ↑↓切换'),el('span','audit-help-touch','点击固定讲解 · 再次点击取消'));heading.append(help);
+      }
       const content = el('div', 'slide-content'); content.append(renderBody(s));
       slide.append(heading, el('p', 'slide-lead', s.lead), content);
       if (['gallery','expert'].includes(s.layout)) slide.classList.add('media-slide');
+      if(s.interaction==='source-board')slide.classList.add('source-slide');
       if (s.interaction==='document-exhibit') slide.classList.add('exhibit-slide');
       if (s.interaction==='policy-library') slide.classList.add('policy-slide');
       if (['layers','workflow','database','staffing'].includes(s.layout)) slide.classList.add('technical-slide');
+      if(s.interaction?.startsWith('registration-'))slide.classList.add('registration-slide');
+      if(s.layout==='notice')slide.classList.add('notice-slide');
+      if(s.interaction==='summary-focus')slide.classList.add('summary-slide');
       if (s.note && s.layout==='boundaries') slide.append(el('p','slide-note',s.note));
     }
     $('presentation').replaceChildren(slide);
@@ -740,11 +951,11 @@
     $('page-count').textContent = pad(pageIndex + 1) + ' / ' + slides.length;
     $('stage').dataset.page = String(pageIndex + 1);
     $('prev-button').disabled = pageIndex === 0; $('next-button').disabled = pageIndex === slides.length - 1;
-    $('step-button').disabled = !['process', 'layers','workflow','database','staffing'].includes(s.layout);
+    $('step-button').disabled = !['process', 'layers','workflow','database','staffing'].includes(s.layout)&&!s.interaction?.startsWith('registration-')&&s.interaction!=='summary-focus';
     document.querySelectorAll('.chapter-button').forEach((b, i) => b.setAttribute('aria-current', String(i === s.chapter)));
     $('page-progress-fill').style.transform = 'scaleX(' + (pageIndex + 1) / slides.length + ')';
     try { history.replaceState(null, '', '#p' + (pageIndex + 1)); } catch { location.hash = 'p' + (pageIndex + 1); }
-    updateControls(); highlightStep(0); fitStage(); exhibitView?.refit(); activeGallery?.refit(); intro(animate, direction);
+    updateControls(); highlightStep(0); fitStage(); exhibitView?.refit?.(); activeGallery?.refit(); intro(animate, direction);
     if (keyboard) $('slide-title').focus({ preventScroll: true });
     if (window.innerWidth < 768) window.scrollTo({ top: 0, behavior: 'instant' });
   }
@@ -775,11 +986,11 @@
   function togglePause() {
     if (motionOff()) return;
     paused = !paused;
-    if (paused) { timeline?.pause(); landscape?.pause(); mediaTween?.pause(); stepTween?.pause(); exhibitView?.pause();workflowView?.pause(); }
-    else { timeline?.resume(); landscape?.resume(); mediaTween?.resume(); stepTween?.resume(); exhibitView?.resume();workflowView?.resume(); }
+    if (paused) { timeline?.pause(); landscape?.pause(); mediaTween?.pause(); stepTween?.pause(); exhibitView?.pause?.();workflowView?.pause(); }
+    else { timeline?.resume(); landscape?.resume(); mediaTween?.resume(); stepTween?.resume(); exhibitView?.resume?.();workflowView?.resume(); }
     updateControls();
   }
-  function pauseAll() { hideLoupe();paused = true; timeline?.pause(); landscape?.pause(); mediaTween?.pause(); stepTween?.pause(); exhibitView?.pause();workflowView?.pause(); updateControls(); }
+  function pauseAll() { hideLoupe();paused = true; timeline?.pause(); landscape?.pause(); mediaTween?.pause(); stepTween?.pause(); exhibitView?.pause?.();workflowView?.pause(); updateControls(); }
   function skipAnimation() {
     timeline?.progress(1).pause(); landscape?.pause(); mediaTween?.progress(1).pause(); stepTween?.progress(1).pause(); exhibitView?.finish?.();
     const s = slides[pageIndex];
@@ -843,13 +1054,13 @@
   $('step-button').addEventListener('click', () => {
     stopTimeline(); const s = slides[pageIndex]; highlightStep((currentStep + 1) % (s.steps || s.points).length);
   });
-  $('static-button').addEventListener('click', () => { manualStatic = !manualStatic; skipAnimation(); updateControls(); if (!motionOff() && !paused) { landscape?.resume(); mediaTween?.resume(); stepTween?.resume(); exhibitView?.resume(); } });
+  $('static-button').addEventListener('click', () => { manualStatic = !manualStatic; skipAnimation(); updateControls(); if (!motionOff() && !paused) { landscape?.resume(); mediaTween?.resume(); stepTween?.resume(); exhibitView?.resume?.(); } });
   $('zoom-in').addEventListener('click', () => changeZoom(1.5));
   $('zoom-out').addEventListener('click', () => changeZoom(1 / 1.5));
   $('zoom-reset').addEventListener('click', () => { zoom = 1; fitOriginal(); $('image-scroll').scrollTo(0, 0); });
   document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => $(b.dataset.close).close()));
   window.addEventListener('hashchange', () => { const n = parseHash(); if (n !== pageIndex) showPage(n, { animate:false }); });
-  window.addEventListener('resize', () => { hideLoupe();fitStage(); landscape?.resize(); exhibitView?.refit(); activeGallery?.refit(); if ($('image-dialog').open) fitOriginal(); });
+  window.addEventListener('resize', () => { hideLoupe();fitStage(); landscape?.resize(); exhibitView?.refit?.(); activeGallery?.refit(); if ($('image-dialog').open) fitOriginal(); });
   window.addEventListener('scroll',hideLoupe,{passive:true});
   window.addEventListener('blur',hideLoupe);
   document.addEventListener('pointermove',event=>{

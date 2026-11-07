@@ -1,4 +1,4 @@
-/* 当前页面使用的图像；1107原图字节保留，历史来源另存docs。 */
+/* 当前运行图件，以页面引用维护。 */
 const RiverAtlasSource = {
   "filename": "大连市自然资源统一确权登记工作市级确权项目汇报-2026-5.1(1).pptx",
   "sha256": "993c0bd3cc02532914d459ed0ae37282a054fe1ebd79c2fa4f0f82623f8adc18",
@@ -283,33 +283,6 @@ const RiverAtlasSource = {
       "caption": "大沙河 · 工作底图（1107）",
       "source": "大连市自然资源统一确权登记工作市级确权项目汇报-2026-5.1(1).pptx",
       "sha256": "923d6cf01b08dee4fd0003d652c6cdc938836e1348c6e5ad8afe38e30b0c5b56"
-    },
-    {
-      "id": 108,
-      "path": "assets/supplement/asset-108.png",
-      "displayPath": "assets/supplement/asset-108-view.png",
-      "caption": "大沙河 · 范围与现势",
-      "source": "大沙河登记单元（210200331000003）底图三调.pdf",
-      "page": 1,
-      "rotation": 0
-    },
-    {
-      "id": 109,
-      "path": "assets/supplement/asset-109.png",
-      "displayPath": "assets/supplement/asset-109-view.png",
-      "caption": "大沙河 · 权属与成果",
-      "source": "大沙河登记单元（210200331000003）底图权属.pdf",
-      "page": 1,
-      "rotation": 0
-    },
-    {
-      "id": 110,
-      "path": "assets/supplement/asset-110.png",
-      "displayPath": "assets/supplement/asset-110-view.png",
-      "caption": "大沙河 · 管制与保护",
-      "source": "大沙河登记单元（210200331000003）底图公共管制.pdf",
-      "page": 1,
-      "rotation": 0
     },
     {
       "id": 111,

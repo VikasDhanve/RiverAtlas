@@ -25,16 +25,16 @@ test('第六页按原图保留21节点与22条关系，包含全部分支、回�
 test('缩略图图集主图有跟随局部放大镜，边缘避让且离图、翻页、打开原件会清除',async()=>{
  const b=await chromium.launch({channel:'chrome'}),p=await b.newPage({viewport:{width:1920,height:1080},offline:true});
  try{
-  await p.goto(url+'#p9');const img=p.locator('.gallery-spread img');await img.hover();
+  await p.goto(url+'#p9');const img=p.locator('.document-board img').first();await img.hover();
   assert.equal(await p.locator('#media-loupe').count(),1);
   const first=await p.locator('#media-loupe img').getAttribute('style'),r=await img.boundingBox();await p.mouse.move(r.x+r.width*.72,r.y+r.height*.65);await p.waitForTimeout(50);
   assert.notEqual(await p.locator('#media-loupe img').getAttribute('style'),first);
   const box=await p.locator('#media-loupe').boundingBox();assert(box.x>=0&&box.y>=0&&box.x+box.width<=1920&&box.y+box.height<=1080);
   await p.locator('#slide-title').hover();assert.equal(await p.locator('#media-loupe').count(),0);
   await img.hover();await p.keyboard.press('ArrowRight');await p.waitForTimeout(500);assert.equal(await p.locator('#media-loupe').count(),0);
-  await p.goto(url+'#p17');await p.locator('.gallery-spread img').hover();await p.locator('.gallery-spread .image-button').click();assert.equal(await p.locator('#media-loupe').count(),0);
+  await p.goto(url+'#p15');await p.locator('.gallery-spread img').hover();await p.locator('.gallery-spread .image-button').click();assert.equal(await p.locator('#media-loupe').count(),0);
   await p.keyboard.press('Escape');
-  await p.emulateMedia({reducedMotion:'reduce'});await p.goto(url+'#p32');await p.locator('#slide-title').hover();await p.locator('.gallery-spread img').hover();assert.equal(await p.locator('#media-loupe').count(),1);
+  await p.emulateMedia({reducedMotion:'reduce'});await p.goto(url+'#p28');await p.locator('#slide-title').hover();await p.locator('.gallery-spread img').hover();assert.equal(await p.locator('#media-loupe').count(),1);
  }finally{await b.close();}
 });
 test('流程条件分支分别描绘，解决与未解决不同时高亮，暂停冻结描线',async()=>{
@@ -55,18 +55,8 @@ test('流程条件分支分别描绘，解决与未解决不同时高亮，暂�
 test('放大镜在手动静态和暂停时没有入场动画，触屏不生成浮窗',async()=>{
  const b=await chromium.launch({channel:'chrome'}),p=await b.newPage({viewport:{width:1920,height:1080},offline:true});
  try{
-  await p.goto(url+'#p9');await p.keyboard.press('a');await p.locator('.gallery-spread img').hover();assert.equal(await p.locator('.media-loupe-surface').evaluate(n=>n.getAnimations().filter(a=>a.playState==='running').length),0);
-  await p.locator('#slide-title').hover();await p.keyboard.press('a');await p.keyboard.press('p');await p.locator('.gallery-spread img').hover();assert.equal(await p.locator('.media-loupe-surface').evaluate(n=>n.getAnimations().filter(a=>a.playState==='running').length),0);
-  const touch=await b.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,offline:true});await touch.goto(url+'#p9');await touch.locator('.gallery-spread img').tap();assert.equal(await touch.locator('#media-loupe').count(),0);await touch.close();
- }finally{await b.close();}
-});
-test('第八页悬停左右双向切换，动画与左侧高亮保持一致且不会自行跳回',async()=>{
- const b=await chromium.launch({channel:'chrome'}),p=await b.newPage({viewport:{width:1920,height:1080},offline:true});
- try{
-  await p.goto(url+'#p8');await p.getByRole('button',{name:'权属与成果',exact:true}).hover();
-  await p.waitForTimeout(1000);assert.equal(await p.locator('.atlas-plane.active img').getAttribute('data-asset'),'109');
-  await p.getByRole('button',{name:'预览：管制与保护',exact:true}).hover();
-  await p.waitForTimeout(400);assert.equal(await p.getByRole('button',{name:'管制与保护',exact:true}).getAttribute('aria-pressed'),'true');
-  await p.locator('#slide-title').hover();await p.waitForTimeout(1000);assert.equal(await p.locator('.atlas-plane.active img').getAttribute('data-asset'),'110');
+  await p.goto(url+'#p9');await p.keyboard.press('a');await p.locator('.document-board img').first().hover();assert.equal(await p.locator('.media-loupe-surface').evaluate(n=>n.getAnimations().filter(a=>a.playState==='running').length),0);
+  await p.locator('#slide-title').hover();await p.keyboard.press('a');await p.keyboard.press('p');await p.locator('.document-board img').first().hover();assert.equal(await p.locator('.media-loupe-surface').evaluate(n=>n.getAnimations().filter(a=>a.playState==='running').length),0);
+  const touch=await b.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,offline:true});await touch.goto(url+'#p9');await touch.locator('.document-board img').first().tap();assert.equal(await touch.locator('#media-loupe').count(),0);await touch.close();
  }finally{await b.close();}
 });
