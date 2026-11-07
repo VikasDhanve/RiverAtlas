@@ -537,7 +537,9 @@ body.static-mode button { transition: none; }
 .exhibit-layout > .copy-column { grid-row: auto; }
 .document-pin-state:empty { display: none; }
 
-#starfield { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+#starfield { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse 44% 12% at 13% 21%, rgba(125,145,230,.045), transparent 100%), radial-gradient(ellipse 48% 14% at 88% 80%, rgba(67,155,204,.045), transparent 100%);
+}
 .workflow-layout { height: 100%; display: grid; grid-template-rows: minmax(0,1fr) 38px; gap: 14px; }
 .slide[data-layout="workflow"] { padding: 18px 24px 16px; }
 .slide[data-layout="workflow"] .slide-lead { margin-bottom: 12px; }
