@@ -25,13 +25,13 @@ test('第二页由鼠标聚焦和点击固定，移开还原且不会自动轮�
     await page.waitForTimeout(3500);
     assert.equal(await contract.getAttribute('aria-pressed'),'true');
     assert(Math.abs((await contract.boundingBox()).width-focused.width)<3);
-    assert.equal(await page.locator('#page-count').innerText(),'05 / 30');
+    assert.equal(await page.locator('#page-count').innerText(),'05 / 31');
     await page.getByRole('button',{name:'恢复全览',exact:true}).click();
     assert.equal(await contract.getAttribute('aria-pressed'),'false');
     await page.getByRole('button',{name:'查看完整原件：项目合同',exact:true}).click();
     await page.waitForFunction(()=>{const i=document.getElementById('original-image');return !i.hidden&&i.complete&&i.naturalWidth>0;});
     assert.match(await page.locator('#image-title').innerText(),/合同/);
-    await page.keyboard.press('Escape');assert.equal(await page.locator('#page-count').innerText(),'05 / 30');
+    await page.keyboard.press('Escape');assert.equal(await page.locator('#page-count').innerText(),'05 / 31');
   } finally {await browser.close();}
 });
 test('键盘和触屏可直接固定/还原，减少动态保留可读内容',async()=>{

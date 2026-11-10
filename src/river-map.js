@@ -43,9 +43,9 @@ const RiverAtlasMap=(()=>{
       data.rivers.features.forEach((feature,index)=>{
         const group=L.featureGroup().addTo(map);groups.push(group);
         for(const options of [
-          {className:'river-bank',color:'#46bed8',weight:13,opacity:.13,interactive:false},
-          {className:'river-channel',color:'#64d8ed',weight:5,opacity:.92,interactive:true},
-          {className:'river-flow',color:'#d5faff',weight:2.6,opacity:.95,dashArray:'8 23',interactive:false}
+          {className:'river-bank',color:'#287bef',weight:13,opacity:.13,interactive:false},
+          {className:'river-channel',color:'#368fff',weight:5,opacity:.92,interactive:true},
+          {className:'river-flow',color:'#a8d2ff',weight:2.6,opacity:.95,dashArray:'8 23',interactive:false}
         ]){
           L.geoJSON(feature,{style:{lineCap:'round',lineJoin:'round',...options},interactive:options.interactive,
             onEachFeature:(_,layer)=>layer.on('click',()=>select(index))}).addTo(group);

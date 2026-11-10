@@ -1,6 +1,6 @@
 # RiverAtlas维护约定
 
-原始PPTX和新增PDF只读。当前内容以1107版41页原始PPT及docs/source-manifest-1107.json为准；1106清单和Obsidian旧35页覆盖表只作历史追溯。编排在src/content.js，交互在src/app.js，样式在src/styles.css；src/source.js统一维护当前运行图像目录。
+原始PPTX和新增PDF只读。当前内容以1107版41页原始PPT及docs/source-manifest-1107.json为基础，1110用户补充文字和英那河PDF来源另记docs/source-manifest-1110.json；1106清单和Obsidian旧35页覆盖表只作历史追溯。编排在src/content.js，交互在src/app.js，样式在src/styles.css；src/source.js统一维护当前运行图像目录。
 
 维护时核对1107版41页原稿去向和当前页面的图件入口，运行素材按页面引用维护。2026-11-06用户已要求移除原稿资料模块及无引用旧图，历史清单只作追溯；不要据旧39份原件规则恢复已删模块。原稿草案、外地样例、历史文件和实际进度保留标识。未知数据不填0，流程播放不改变实际状态。
 

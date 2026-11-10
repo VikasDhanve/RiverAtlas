@@ -32,9 +32,9 @@ test('缩略图图集主图有跟随局部放大镜，边缘避让且离图、�
   const box=await p.locator('#media-loupe').boundingBox();assert(box.x>=0&&box.y>=0&&box.x+box.width<=1920&&box.y+box.height<=1080);
   await p.locator('#slide-title').hover();assert.equal(await p.locator('#media-loupe').count(),0);
   await img.hover();await p.keyboard.press('ArrowRight');await p.waitForTimeout(500);assert.equal(await p.locator('#media-loupe').count(),0);
-  await p.goto(url+'#p15');await p.locator('.gallery-spread img').hover();await p.locator('.gallery-spread .image-button').click();assert.equal(await p.locator('#media-loupe').count(),0);
+  await p.goto(url+'#p16');await p.locator('.gallery-spread img').hover();await p.locator('.gallery-spread .image-button').click();assert.equal(await p.locator('#media-loupe').count(),0);
   await p.keyboard.press('Escape');
-  await p.emulateMedia({reducedMotion:'reduce'});await p.goto(url+'#p28');await p.locator('#slide-title').hover();await p.locator('.gallery-spread img').hover();assert.equal(await p.locator('#media-loupe').count(),1);
+  await p.emulateMedia({reducedMotion:'reduce'});await p.goto(url+'#p29');await p.locator('#slide-title').hover();await p.locator('.gallery-spread img').hover();assert.equal(await p.locator('#media-loupe').count(),1);
  }finally{await b.close();}
 });
 test('流程条件分支分别描绘，解决与未解决不同时高亮，暂停冻结描线',async()=>{

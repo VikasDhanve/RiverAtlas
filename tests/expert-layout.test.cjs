@@ -5,7 +5,7 @@ test('第19页意见书完整、两张现场照片等高对齐，裁切展示保
  const b=await chromium.launch({channel:'chrome'}),p=await b.newPage({viewport:{width:1920,height:1080},offline:true,reducedMotion:'reduce'});
  const errors=[];p.on('pageerror',e=>errors.push(e.message));
  try{
-  const url=pathToFileURL(path.resolve(__dirname,'../index.html')).href+'#p19';
+  const url=pathToFileURL(path.resolve(__dirname,'../index.html')).href+'#p20';
   for(const width of [1920,390]){
    await p.setViewportSize({width,height:width===1920?1080:844});await p.goto(url);
    const imgs=p.locator('.document-board img');

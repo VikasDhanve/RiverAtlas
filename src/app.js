@@ -28,7 +28,7 @@
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('aria-hidden', 'true');
     const p = document.createElementNS(svg.namespaceURI, 'path');
-    p.setAttribute('d', { prev:'M14 5 7 12l7 7', next:'m10 5 7 7-7 7', help:'M9.3 8.5a3 3 0 0 1 5.7 1.3c0 2-3 2-3 4.2m0 3.5v.1M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0' }[name]);
+    p.setAttribute('d', { team:'M8 8a3 3 0 1 0 0-.01M2 21v-3a6 6 0 0 1 12 0v3M17 5a3 3 0 0 1 0 6m0 3a5 5 0 0 1 5 5v2', shield:'M12 3 3 7v5c0 5 9 10 9 10s9-5 9-10V7ZM8 12l3 3 5-6', board:'M3 4h18v13H3ZM7 8h10M7 12h7M7 17v4m10-4v4', browser:'M3 4h18v16H3ZM3 9h18M6 6.5h.1m3 0h.1M7 13h10M7 16h6', calendar:'M4 5h16v16H4ZM8 2v6m8-6V2M4 10h16M8 14h2m4 0h2m-8 3h2m4 0h2', prev:'M14 5 7 12l7 7', next:'m10 5 7 7-7 7', help:'M9.3 8.5a3 3 0 0 1 5.7 1.3c0 2-3 2-3 4.2m0 3.5v.1M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0' }[name]);
     svg.append(p); return svg;
   }
   function parseHash() {
@@ -182,10 +182,23 @@
       control.dataset.asset=id;control.setAttribute('aria-label','查看原件：'+label);
       if([24,26,33,34].includes(id))control.classList.add('photo-surface');
       img.addEventListener('load',fit);control.addEventListener('pointermove',event=>moveLoupe(event,img));control.addEventListener('pointerleave',hideLoupe);
-      control.append(img);windowEl.append(control);figure.append(windowEl,el('figcaption','',label));board.append(figure);
+      control.append(img);windowEl.append(control);
+      const caption=el('figcaption','',label);
+      if(s.board==='protected-units'){
+        caption.classList.add('document-original-caption');
+        caption.append(button('查看原图',()=>openImage(id),'plain-button'));
+      }
+      figure.append(windowEl,caption);board.append(figure);
       documents.push({windowEl,control,img});
     }
     if(s.board==='announcement-sample')layout.append(board);
+    if(s.board==='protected-units'){
+      const copy=el('div','protected-unit-copy');
+      const [principle,cases]=s.lead.split('其中');
+      copy.append(el('p','protected-unit-principle',principle));
+      for(const [index,text] of cases.split('；').entries())copy.append(el('p','protected-unit-case',(index===0?'其中':'')+text+(index===0?'；':'')));
+      layout.append(copy);
+    }
     if(s.table)layout.append(renderTable(s.table,'audit-table'));
     else if(s.points?.length)layout.append(copyPoints(s.points));
     if(s.board!=='announcement-sample')layout.append(board);
@@ -574,7 +587,7 @@
             animation.call(()=>scenario.textContent='争议仍无法解决：划定权属争议区',[],4.2);draw(out,4.2,.55);draw(unresolved,4.8,.55);draw(dispute,5.4,.65);animation.to([out,unresolved,dispute],{opacity:0,duration:.15},6.25);animation.call(()=>scenario.textContent='',[],6.5);
           }else active.forEach((p,i)=>draw(p,i*.065));
         }
-      },pause:()=>{animation?.pause();flowMotion?.pause();for(const motion of elevations.values())motion.pause();},resume:()=>{if(motionPhase!==activePhase){workflowView.selectStep(activePhase);return;}animation?.resume();flowMotion?.resume();refreshDepth();},finish:()=>{animation?.progress(1).pause();flowMotion?.pause();for(const motion of elevations.values())motion.progress(1).pause();for(const dot of dots.values())dot.style.opacity='0';nodeLayer.querySelectorAll('.workflow-node-arrival').forEach(n=>n.style.opacity='0');},destroy:()=>{animation?.kill();flowMotion?.kill();for(const motion of elevations.values())motion.kill();}
+      },pause:()=>{animation?.pause();flowMotion?.pause();for(const motion of elevations.values())motion.pause();},resume:()=>{if(motionPhase!==activePhase){workflowView.selectStep(activePhase);return;}animation?.resume();flowMotion?.resume();refreshDepth();},finish:()=>{motionPhase=-1;animation?.progress(1).pause();flowMotion?.pause();for(const motion of elevations.values())motion.progress(1).pause();for(const dot of dots.values())dot.style.opacity='0';nodeLayer.querySelectorAll('.workflow-node-arrival').forEach(n=>n.style.opacity='0');},destroy:()=>{animation?.kill();flowMotion?.kill();for(const motion of elevations.values())motion.kill();}
     };
     return layout;
   }
@@ -590,23 +603,25 @@
   }
   function renderStaffing(s){
     const layout=el('div','staff-layout'),organization=el('section','staff-organization'),qualifications=el('section','staff-qualifications');
-    organization.append(el('h2','','岗位配置'));
+    const heading=el('div','staff-heading');heading.append(el('h2','','岗位配置'),el('span','staff-participant-note',s.total+'名项目参与人员'));organization.append(heading);
     const leaders=el('div','staff-leaders');s.roles.slice(0,2).forEach(([name,count])=>{const row=el('div','staff-role');row.append(el('span','',name),el('strong','',count+'人'));leaders.append(row);});organization.append(leaders);
     const branches=el('div','staff-branches');
     for(const [title,roles] of [['内业组',s.roles.slice(2,4)],['外业组',s.roles.slice(4,6)],['质量检查',s.roles.slice(6)]]){
-      const branch=el('section','staff-branch');branch.append(el('h3','',title));
+      const branch=el('section','staff-branch');const heading=el('div','staff-card-heading');heading.append(icon(title==='质量检查'?'shield':'team'),el('h3','',title),el('strong','staff-team-count',roles.reduce((sum,role)=>sum+role[1],0)+'人'));branch.append(heading);
       roles.forEach(([name,count])=>{const row=el('div','staff-role');row.append(el('span','',name),el('strong','',count+'人'));branch.append(row);});branches.append(branch);
     }
     const temporary=el('div','staff-temporary');temporary.append(el('span','','临时抽调'),el('strong','',s.temporary+'人'),el('span','','配合项目实施'));
-    const total=el('p','staff-total','岗位配置13人 + 临时抽调10人 = 项目参与23人');organization.append(branches,temporary,total);
-    qualifications.append(el('h2','','职称构成'),el('p','staff-qualification-note','23名项目参与人员'));
+    organization.append(branches,temporary);
+    qualifications.append(el('h2','','职称构成'));
+    const qualificationGrid=el('div','staff-qualification-grid');
     s.qualifications.forEach(([name,count],i)=>{
       const group=button('',()=>{stopTimeline();highlightStep(i);},'staff-qualification');group.dataset.staffStep=i;
       const label=el('div','staff-qualification-label');label.append(el('span','',name),el('strong','',count+'人'));
       const seats=el('div','staff-seats');seats.setAttribute('aria-hidden','true');
       for(let j=0;j<count;j++)seats.append(el('span','staff-seat'));
-      group.append(label,seats);qualifications.append(group);
+      group.append(label,seats);qualificationGrid.append(group);
     });
+    qualifications.append(qualificationGrid);
     const desc=el('p','step-description sr-only');desc.id='step-description';desc.setAttribute('aria-live','polite');
     layout.append(organization,qualifications,desc);return layout;
   }
@@ -828,8 +843,9 @@
     }
     if (s.layout === 'announcement') {
       const c = el('div', 'announcement-layout'), number = el('div', 'notice-duration');
-      number.append(el('span', '', '公告期不少于'), el('strong', '', '15'), el('span', '', '个工作日'));
-      c.append(number, copyPoints(s.points)); return c;
+      number.append(icon('calendar'),el('span', '', '公告期不少于'), el('strong', '', '15'), el('span', '', '个工作日'));
+      const channels=copyPoints(s.points);Array.from(channels.children).forEach((card,i)=>card.prepend(icon(i===0?'board':'browser')));
+      c.append(number,channels); return c;
     }
     if (s.layout === 'notice') return renderNotice(s);
     if (s.layout === 'chart') return renderChart(s);
@@ -935,7 +951,9 @@
         help.append(el('span','audit-help-pointer','悬停聚焦 · 点击固定 · ↑↓切换'),el('span','audit-help-touch','点击固定讲解 · 再次点击取消'));heading.append(help);
       }
       const content = el('div', 'slide-content'); content.append(renderBody(s));
-      slide.append(heading, el('p', 'slide-lead', s.lead), content);
+      slide.append(heading);
+      if(s.board!=='protected-units')for(const paragraph of s.leadParagraphs||[s.lead])slide.append(el('p','slide-lead',paragraph));
+      slide.append(content);
       if (['gallery','expert'].includes(s.layout)) slide.classList.add('media-slide');
       if(s.interaction==='source-board')slide.classList.add('source-slide');
       if (s.interaction==='document-exhibit') slide.classList.add('exhibit-slide');
@@ -1054,7 +1072,7 @@
   $('step-button').addEventListener('click', () => {
     stopTimeline(); const s = slides[pageIndex]; highlightStep((currentStep + 1) % (s.steps || s.points).length);
   });
-  $('static-button').addEventListener('click', () => { manualStatic = !manualStatic; skipAnimation(); updateControls(); if (!motionOff() && !paused) { landscape?.resume(); mediaTween?.resume(); stepTween?.resume(); exhibitView?.resume?.(); } });
+  $('static-button').addEventListener('click', () => { manualStatic = !manualStatic; skipAnimation(); updateControls(); if (!motionOff() && !paused) { landscape?.resume(); mediaTween?.resume(); stepTween?.resume(); exhibitView?.resume?.(); workflowView?.resume(); } });
   $('zoom-in').addEventListener('click', () => changeZoom(1.5));
   $('zoom-out').addEventListener('click', () => changeZoom(1 / 1.5));
   $('zoom-reset').addEventListener('click', () => { zoom = 1; fitOriginal(); $('image-scroll').scrollTo(0, 0); });
@@ -1075,7 +1093,7 @@
     $('fullscreen-button').setAttribute('aria-pressed', String(Boolean(document.fullscreenElement)));
     $('fullscreen-button').textContent = document.fullscreenElement ? '退出全屏' : '全屏'; fitStage();
   });
-  reduceQuery.addEventListener('change', () => { skipAnimation(); updateControls(); });
+  reduceQuery.addEventListener('change', () => { skipAnimation(); updateControls(); if (!motionOff() && !paused) workflowView?.resume(); });
   document.addEventListener('keydown', e => {
     if (e.altKey || e.ctrlKey || e.metaKey) return;
     if ($('image-dialog').open) {

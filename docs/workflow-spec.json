@@ -696,7 +696,7 @@
       "kind": "condition",
       "label": "权属不清、有争议或成果缺失",
       "labelAt": [
-        820,
+        881,
         550
       ],
       "lines": null,
@@ -714,7 +714,7 @@
           567
         ]
       ],
-      "anchor": "middle"
+      "anchor": "end"
     },
     {
       "from": "supplement",
@@ -724,8 +724,8 @@
       "kind": "condition",
       "label": "争议解决或成果完善",
       "labelAt": [
-        1000,
-        666
+        824,
+        674
       ],
       "lines": null,
       "points": [
@@ -746,18 +746,18 @@
           686
         ]
       ],
-      "anchor": "middle"
+      "anchor": "end"
     },
     {
       "from": "supplement",
       "to": "dispute",
-      "d": "M1025 597L1080 597",
+      "d": "M1025 597L1038 597Q1048 597 1048 587L1048 540Q1048 530 1058 530L1172 530Q1182 530 1182 540L1182 567",
       "phase": 1,
       "kind": "condition",
       "label": "争议仍无法解决",
       "labelAt": [
-        1160,
-        550
+        1166,
+        553
       ],
       "lines": null,
       "points": [
@@ -766,11 +766,23 @@
           597
         ],
         [
-          1080,
+          1048,
           597
+        ],
+        [
+          1048,
+          530
+        ],
+        [
+          1182,
+          530
+        ],
+        [
+          1182,
+          567
         ]
       ],
-      "anchor": "middle"
+      "anchor": "end"
     },
     {
       "from": "dispute",

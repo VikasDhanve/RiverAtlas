@@ -311,6 +311,17 @@ const RiverAtlasSource = {
       "caption": "碧流河 · 水流资源专题图",
       "source": "大连市自然资源统一确权登记工作市级确权项目汇报-2026-5.1(1).pptx",
       "sha256": "3d47121ff85c1c89d00a6b21e5021fce171d62db4fb08e9e8165d469c17e2acd"
+    },
+    {
+      "id": 401,
+      "file": "yingna-registration-units.png",
+      "path": "assets/revision-1110/yingna-registration-units.png",
+      "business": true,
+      "sha256": "74e6a7ffd9421ac9834efa64d1a706f44a11d44fa8c097fc7e22bcd393342b1d",
+      "rotation": 0,
+      "caption": "英那河预划登记单元图",
+      "source": "英那河预划登记单元图.pdf",
+      "page": 1
     }
   ]
 };

@@ -13,7 +13,7 @@ test('第三页去掉重复标题和提示，纸面高度增加；其他页不�
   assert.match(await page.title(),/RiverAtlas/);
   assert.equal(await page.locator('.policy-page-title,.policy-page-meta,.policy-selection-state,.policy-reader-hint').count(),0);
   assert((await page.locator('.policy-sheet:not([hidden])').boundingBox()).height>620);
-  for(const n of [2,3,8,15,20]){
+  for(const n of [2,3,8,16,21]){
    await page.goto(url+'#p'+n);
    const visible=await page.locator('#presentation').evaluate(root=>[...root.querySelectorAll('p,span')].filter(n=>{
     const b=n.getBoundingClientRect(),s=getComputedStyle(n);return b.width>4&&b.height>4&&s.display!=='none'&&s.visibility!=='hidden';

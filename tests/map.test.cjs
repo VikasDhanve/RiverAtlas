@@ -29,8 +29,8 @@ test('动态河流暂停和静态可控，地图键盘平移不翻页，离页�
   await p.keyboard.press('p');await p.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));const paused=await offset();await p.waitForTimeout(200);assert.equal(await offset(),paused);
   await p.keyboard.press('p');await p.waitForTimeout(180);assert.notEqual(await offset(),paused);
   await p.keyboard.press('a');const still=await offset();await p.waitForTimeout(180);assert.equal(await offset(),still);
-  await p.locator('.leaflet-container').focus();await p.keyboard.press('ArrowRight');assert.equal(await p.locator('#page-count').innerText(),'03 / 30');
-  await p.locator('#slide-title').focus();await p.keyboard.press('ArrowRight');assert.equal(await p.locator('#page-count').innerText(),'04 / 30');await p.keyboard.press('ArrowLeft');assert.equal(await p.locator('.leaflet-container').count(),1);
+  await p.locator('.leaflet-container').focus();await p.keyboard.press('ArrowRight');assert.equal(await p.locator('#page-count').innerText(),'03 / 31');
+  await p.locator('#slide-title').focus();await p.keyboard.press('ArrowRight');assert.equal(await p.locator('#page-count').innerText(),'04 / 31');await p.keyboard.press('ArrowLeft');assert.equal(await p.locator('.leaflet-container').count(),1);
  }finally{await b.close();}
 });
 test('地图库缺失时回退原图，触屏与减少动态仍可选择河流',async()=>{
