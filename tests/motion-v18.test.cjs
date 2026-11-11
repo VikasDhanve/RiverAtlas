@@ -6,7 +6,7 @@ const url=pathToFileURL(path.resolve(__dirname,'../index.html')).href;
 test('第六页为三栏完整流程，流光沿路径移动，暂停冻结且静态保留全图',async()=>{
  const b=await chromium.launch({channel:'chrome'}),p=await b.newPage({viewport:{width:1920,height:1080},offline:true});
  try{
-  await p.goto(url+'#p6');const columns=await p.locator('.workflow-panel').evaluateAll(ns=>ns.map(n=>{const r=n.getBoundingClientRect();return{x:r.x,y:r.y,right:r.right};}));
+  await p.goto(url+'#p7');const columns=await p.locator('.workflow-panel').evaluateAll(ns=>ns.map(n=>{const r=n.getBoundingClientRect();return{x:r.x,y:r.y,right:r.right};}));
   assert.equal(columns.length,3);assert(columns[0].right<columns[1].x&&columns[1].right<columns[2].x);assert(Math.abs(columns[0].y-columns[2].y)<2);
   const positions=()=>p.locator('.workflow-particle').evaluateAll(ns=>ns.filter(n=>Number(getComputedStyle(n).opacity)>.5).map(n=>n.getAttribute('transform')));
   await p.waitForFunction(()=>[...document.querySelectorAll('.workflow-particle')].some(n=>Number(getComputedStyle(n).opacity)>.5),null,{timeout:3000});
@@ -27,7 +27,7 @@ test('第6页退出静态及系统减少动态后恢复流光，手动暂停仍�
   await p.waitForFunction(before=>{const now=[...document.querySelectorAll('.workflow-particle')].filter(n=>Number(getComputedStyle(n).opacity)>.5).map(n=>n.getAttribute('transform'));return now.length>0&&JSON.stringify(now)!==JSON.stringify(before);},before,{timeout:3000});
  }
  try{
-  await p.goto(url+'#p6');await assertMoving();
+  await p.goto(url+'#p7');await assertMoving();
   await p.locator('#static-button').click();assert.deepEqual(await visible(),[]);
   await p.locator('#static-button').click();await assertMoving();
   await p.locator('#pause-button').click();await p.locator('#static-button').click();await p.locator('#static-button').click();

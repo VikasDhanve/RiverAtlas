@@ -1,25 +1,38 @@
 'use strict';
-const {test}=require('node:test'),assert=require('node:assert/strict');
-const {chromium}=require('playwright'),{pathToFileURL}=require('node:url'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
-const root=path.resolve(__dirname,'..'),c={};
-vm.runInNewContext(fs.readFileSync(path.join(root,'src/content.js'),'utf8')+';this.slides=RiverAtlasSlides',c);
-test('公共管制调查保留PPT第14页完整说明与三项独立图示说明',async()=>{
- const index=c.slides.findIndex(s=>s.sources.includes(14));assert(index>=0);
+const {test}=require('node:test'),assert=require('node:assert/strict'),{chromium}=require('playwright'),{pathToFileURL}=require('node:url'),path=require('node:path');
+test('第13页矿业与7处排污口原文、河流筛选、聚焦、键盘及原图完整可用',async()=>{
  const b=await chromium.launch({channel:'chrome'}),p=await b.newPage({viewport:{width:1920,height:1080},offline:true,reducedMotion:'reduce'});
  try{
-  await p.goto(pathToFileURL(path.join(root,'index.html')).href+'#p'+(index+1));
-  const text=await p.locator('#presentation').innerText();
-  assert(text.includes('依据收集的资料'));
-  assert(text.includes('提取与自然资源登记单元相关的规划用途和特殊保护信息、已登记的不动产信息、矿业信息和排污权信息等。'));
-  const headings=await p.locator('.copy-point h2').allTextContents();
-  for(const label of ['河流—矿业','河流—排污口','生态保护红线'])assert(headings.includes(label),'缺少独立图示说明：'+label);
-  const image=p.locator('.document-board img');await image.evaluate(i=>i.decode());
-  assert.equal(await image.getAttribute('data-asset'),'19');
-  const copy=await p.locator('.copy-column').boundingBox(),map=await p.locator('.document-board').boundingBox();
-  assert(copy.x+copy.width<=map.x);
-  await p.locator('.document-board .image-button').click();assert(await p.locator('#image-dialog').isVisible());await p.keyboard.press('Escape');
-  await p.setViewportSize({width:390,height:844});
-  assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2));
-  for(const label of ['河流—矿业','河流—排污口','生态保护红线'])assert(await p.getByRole('heading',{name:label,exact:true}).isVisible());
+ await p.goto(pathToFileURL(path.resolve('index.html')).href+'#p13');
+ assert.match(await p.locator('.outfall-summary').innerText(),/英那河存在1处矿业数据，庄河市大顶山-老虎山金矿/);
+ assert.match(await p.locator('.outfall-summary').innerText(),/关联排污口信息共7处/);
+ const original=p.locator('.document-board img');await original.evaluate(i=>i.decode());
+ assert((await original.boundingBox()).height>450);
+ await original.hover();await p.waitForSelector('#media-loupe');
+ await p.getByRole('button',{name:'查看原图',exact:true}).click();assert(await p.locator('#image-dialog').isVisible());await p.keyboard.press('Escape');
+ await p.mouse.move(10,10);await p.screenshot({path:'backups/basemap-20261111/page-13-map.png'});
+ await p.getByRole('tab',{name:'排污口详情',exact:true}).click();
+ assert.equal(await p.locator('.outfall-row').count(),7);
+ const expected=require('../docs/public-control-1111.json').outfalls.rows;
+ assert.deepEqual(await p.locator('.outfall-row').evaluateAll(rs=>rs.map(r=>[...r.cells].map(c=>c.textContent))),expected);
+ assert(!await p.getByRole('heading',{name:'河流—矿业',exact:true}).count());
+ for(const [river,count] of [['大沙河',1],['浮渡河',2],['登沙河',1],['英那河',3]]){
+  await p.getByRole('button',{name:river+' '+count,exact:true}).click();
+  assert.equal(await p.locator('.outfall-row:visible').count(),count);
+ }
+ await p.getByRole('button',{name:'全部 7',exact:true}).click();
+ await p.locator('.outfall-row').first().hover();assert.match(await p.locator('.outfall-status').innerText(),/岭东污水处理厂/);
+ await p.locator('.outfall-row').first().focus();await p.keyboard.press('ArrowDown');
+ assert.equal(await p.locator('.outfall-row').nth(1).evaluate(n=>n===document.activeElement),true);
+ await p.keyboard.press('End');assert.equal(await p.locator('.outfall-row').last().evaluate(n=>n===document.activeElement),true);
+ const last=await p.locator('.outfall-row').last().boundingBox(),box=await p.locator('.outfall-table-scroll').boundingBox();
+ assert(last.y+last.height<=box.y+box.height+2,'大屏7行应完整可见');
+
+ await p.mouse.move(10,10);await p.screenshot({path:'backups/basemap-20261111/page-13.png'});
+ await p.setViewportSize({width:390,height:844});
+ assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2));
+ await p.getByRole('button',{name:'英那河 3',exact:true}).click();assert.equal(await p.locator('.outfall-row:visible').count(),3);
+ await p.getByRole('button',{name:'全部 7',exact:true}).click();await p.screenshot({path:'backups/basemap-20261111/mobile-13.png',fullPage:true});
+ await p.getByRole('tab',{name:'调查图件',exact:true}).click();await p.getByRole('button',{name:'查看原图',exact:true}).click();assert(await p.locator('#image-dialog').isVisible());
  }finally{await b.close();}
 });

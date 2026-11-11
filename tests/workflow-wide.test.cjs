@@ -1,7 +1,7 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const {chromium}=require('playwright'),{pathToFileURL}=require('node:url'),path=require('node:path');
-const url=pathToFileURL(path.resolve(__dirname,'../index.html')).href+'#p6';
+const url=pathToFileURL(path.resolve(__dirname,'../index.html')).href+'#p7';
 test('第6页三栏占满可用宽度，底部阶段悬停切换且同项内移动不重播',async()=>{
  const b=await chromium.launch({channel:'chrome'}),p=await b.newPage({viewport:{width:1920,height:1080},offline:true,reducedMotion:'reduce'});
  try{
@@ -11,7 +11,7 @@ test('第6页三栏占满可用宽度，底部阶段悬停切换且同项内移�
   const phases=p.locator('.workflow-phase-controls button');for(const i of [1,2,0]){await phases.nth(i).hover();assert.equal(await phases.nth(i).getAttribute('aria-pressed'),'true');assert.equal(await p.locator('.workflow-phase.is-current').getAttribute('data-phase'),String(i));}
   assert.equal(await p.locator('.workflow-node').count(),21);assert.equal(await p.locator('.workflow-route').count(),22);
   await p.emulateMedia({reducedMotion:'no-preference'});await phases.nth(1).hover();await p.waitForTimeout(1350);const before=await p.locator('.workflow-scenario').innerText();const r=await phases.nth(1).boundingBox();await p.mouse.move(r.x+r.width/2+2,r.y+r.height/2);await p.waitForTimeout(100);assert.equal(await p.locator('.workflow-scenario').innerText(),before);
-  const t=await b.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,offline:true,reducedMotion:'reduce'});await t.goto(url);await t.getByRole('button',{name:'数据入库',exact:true}).last().tap();assert.equal(await t.locator('.workflow-phase.is-current').getAttribute('data-phase'),'2');assert(await t.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2));await t.close();
+  const t=await b.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,offline:true,reducedMotion:'reduce'});await t.goto(url);await t.getByRole('button',{name:'数据建库',exact:true}).last().tap();assert.equal(await t.locator('.workflow-phase.is-current').getAttribute('data-phase'),'2');assert(await t.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2));await t.close();
  }finally{await b.close();}
 });
 test('流程节点有厚度与抬升反馈，流光有尾迹，暂停和静态保留完整关系',async()=>{

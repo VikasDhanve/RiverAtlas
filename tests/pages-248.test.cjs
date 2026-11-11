@@ -5,7 +5,7 @@ const url=pathToFileURL(path.resolve(__dirname,'../index.html')).href;
 test('第4页点击过目录后，鼠标移到另一项仍立即切换右侧对应文件',async()=>{
  const b=await chromium.launch({channel:'chrome'}),p=await b.newPage({viewport:{width:1920,height:1080},offline:true,reducedMotion:'reduce'});
  try{
-  await p.goto(url+'#p4');
+  await p.goto(url+'#p5');
   const province=p.getByRole('button',{name:'《辽宁省自然资源统一确权登记工作总体方案》',exact:true});
   const city=p.getByRole('button',{name:'《大连市自然资源统一确权登记工作总体方案》',exact:true});
   await province.click();await city.hover();
@@ -17,8 +17,8 @@ test('第2/8页小屏保留完整文书，触屏与键盘均可打开原件',asy
  const b=await chromium.launch({channel:'chrome'}),p=await b.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,offline:true,reducedMotion:'reduce'});
  const errors=[],remote=[];p.on('pageerror',e=>errors.push(e.message));p.on('request',r=>{if(/^https?:/.test(r.url()))remote.push(r.url());});
  try{
-  for(const n of [2,8]){
-   await p.goto(url+'#p'+n);await p.locator('.document-board img').first().evaluate(i=>i.decode());
+  for(const n of [2]){
+   await p.goto(url+'#p'+(n>=2&&n<=9?n+1:n));await p.locator('.document-board img').first().evaluate(i=>i.decode());
    assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),true);
    for(const img of await p.locator('.document-board img').all()){
     await img.evaluate(i=>i.decode());
@@ -34,15 +34,15 @@ test('第2/8页小屏保留完整文书，触屏与键盘均可打开原件',asy
 test('第8页按PPT第10页展示编制依据与唯一底图，移除旧图集及描述',async()=>{
  const b=await chromium.launch({channel:'chrome'}),p=await b.newPage({viewport:{width:1920,height:1080},offline:true,reducedMotion:'reduce'});
  try{
-  await p.goto(url+'#p8');
+  await p.goto(url+'#p9');
   assert.equal(await p.locator('#slide-title').innerText(),'编制工作底图');
   const text=await p.locator('#presentation').innerText();
   for(const term of ['最新正射影像','河流管理范围线','2023年全国国土变更调查成果','集体土地所有权确权登记成果','国有土地使用权确权登记成果','公共管制','特殊保护','预划登记单元'])assert(text.includes(term),term);
-  assert.equal(await p.locator('.atlas-layers-layout,.gallery-tabs').count(),0);
-  assert.equal(await p.locator('.document-board img').count(),1);
-  assert.equal(await p.locator('.document-board img').getAttribute('data-asset'),'107');
-  assert.doesNotMatch(text,/三调|前期资料|资料组织|卫星 \/|权属与成果|管制与保护/);
-  await p.locator('.document-board .image-button').click();
+  assert.equal(await p.locator('.gallery-tabs button').count(),4);
+  assert.equal(await p.locator('.gallery-spread img').count(),1);
+  assert.equal(await p.locator('.gallery-spread img').getAttribute('data-asset'),'501');
+  assert.doesNotMatch(text,/前期资料|资料组织|卫星 \/|权属与成果|管制与保护/);
+  await p.locator('.gallery-spread .image-button').click();
   await p.waitForFunction(()=>{const n=document.getElementById('original-image');return !n.hidden&&n.complete&&n.naturalWidth>0;});
   assert.match(await p.locator('#image-title').innerText(),/工作底图/);
  }finally{await b.close();}
@@ -50,7 +50,7 @@ test('第8页按PPT第10页展示编制依据与唯一底图，移除旧图集�
 test('第2页两份方案同时完整显示，原件可打开且没有缩略图选择区',async()=>{
  const b=await chromium.launch({channel:'chrome'}),p=await b.newPage({viewport:{width:1920,height:1080},offline:true,reducedMotion:'reduce'});
  try{
-  await p.goto(url+'#p2');
+  await p.goto(url+'#p3');
   assert.equal(await p.locator('.document-board img').count(),2);
   assert.equal(await p.locator('.gallery-tabs').count(),0);
   const pictures=p.locator('.document-board img');

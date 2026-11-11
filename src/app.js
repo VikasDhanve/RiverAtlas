@@ -101,6 +101,9 @@
   function gallery(ids) {
     const c = el('div', 'gallery'), spread = el('div', 'gallery-spread');
     const caption = el('p', 'gallery-caption'), tabs = el('div', 'gallery-tabs');
+    const sourceLink = button('查看原图', () => openImage(active), 'gallery-source');
+    sourceLink.hidden = !ids.some(id => assets.get(id).sourceFile);
+    const footer = el('div', 'gallery-footer'); footer.append(caption, sourceLink);
     tabs.setAttribute('role', 'group'); tabs.setAttribute('aria-label', '选择业务图像');
     let active = ids[0];
     function fit() {
@@ -150,7 +153,7 @@
     }, 'focus-media'); focus.setAttribute('aria-pressed','false');
     const previous=button('',()=>{stopTimeline();select(ids[(ids.indexOf(active)+ids.length-1)%ids.length]);},'gallery-previous');previous.append(icon('prev'));previous.setAttribute('aria-label','上一张图件');
     const next=button('',()=>{stopTimeline();select(ids[(ids.indexOf(active)+1)%ids.length]);},'gallery-next');next.append(icon('next'));next.setAttribute('aria-label','下一张图件');
-    tools.append(previous,tabs,next,focus);c.append(spread,tools,caption);select(active,false);
+    tools.append(previous,tabs,next,focus);c.append(spread,tools,footer);select(active,false);
     activeGallery = { element:c, ids, select, refit:fit };
     return c;
   }
@@ -178,7 +181,7 @@
     }
     for(const id of s.images){
       const label=RiverAtlasCaptions[id]||assets.get(id).caption,figure=el('figure','document-figure');
-      const windowEl=el('div','document-window'),control=button('',()=>openImage(id),'image-button'),img=assetImage(id);
+      const windowEl=el('div','document-window'),control=button('',()=>openImage(id),'image-button'),img=assetImage(id,'',s.board==='deliverables');
       control.dataset.asset=id;control.setAttribute('aria-label','查看原件：'+label);
       if([24,26,33,34].includes(id))control.classList.add('photo-surface');
       img.addEventListener('load',fit);control.addEventListener('pointermove',event=>moveLoupe(event,img));control.addEventListener('pointerleave',hideLoupe);
@@ -475,7 +478,7 @@
     const ns='http://www.w3.org/2000/svg';
     function svg(tag,attributes={},text){const n=document.createElementNS(ns,tag);for(const [name,value] of Object.entries(attributes))n.setAttribute(name,String(value));if(text!==undefined)n.textContent=text;return n;}
     const diagram=svg('svg',{class:'workflow-diagram',viewBox:'0 0 '+1800*horizontalScale+' 780',role:'group','aria-labelledby':'workflow-svg-title'});
-    diagram.append(svg('title',{id:'workflow-svg-title'},'自然资源地籍调查实施流程：准备、地籍调查、数据入库'));
+    diagram.append(svg('title',{id:'workflow-svg-title'},'自然资源地籍调查实施流程：准备、地籍调查、数据建库'));
     const defs=svg('defs');
     for(const [id,top,bottom] of [['flow-panel','#10374b','#082435'],['flow-node','#244e65','#12384d'],['flow-header','#10516a','#0b2c40']]){
       const gradient=svg('linearGradient',{id,x1:0,y1:0,x2:0,y2:1});gradient.append(svg('stop',{offset:0,'stop-color':top}),svg('stop',{offset:1,'stop-color':bottom}));defs.append(gradient);
@@ -583,8 +586,8 @@
             const forks=[direct,out,solved,unresolved,dispute];forks.forEach(p=>p.style.opacity='0');
             active.filter(p=>!forks.includes(p)).forEach((p,i)=>draw(p,i*.045));
             animation.call(()=>scenario.textContent='成果无异议：直接上图',[],1.15);draw(direct,1.15,.65);animation.to(direct,{opacity:0,duration:.15},1.95);
-            animation.call(()=>scenario.textContent='补充调查：争议解决或成果完善',[],2.2);draw(out,2.2,.55);draw(solved,2.8,.65);animation.to([out,solved],{opacity:0,duration:.15},3.85);
-            animation.call(()=>scenario.textContent='争议仍无法解决：划定权属争议区',[],4.2);draw(out,4.2,.55);draw(unresolved,4.8,.55);draw(dispute,5.4,.65);animation.to([out,unresolved,dispute],{opacity:0,duration:.15},6.25);animation.call(()=>scenario.textContent='',[],6.5);
+            animation.call(()=>scenario.textContent='补充调查后成果上图',[],2.2);draw(out,2.2,.55);draw(solved,2.8,.65);animation.to([out,solved],{opacity:0,duration:.15},3.85);
+            animation.call(()=>scenario.textContent='划定权属争议区：争议解决或成果完善后上图',[],4.2);draw(out,4.2,.55);draw(unresolved,4.8,.55);draw(dispute,5.4,.65);animation.to([out,unresolved,dispute],{opacity:0,duration:.15},6.25);animation.call(()=>scenario.textContent='',[],6.5);
           }else active.forEach((p,i)=>draw(p,i*.065));
         }
       },pause:()=>{animation?.pause();flowMotion?.pause();for(const motion of elevations.values())motion.pause();},resume:()=>{if(motionPhase!==activePhase){workflowView.selectStep(activePhase);return;}animation?.resume();flowMotion?.resume();refreshDepth();},finish:()=>{motionPhase=-1;animation?.progress(1).pause();flowMotion?.pause();for(const motion of elevations.values())motion.progress(1).pause();for(const dot of dots.values())dot.style.opacity='0';nodeLayer.querySelectorAll('.workflow-node-arrival').forEach(n=>n.style.opacity='0');},destroy:()=>{animation?.kill();flowMotion?.kill();for(const motion of elevations.values())motion.kill();}
@@ -796,7 +799,107 @@
     });
     exhibitView={resetLabel:'恢复首项',reset:()=>select(0),selectStep:select};select(0);return layout;
   }
+  function chapterStart(chapter) {
+    return slides.findIndex(s => s.chapter === chapter && !['cover','closing','agenda'].includes(s.layout));
+  }
+  function renderAgenda() {
+    const layout = el('div', 'agenda-layout');
+    const preview = el('section', 'agenda-preview');
+    const number = el('span', 'agenda-preview-number');
+    number.setAttribute('aria-hidden', 'true');
+    const label = el('p', 'agenda-preview-label', '篇章导览');
+    const title = el('h2', 'agenda-preview-title');
+    const topics = el('ul', 'agenda-preview-topics');
+    const range = el('p', 'agenda-preview-range');
+    preview.append(number, label, title, topics, range);
+    const choices = el('nav', 'agenda-choices');
+    choices.setAttribute('aria-label', '选择汇报篇章');
+    function select(chapter) {
+      document.querySelectorAll('.chapter-button').forEach((node, i) => node.classList.toggle('is-agenda-preview', i === chapter));
+      number.textContent = pad(chapter + 1);
+      title.textContent = RiverAtlasChapters[chapter];
+      const pages = slides.map((s, i) => ({s, i})).filter(({s}) => s.chapter === chapter && !['cover','closing'].includes(s.layout));
+      topics.replaceChildren(...pages.slice(0, 3).map(({s}) => el('li', '', s.title)));
+      range.textContent = '第 ' + pad(pages[0].i + 1) + ' — ' + pad(pages.at(-1).i + 1) + ' 页 · ' + pages.length + ' 页内容';
+      [...choices.children].forEach((choice, i) => choice.classList.toggle('is-preview', i === chapter));
+    }
+    RiverAtlasChapters.forEach((name, chapter) => {
+      const entry = button('', () => showPage(chapterStart(chapter), {keyboard:true}), 'agenda-choice');
+      const index = el('span', 'agenda-index', pad(chapter + 1));
+      const arrow = el('span', 'agenda-arrow', '↗'); arrow.setAttribute('aria-hidden', 'true');
+      entry.append(index, el('span', 'agenda-name', name), el('span', 'agenda-page', '第 ' + pad(chapterStart(chapter) + 1) + ' 页'), arrow);
+      entry.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') select(chapter); });
+      entry.addEventListener('focus', () => select(chapter));
+      choices.append(entry);
+    });
+    layout.append(preview, choices);
+    select(0);
+    exhibitView = {reset:() => select(0), resetLabel:'恢复目录'};
+    return layout;
+  }
+  function renderOutfalls(s) {
+    const layout = el('div', 'outfall-layout'), summary = el('aside', 'outfall-summary');
+    summary.append(copyPoints(s.points));
+    const original = renderDocumentBoard({...s, interaction:'source-board', points:[]});
+    original.className = 'outfall-original';
+    original.append(button('查看原图',()=>openImage(s.images[0]),'policy-original'));
+    const register = el('section', 'outfall-register'), filters = el('div', 'outfall-filters');
+    filters.setAttribute('role','group'); filters.setAttribute('aria-label','按受纳水体筛选排污口');
+    const table = el('table','outfall-table'), head = el('thead'), heading = el('tr'), body = el('tbody');
+    const caption = el('caption','','排污口详情'); table.append(caption);
+    s.outfalls.heads.forEach(text => { const th=el('th','',text); th.scope='col'; heading.append(th); });
+    head.append(heading); table.append(head,body);
+    const status = el('p','outfall-status','全部 7 处排污口 · 悬停或键盘聚焦查看明细');
+    status.setAttribute('role','status');
+    const rows=s.outfalls.rows.map(data=>{
+      const row=el('tr','outfall-row'); row.tabIndex=0; row.dataset.river=data[3];
+      data.forEach(text=>row.append(el('td','',text)));
+      const focus=()=>{ body.querySelectorAll('tr').forEach(n=>n.classList.toggle('is-current',n===row)); status.textContent=data[2]+' / '+data[3]+' / '+data[4]; };
+      row.addEventListener('pointerenter',focus);row.addEventListener('focus',focus);
+      row.addEventListener('click',()=>{row.focus({preventScroll:true});focus();});body.append(row);return row;
+    });
+    function filter(river) {
+      let count=0;rows.forEach(row=>{row.hidden=river!=='全部'&&row.dataset.river!==river;row.classList.remove('is-current');if(!row.hidden)count++;});
+      [...filters.children].forEach(n=>n.setAttribute('aria-pressed',String(n.dataset.river===river)));
+      status.textContent=river+' · '+count+' 处排污口';
+    }
+    ['全部','大沙河','浮渡河','登沙河','英那河'].forEach(river=>{
+      const count=river==='全部'?rows.length:rows.filter(r=>r.dataset.river===river).length;
+      const control=button(river+' '+count,()=>filter(river),'outfall-filter');control.dataset.river=river;control.setAttribute('aria-pressed',String(river==='全部'));filters.append(control);
+    });
+    body.addEventListener('keydown',e=>{
+      if(!['ArrowUp','ArrowDown','Home','End'].includes(e.key))return;
+      e.preventDefault();e.stopPropagation();const visible=rows.filter(r=>!r.hidden),index=visible.indexOf(document.activeElement);
+      const next=e.key==='Home'?0:e.key==='End'?visible.length-1:Math.max(0,Math.min(visible.length-1,index+(e.key==='ArrowDown'?1:-1)));
+      visible[next]?.focus({preventScroll:true});
+    });
+    const scroll=el('div','outfall-table-scroll');scroll.append(table);
+    register.append(filters,scroll,status);
+    const board=exhibitView, overview=el('section','outfall-overview'), panels=el('div','outfall-panels'), tabs=el('div','program-tabs outfall-tabs');
+    overview.append(summary,original);panels.append(overview,register);
+    tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','公共管制调查视图');
+    const views=[overview,register];
+    function select(index,animate=true){
+      hideLoupe();views.forEach((panel,i)=>panel.hidden=i!==index);
+      [...tabs.children].forEach((control,i)=>{control.setAttribute('aria-selected',String(i===index));control.setAttribute('aria-pressed',String(i===index));control.tabIndex=i===index?0:-1;});
+      board.refit();
+      mediaTween?.progress(1).kill();
+      if(animate&&!motionOff()&&!paused)mediaTween=gsap.fromTo(views[index],{opacity:.5,y:8},{opacity:1,y:0,duration:.25,ease:'power2.out',clearProps:'opacity,transform'});
+    }
+    ['调查图件','排污口详情'].forEach((name,i)=>{
+      const control=button(name,()=>select(i));control.setAttribute('role','tab');control.id='outfall-tab-'+i;
+      control.setAttribute('aria-controls','outfall-panel-'+i);
+      views[i].id='outfall-panel-'+i;views[i].setAttribute('role','tabpanel');views[i].setAttribute('aria-labelledby',control.id);
+      control.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();e.stopPropagation();const next=e.key==='Home'?0:e.key==='End'?1:1-i;select(next);tabs.children[next].focus();});
+      tabs.append(control);
+    });
+    layout.append(tabs,panels);select(0,false);
+    exhibitView={...board,resetLabel:'恢复全览',reset:()=>{filter('全部');select(0);}};
+    return layout;
+  }
   function renderBody(s) {
+    if (s.interaction === 'outfall-register') return renderOutfalls(s);
+    if (s.layout === 'agenda') return renderAgenda();
     if(s.interaction==='summary-focus')return renderSummary(s);
     if(s.interaction==='audit-focus')return renderAudit(s);
     if(s.interaction?.startsWith('registration-'))return renderRegistration(s);
@@ -932,6 +1035,7 @@
   }
   function showPage(index, { animate = true, keyboard = false } = {}) {
     hideLoupe();
+    document.querySelectorAll('.chapter-button').forEach(node => node.classList.remove('is-agenda-preview'));
     const next = Math.max(0, Math.min(slides.length - 1, Math.trunc(index)));
     const direction = next >= pageIndex ? 1 : -1;
     stopTimeline(); landscape?.destroy(); exhibitView?.destroy?.();workflowView?.destroy();workflowView=null; exhibitView=null; landscape=null; activeGallery=null; pageIndex = next; currentStep = 0;
@@ -1057,7 +1161,7 @@
   }
   $('prev-button').append(icon('prev')); $('next-button').append(icon('next')); $('help-button').append(icon('help'));
   RiverAtlasChapters.forEach((name, chapter) => {
-    const b = button(name, () => showPage(slides.findIndex(s => s.chapter === chapter)), 'chapter-button'); $('chapter-nav').append(b);
+    const b = button(name, () => showPage(chapterStart(chapter)), 'chapter-button'); $('chapter-nav').append(b);
   });
   $('prev-button').addEventListener('click', () => showPage(pageIndex - 1));
   $('next-button').addEventListener('click', () => showPage(pageIndex + 1));

@@ -45,7 +45,7 @@ test('离线入口显示业务名称，键盘翻页、首尾及非法页码均�
   } finally { await page.close(); }
 });
 
-test('当前40份业务与流程图像均可离线打开，缩放关闭保持原页',async()=>{
+test('当前53份业务与流程图像均可离线打开，缩放关闭保持原页',async()=>{
  const page=await browser.newPage({viewport:{width:1920,height:1080},offline:true,reducedMotion:'reduce'}),seen=new Set(),errors=[],remote=[];
  page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(/^https?:/.test(r.url()))remote.push(r.url());});
  async function open(trigger){
@@ -57,16 +57,16 @@ test('当前40份业务与流程图像均可离线打开，缩放关闭保持原
  try{
   for(let n=1;n<=31;n++){
    await page.goto(url+'#p'+n);
-   if(n===5)for(const name of ['查看完整原件：中标通知书','查看完整原件：项目合同'])await open(page.getByRole('button',{name,exact:true}));
-   if(n===4)for(let i=0;i<5;i++){await page.locator('.policy-choice').nth(i).click();await open(page.getByRole('button',{name:'查看完整政策文件',exact:true}));}
-   if(n===3)await open(page.getByRole('button',{name:'查看原件',exact:true}));
-   if(n===6)await open(page.getByRole('button',{name:'查看流程原图',exact:true}));
+   if(n===6)for(const name of ['查看完整原件：中标通知书','查看完整原件：项目合同'])await open(page.getByRole('button',{name,exact:true}));
+   if(n===5)for(let i=0;i<5;i++){await page.locator('.policy-choice').nth(i).click();await open(page.getByRole('button',{name:'查看完整政策文件',exact:true}));}
+   if(n===4)await open(page.getByRole('button',{name:'查看原件',exact:true}));
+   if(n===7)await open(page.getByRole('button',{name:'查看流程原图',exact:true}));
    for(const control of await page.locator('.document-board .image-button').all())await open(control);
    if(n===21)await page.getByRole('button',{name:'政策文件',exact:true}).click();
    for(let i=0;i<await page.locator('.gallery-tabs button').count();i++){await page.locator('.gallery-tabs button').nth(i).click();await open(page.locator('.gallery-spread .image-button'));}
    assert.equal(await page.locator('#page-count').innerText(),String(n).padStart(2,'0')+' / 31');
   }
-  assert.equal(seen.size,40);assert.deepEqual(errors,[]);assert.deepEqual(remote,[]);
+  assert.equal(seen.size,53);assert.deepEqual(errors,[]);assert.deepEqual(remote,[]);
  }finally{await page.close();}
 });
 
@@ -82,7 +82,7 @@ test('七章目录与31页可查找，空结果有反馈，原稿资料入口已
     await page.getByRole('searchbox').fill('内部审核分工');
     await page.locator('.contents-entry').click();
     assert.equal(await page.locator('#page-count').innerText(), '22 / 31');
-    for (const [chapter, expected] of [['调查过程','06 / 31'],['专家论证','20 / 31'],['项目审核','21 / 31'],['项目公告','25 / 31'],['项目登簿','28 / 31'],['项目概况','01 / 31']]) {
+    for (const [chapter, expected] of [['调查过程','07 / 31'],['专家论证','20 / 31'],['项目审核','21 / 31'],['项目公告','25 / 31'],['项目登簿','28 / 31'],['项目概况','03 / 31']]) {
       await page.getByRole('button', { name: chapter, exact: true }).click();
       assert.equal(await page.locator('#page-count').innerText(), expected);
     }
@@ -136,7 +136,7 @@ test('静态模式与系统减少动态效果保留全部内容，流程可直�
 test('全屏能进入并退出，地图聚焦和成果专题能切换', async () => {
   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, reducedMotion: 'reduce' });
   try {
-    await page.goto(url + '#p3');
+    await page.goto(url + '#p4');
     await page.getByRole('button', { name: '英那河 庄河市', exact: true }).click();
     assert.match(await page.locator('.map-controls').innerText(), /英那河.*庄河市/);
     await page.getByRole('button', { name: '恢复全图', exact: true }).click();
@@ -169,7 +169,7 @@ test('桌面、大屏及小屏全部31页无内容越界，按需保存画面证
           const r = content.getBoundingClientRect(), out = [];
           for (const n of content.querySelectorAll('h2,p,td,th,.gallery-tabs,.map-controls,.process-node')) {
             const b = n.getBoundingClientRect();
-            const window=n.closest('.notice-table-window'),scrollable=window&&window.scrollWidth>window.clientWidth;
+            const window=n.closest('.notice-table-window,.outfall-table-scroll'),scrollable=window&&window.scrollWidth>window.clientWidth;
             if (b.width && (b.bottom > r.bottom + 3 || !scrollable&&(b.right > r.right + 3 || b.left < r.left - 3))) out.push(n.textContent.slice(0,70));
             if(scrollable){const w=window.getBoundingClientRect();if(w.right>r.right+3||w.left<r.left-3)out.push('公告表格滚动容器越界');}
           }

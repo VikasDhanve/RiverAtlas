@@ -7,7 +7,7 @@ test('成果与登记簿图集悬停缩略图即选图，同步高亮且同一�
  const b=await chromium.launch({channel:'chrome'}),p=await b.newPage({viewport:{width:1920,height:1080},offline:true});
  try{
   for(const page of [16,29]){
-   await p.goto(url+'#p'+page);const tabs=p.locator('.gallery-tabs button');
+   await p.goto(url+'#p'+(page>=2&&page<=9?page+1:page));const tabs=p.locator('.gallery-tabs button');
    for(let i=0;i<await tabs.count();i++){
     const thumb=tabs.nth(i),id=await thumb.getAttribute('data-asset');await thumb.hover();
     assert.equal(await p.locator('.gallery-spread img').getAttribute('data-asset'),id,'悬停应选中：'+page+'/'+i);

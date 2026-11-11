@@ -9,7 +9,7 @@ test('第15/16页合并后，完整上图要求和三份专题图同页可操作
  try{
   await p.goto(url+'#p16');const text=await p.locator('#presentation').innerText();
   for(const term of ['登记单元范围界线','自然资源权属范围线','行政管辖界线','公共管制信息','地类图斑','地类编码','界址点坐标','所有权主体','所有权代理行使主体'])assert(text.includes(term),term);
-  assert.equal(await p.locator('.gallery-tabs button').count(),3);assert.equal(await p.locator('.gallery-thumbnail').count(),3);
+  assert.equal(await p.locator('.gallery-tabs button').count(),12);assert.equal(await p.locator('.gallery-thumbnail').count(),12);
   assert.equal(await p.locator('.coverflow-card,.mapping-wing,.mapping-sweep,.mapping-stage').count(),0);
   for(const id of [301,302,303]){
    await p.locator('.gallery-tabs button[data-asset="'+id+'"]').click();

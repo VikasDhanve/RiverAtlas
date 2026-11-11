@@ -4,7 +4,7 @@
   "private": true,
   "description": "RiverAtlas · 大连市级确权项目离线交互汇报",
   "scripts": {
-    "test": "node --test tests/presentation.test.cjs tests/revision.test.cjs tests/exhibit.test.cjs tests/policy.test.cjs tests/showcase.test.cjs tests/map.test.cjs tests/supplement.test.cjs tests/biliuhe.test.cjs tests/interactions-v17.test.cjs tests/motion-v18.test.cjs tests/hover-gallery.test.cjs tests/content-1107.test.cjs tests/pages-248.test.cjs tests/source-layout-1107.test.cjs tests/merge-surveys.test.cjs tests/public-control.test.cjs tests/photo-pair.test.cjs tests/mapping-exhibit.test.cjs tests/expert-copy.test.cjs tests/expert-layout.test.cjs tests/merge-audits.test.cjs tests/registration-review.test.cjs tests/audit-focus.test.cjs tests/notice-table.test.cjs tests/announcement-summary.test.cjs tests/workflow-wide.test.cjs",
+    "test": "node --test tests/presentation.test.cjs tests/revision.test.cjs tests/exhibit.test.cjs tests/policy.test.cjs tests/showcase.test.cjs tests/map.test.cjs tests/supplement.test.cjs tests/biliuhe.test.cjs tests/interactions-v17.test.cjs tests/motion-v18.test.cjs tests/hover-gallery.test.cjs tests/content-1107.test.cjs tests/pages-248.test.cjs tests/source-layout-1107.test.cjs tests/merge-surveys.test.cjs tests/public-control.test.cjs tests/photo-pair.test.cjs tests/mapping-exhibit.test.cjs tests/expert-copy.test.cjs tests/expert-layout.test.cjs tests/merge-audits.test.cjs tests/registration-review.test.cjs tests/audit-focus.test.cjs tests/notice-table.test.cjs tests/announcement-summary.test.cjs tests/workflow-wide.test.cjs tests/agenda.test.cjs tests/assets-1111.test.cjs tests/deliverables-1111.test.cjs",
     "vendor": "node scripts/vendor.cjs"
   },
   "dependencies": {

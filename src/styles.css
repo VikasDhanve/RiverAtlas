@@ -947,3 +947,112 @@ body.static-mode button { transition: none; }
 
 .document-original-caption { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 16px; }
 .document-original-caption .plain-button { font-size: 17px; padding: 8px 14px; }
+
+/* 目录沿用海蓝与水青色：左侧篇章预览，右侧七章直达。 */
+.agenda-layout { display:grid; grid-template-columns: .92fr 1.08fr; gap:76px; height:100%; padding:12px 0 10px; }
+.agenda-preview { position:relative; overflow:hidden; padding:42px 38px; border-left:2px solid var(--water); background:linear-gradient(125deg,#123750b3,#061a2c00 80%); display:flex; flex-direction:column; justify-content:center; }
+.agenda-preview::after { content:""; position:absolute; width:420px; height:420px; border:1px solid #67d8ea26; border-radius:43% 57% 72% 28%; transform:rotate(-28deg); right:-150px; bottom:-210px; pointer-events:none; }
+.agenda-preview-number { position:absolute; right:20px; top:0; font-size:180px; line-height:1; font-weight:600; color:#67d8ea12; font-variant-numeric:tabular-nums; pointer-events:none; }
+.agenda-preview-label { color:var(--water); font-size:19px; margin:0 0 20px; }
+.agenda-preview-title { position:relative; font-size:48px; font-weight:600; margin:0 0 30px; }
+.agenda-preview-topics { list-style:none; padding:0; margin:0; display:grid; gap:18px; color:var(--muted); font-size:22px; line-height:1.5; }
+.agenda-preview-topics li { padding-left:18px; border-left:2px solid #365066; }
+.agenda-preview-range { margin:32px 0 0; font-size:18px; color:var(--water); }
+.agenda-choices { display:grid; grid-template-rows:repeat(7,1fr); min-height:0; }
+.agenda-choice { display:grid; grid-template-columns:48px 1fr 95px 30px; gap:20px; align-items:center; text-align:left; padding:0 22px; border-radius:0; border-bottom:1px solid #36506699; position:relative; transition:background-color .2s ease; }
+.agenda-choice::before { content:""; position:absolute; inset:15px auto 15px 0; width:3px; background:var(--water); transform:scaleY(0); transition:transform .22s var(--ease-out); }
+.agenda-choice.is-preview { background:#123750b3; }
+.agenda-choice.is-preview::before { transform:scaleY(1); }
+.agenda-index { font-size:21px; color:var(--water); font-variant-numeric:tabular-nums; }
+.agenda-name { font-size:29px; font-weight:550; transition:transform .22s var(--ease-out); }
+.agenda-choice.is-preview .agenda-name { transform:translateX(7px); }
+.agenda-page { color:var(--muted); font-size:17px; text-align:right; white-space:nowrap; }
+.agenda-arrow { font-size:27px; color:var(--water); opacity:.45; transition:transform .22s var(--ease-out),opacity .22s; }
+.agenda-choice.is-preview .agenda-arrow { opacity:1; transform:translate(3px,-3px); }
+.static-mode .agenda-choice *, .static-mode .agenda-choice::before,
+.motion-paused .agenda-choice *, .motion-paused .agenda-choice::before { transition:none; }
+@media (prefers-reduced-motion:reduce) { .agenda-choice *, .agenda-choice::before { transition:none; } }
+@media (max-width:767px) {
+ .agenda-layout { grid-template-columns:1fr; height:auto; gap:24px; padding:0; }
+ .agenda-preview { padding:24px; min-height:280px; }
+ .agenda-preview-title { font-size:34px; margin-bottom:22px; }
+ .agenda-preview-topics { font-size:17px; gap:12px; }
+ .agenda-preview-range { margin-top:24px; font-size:15px; }
+ .agenda-preview-number { font-size:130px; }
+ .agenda-choice { min-height:76px; padding:12px 10px; grid-template-columns:26px 1fr 65px 20px; gap:10px; }
+ .agenda-name { font-size:22px; }
+ .agenda-index,.agenda-page { font-size:14px; }
+ .agenda-choice.is-preview .agenda-name { transform:none; }
+}
+
+.chapter-button.is-agenda-preview { color:var(--water); background:#123750b3; }
+.chapter-button.is-agenda-preview::after { content:""; position:absolute; bottom:-12px; left:16px; right:16px; height:2px; background:var(--water); }
+
+.gallery-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:30px; }
+.gallery-footer .gallery-caption { min-width:0; }
+.gallery-source { flex-shrink:0; color:var(--water); font-size:17px; text-underline-offset:4px; padding:5px 0; }
+@media(max-width:767px) { .gallery-footer { flex-wrap:wrap; } .gallery-source { font-size:15px; } }
+
+.outfall-layout { height:100%; display:flex; flex-direction:column; gap:18px; }
+.outfall-panels { flex:1; min-height:0; }
+.outfall-overview { display:grid; grid-template-columns:360px minmax(0,1fr); gap:40px; height:100%; }
+.outfall-tabs { flex:none; }
+.outfall-panels > .outfall-register { height:100%; }
+.outfall-summary { min-height:0; display:flex; flex-direction:column; gap:16px; }
+.outfall-summary .copy-column { gap:16px; }
+.outfall-summary .copy-point h2 { font-size:23px; }
+.outfall-summary .copy-point p { font-size:20px; line-height:1.5; }
+.outfall-original { min-height:0; display:flex; flex-direction:column; gap:10px; }
+.outfall-original > .policy-original { align-self:flex-end; }
+.outfall-original .document-board { flex:1; min-height:0; height:auto; }
+.outfall-original figcaption { font-size:14px; }
+.outfall-register { min-height:0; display:flex; flex-direction:column; gap:14px; }
+.outfall-filters { display:flex; gap:8px; flex-wrap:wrap; }
+.outfall-filter { border:1px solid var(--line); padding:9px 16px; font-size:18px; border-radius:6px; }
+.outfall-table-scroll { flex:1; min-height:0; overflow:auto; border-top:1px solid #67d8ea80; }
+.outfall-table { width:100%; border-collapse:collapse; table-layout:fixed; font-size:18px; line-height:1.45; }
+.outfall-table caption { text-align:left; font-size:24px; font-weight:600; padding:0 0 12px; color:var(--ink); }
+.outfall-table th { text-align:left; color:var(--water); font-weight:550; background:#123750; position:sticky; top:0; z-index:1; }
+.outfall-table th,.outfall-table td { padding:9px 12px; border-bottom:1px solid #36506680; overflow-wrap:anywhere; }
+.outfall-table th:nth-child(1) { width:7%; }
+.outfall-table th:nth-child(2) { width:34%; }
+.outfall-table th:nth-child(3) { width:13%; }
+.outfall-table th:nth-child(4) { width:12%; }
+.outfall-table th:nth-child(5) { width:34%; }
+.outfall-row { transition:background-color .18s ease,box-shadow .18s ease; }
+.outfall-row.is-current { background:#16455e; box-shadow:inset 3px 0 var(--water); }
+.outfall-status { margin:0; color:var(--muted); font-size:16px; line-height:1.4; min-height:23px; }
+.static-mode .outfall-row,.motion-paused .outfall-row { transition:none; }
+@media(prefers-reduced-motion:reduce) { .outfall-row { transition:none; } }
+@media(max-width:767px) {
+ .outfall-layout { height:auto; gap:20px; }
+ .outfall-overview { grid-template-columns:1fr; height:auto; gap:24px; }
+ .outfall-original { height:440px; }
+ .outfall-register { overflow:hidden; }
+ .outfall-table-scroll { flex:auto; }
+ .outfall-table { min-width:720px; font-size:16px; }
+ .outfall-filter { font-size:16px; padding:9px 12px; }
+}
+.outfall-original .document-figure { grid-template-rows:minmax(0,1fr) auto; }
+.outfall-layout,.outfall-panels,.outfall-register { min-width:0; max-width:100%; } @media(max-width:767px) { .outfall-table-scroll { width:100%; max-width:calc(100vw - 40px); } }
+
+/* 成果清单：左侧六类成果，右侧两张上排、一张下排，完整等比显示。 */
+.source-board-layout[data-board="deliverables"] { grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr); gap:32px; }
+.source-board-layout[data-board="deliverables"] .document-board { grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-rows:minmax(0,.85fr) minmax(0,1.15fr); gap:20px; }
+.source-board-layout[data-board="deliverables"] .document-figure:last-child { grid-column:1 / -1; }
+.source-board-layout[data-board="deliverables"] .document-window { background:#12375066; border:1px solid #365066; border-radius:8px; padding:0; }
+.source-board-layout[data-board="deliverables"] .document-figure figcaption { font-size:17px; }
+@media(max-width:767px) {
+ .source-board-layout[data-board="deliverables"] { grid-template-columns:minmax(0,1fr); gap:24px; }
+ .source-board-layout[data-board="deliverables"] .document-board { grid-template-columns:minmax(0,1fr); grid-template-rows:none; }
+ .source-board-layout[data-board="deliverables"] .document-figure { grid-template-rows:240px auto; }
+ .source-board-layout[data-board="deliverables"] .document-figure:last-child { grid-column:auto; }
+}
+
+/* AI扩图预览：背景无缝铺满，文字与图标始终等比；原件弹窗仍读取原截图。 */
+.source-board-layout[data-board="deliverables"] .document-window { background:#fff; overflow:hidden; }
+@media(max-width:767px) {
+ .source-board-layout[data-board="deliverables"] .document-figure { grid-template-rows:auto auto; }
+ .source-board-layout[data-board="deliverables"] .document-window { aspect-ratio:1.93; }
+ .source-board-layout[data-board="deliverables"] .document-figure:last-child .document-window { aspect-ratio:2.8; }
+}

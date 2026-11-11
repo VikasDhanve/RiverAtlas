@@ -13,7 +13,7 @@ test('第21页悬停逐行聚焦、点击固定后临时预览其他行，移开
   await p.locator('#slide-title').hover();assert.equal(await choices.nth(3).getAttribute('aria-current'),'true');assert.equal(await choices.nth(6).getAttribute('aria-current'),'false');
   await p.getByRole('button',{name:'清除聚焦',exact:true}).click();assert.equal(await p.locator('.audit-table [aria-pressed="true"]').count(),0);assert.equal(await p.locator('.audit-table [aria-current="true"]').count(),0);
   await choices.first().click();await p.keyboard.press('ArrowRight');assert.match(await p.locator('#slide-title').innerText(),/外部审核/);await p.keyboard.press('ArrowLeft');assert.equal(await p.locator('.audit-table [aria-pressed="true"]').count(),0);
-  await p.goto(url+'#p7');assert.equal(await p.locator('.audit-table tbody button').count(),0,'仅第21页使用审核讲解交互');
+  await p.goto(url+'#p8');assert.equal(await p.locator('.audit-table tbody button').count(),0,'仅第21页使用审核讲解交互');
  }finally{await b.close();}
 });
 test('第21页键盘切换与固定、Escape清除、触屏点选和减少动态均可用',async()=>{

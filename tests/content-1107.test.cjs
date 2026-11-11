@@ -10,7 +10,7 @@ test('1107事实更新、缺项及原稿41页去向完整且不混入旧长度�
  assert.deepEqual([...new Set(slides.flatMap(s=>Array.from(s.sources)))].sort((a,b)=>a-b),Array.from({length:41},(_,i)=>i+1));
  for(const original of m.slides)assert.deepEqual(original.presentationPages,Array.from(slides.flatMap((s,i)=>s.sources.includes(original.page)?[i+1]:[])));
  assert.equal(slides[29].title,'工作总结');assert.equal(slides[29].points.length,3);
- assert.equal(slides[6].table.rows.length,8);assert.match(JSON.stringify(slides[7].points),/2023/);
+ assert.equal(slides[7].table.rows.length,8);assert.match(JSON.stringify(slides[8].points),/2023/);
  assert.match(slides.find(s=>s.title==='外部审核').points[1][1],/未提供/);
  assert.match(slides.find(s=>s.sources.includes(32)).note,/省内.*广西/);
  assert(!source.assets.some(a=>a.id===32));assert(!source.assets.some(a=>a.id>=201&&a.id<=208));
