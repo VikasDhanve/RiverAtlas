@@ -47,8 +47,8 @@ test('底图、比例展台、专家意见与登记簿切换在离线状态工�
 test('五河属性、动态流程和人员投入可暂停、分步，触屏保留全部内容',async()=>{
  const browser=await chromium.launch({channel:'chrome'}),page=await browser.newPage({viewport:{width:1920,height:1080},offline:true});
  try{
-  await page.goto(url+'#p4');assert.match(await page.locator('.river-attributes').innerText(),/25.7/);assert.match(await page.locator('.river-attributes').innerText(),/7064.42/);
-  await page.getByRole('button',{name:'大沙河 瓦房店市、普兰店区',exact:true}).click();assert.match(await page.locator('.river-attributes').innerText(),/96.5[\s\S]*3141.83[\s\S]*瓦房店市 普兰店区/);
+  await page.goto(url+'#p4');assert.match(await page.locator('.river-attributes').innerText(),/26\.77/);assert.match(await page.locator('.river-attributes').innerText(),/7064.42/);
+  await page.getByRole('button',{name:'大沙河 瓦房店市、普兰店区',exact:true}).click();assert.match(await page.locator('.river-attributes').innerText(),/92\.62[\s\S]*3141.83[\s\S]*瓦房店市 普兰店区/);
   await page.goto(url+'#p7');assert.match(await page.locator('.workflow-layout').textContent(),/外业补充调查[\s\S]*划定权属争议区/);
   await page.locator('#play-button').click();await page.waitForFunction(()=>document.querySelector('.workflow-phase.is-current')?.dataset.phase==='1');await page.locator('#pause-button').click();const frozen=await page.locator('#step-description').innerText();await page.waitForTimeout(1650);assert.equal(await page.locator('#step-description').innerText(),frozen);
   await page.locator('#step-button').click();assert.match(await page.locator('#step-description').innerText(),/第3步/);

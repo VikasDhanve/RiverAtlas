@@ -5,8 +5,8 @@ const path=require('node:path'),{pathToFileURL}=require('node:url');
 const url=pathToFileURL(path.resolve(__dirname,'../index.html')).href;
 test('第五页属性区只显示属性，总览与单河均无重复标题',async()=>{
  const b=await chromium.launch({channel:'chrome'}),p=await b.newPage({viewport:{width:1920,height:1080},offline:true,reducedMotion:'reduce'});
- try{await p.goto(url+'#p4');assert.equal(await p.locator('.river-attributes h2').count(),0);assert.match(await p.locator('.river-attributes').innerText(),/25.7[\s\S]*327.98/);
- await p.getByRole('button',{name:'登沙河 普兰店区、金普新区',exact:true}).click();assert.equal(await p.locator('.river-attributes h2').count(),0);assert.doesNotMatch(await p.locator('.river-attributes').innerText(),/登沙河|市级/);assert.match(await p.locator('.river-attributes').innerText(),/25.7[\s\S]*327.98/);
+ try{await p.goto(url+'#p4');assert.equal(await p.locator('.river-attributes h2').count(),0);assert.match(await p.locator('.river-attributes').innerText(),/26\.77[\s\S]*327.98/);
+ await p.getByRole('button',{name:'登沙河 普兰店区、金普新区',exact:true}).click();assert.equal(await p.locator('.river-attributes h2').count(),0);assert.doesNotMatch(await p.locator('.river-attributes').innerText(),/登沙河|市级/);assert.match(await p.locator('.river-attributes').innerText(),/26\.77[\s\S]*327.98/);
  }finally{await b.close();}
 });
 test('第六页按原图保留21节点与22条关系，包含全部分支、回流和入库关联',async()=>{

@@ -1,5 +1,20 @@
 'use strict';
 const {test}=require('node:test');const assert=require('node:assert/strict');const {chromium}=require('playwright');const path=require('node:path');const {pathToFileURL}=require('node:url');const url=pathToFileURL(path.resolve(__dirname,'../index.html')).href;
+
+test('第4页按1111截图显示五河新长度，全部表格与单河卡片一致且面积不变',async()=>{
+ const b=await chromium.launch({channel:'chrome'});
+ const expected=[['登沙河','26.77','327.98'],['大沙河','92.62','3141.83'],['浮渡河','39.39','476.21'],['碧流河','85.37','7064.42'],['英那河','78.53','3770.22']];
+ try{for(const viewport of [{width:1920,height:1080},{width:1366,height:768},{width:390,height:844}]){
+  const p=await b.newPage({viewport,offline:true,reducedMotion:'reduce'});await p.goto(url+'#p4');await p.locator('.leaflet-container').waitFor();
+  assert.equal(await p.locator('#page-count').innerText(),'04 / 31');
+  for(const [name,length,area] of expected){const row=p.locator('.river-attribute-table tr').filter({hasText:name});assert((await row.innerText()).includes(length));assert((await row.innerText()).includes(area));}
+  await p.screenshot({path:path.resolve(__dirname,`../backups/river-lengths-20261111/page4-${viewport.width}.png`)});
+  for(const [i,entry] of expected.entries()){
+   await p.locator(`.river-choice[data-river="${i}"]`).click();const values=p.locator('.river-attribute-values dd');assert.equal(await values.nth(0).innerText(),entry[1]);assert.equal(await values.nth(1).innerText(),entry[2]);
+  }
+  await p.close();
+ }}finally{await b.close();}
+});
 test('第五页为离线真实坐标地图，全部与五河选择定位、高亮和原件可用',async()=>{
  const b=await chromium.launch({channel:'chrome'});const p=await b.newPage({viewport:{width:1920,height:1080},offline:true,reducedMotion:'reduce'});const errors=[],remote=[];p.on('pageerror',e=>errors.push(e.message));p.on('request',r=>{if(/^https?:/.test(r.url()))remote.push(r.url());});
  try{
