@@ -1,21 +1,17 @@
-const {test}=require('node:test'),assert=require('node:assert/strict'),{chromium}=require('playwright'),{pathToFileURL}=require('url'),path=require('path');
-test('第18页移除封面，三张截图等比展示、悬停放大且原图可缩放',async()=>{
- const b=await chromium.launch({channel:'chrome'}),p=await b.newPage({viewport:{width:1920,height:1080},offline:true,reducedMotion:'reduce'});
- try{
- await p.goto(pathToFileURL(path.resolve('index.html')).href+'#p18');
- assert.equal(await p.locator('.audit-table tbody tr').count(),6);
- const imgs=p.locator('.document-board img');assert.equal(await imgs.count(),3);
- assert.equal(await p.locator('#presentation [data-asset="27"]').count(),0);
- for(let i=0;i<3;i++){
-  const img=imgs.nth(i);assert((await img.getAttribute('src')).endsWith('-expanded.png'));await img.evaluate(i=>i.decode());const dims=await img.evaluate(i=>({a:i.naturalWidth/i.naturalHeight,b:i.clientWidth/i.clientHeight}));assert(Math.abs(dims.a-dims.b)<.02);
-  await img.hover();await p.waitForSelector('#media-loupe');
-  await p.locator('.document-board .image-button').nth(i).click();await p.locator('#original-image').evaluate(i=>i.decode());
-  assert(await p.locator('#image-dialog').isVisible());assert(!(await p.locator('#original-image').getAttribute('src')).includes('-expanded'));const w=await p.locator('#original-image').evaluate(i=>i.clientWidth);await p.getByRole('button',{name:'放大原件',exact:true}).click();assert(await p.locator('#original-image').evaluate(i=>i.clientWidth)>w);await p.keyboard.press('Escape');
- }
- for(const win of await p.locator('.document-window').all()){const d=await win.evaluate(w=>{const i=w.querySelector('img');return {w:w.clientWidth,h:w.clientHeight,iw:i.clientWidth,ih:i.clientHeight,bg:getComputedStyle(w).backgroundColor};});assert(Math.abs(d.w-d.iw)<=5 && Math.abs(d.h-d.ih)<=5);assert.equal(d.bg,'rgb(255, 255, 255)');}
- await p.mouse.move(10,10);await p.screenshot({path:'backups/deliverables-20261111/desktop.png'});
- await p.setViewportSize({width:390,height:844});assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2));
- for(const img of await imgs.all())assert(await img.isVisible());
- await p.screenshot({path:'backups/deliverables-20261111/mobile.png',fullPage:true});
- }finally{await b.close();}
+const {test}=require('node:test'),assert=require('node:assert/strict'),{chromium}=require('playwright'),{pathToFileURL}=require('url'),path=require('path'),fs=require('fs'),vm=require('vm');const url=pathToFileURL(path.resolve(__dirname,'../index.html')).href,c={};vm.runInNewContext(fs.readFileSync(path.resolve(__dirname,'../src/content.js'),'utf8')+';this.rows=RiverAtlasSlides[16].table.rows',c);
+
+test('第17页移除三张截图，六类成果满幅陈列且原文字与格式完整，18/21布局同步精简',async()=>{
+ const b=await chromium.launch({channel:'chrome'}),errors=[];
+ try{for(const width of [1920,1366,390]){const p=await b.newPage({viewport:{width,height:width===390?844:Math.round(width*9/16)},offline:true,reducedMotion:'reduce'});p.on('pageerror',e=>errors.push(e.message));await p.goto(url+'#p17');assert.equal(await p.locator('#presentation img').count(),0);assert.equal(await p.locator('.deliverable-card').count(),6);
+ for(let i=0;i<6;i++){const card=p.locator('.deliverable-card').nth(i),label=c.rows[i][0],colon=label.indexOf('：');assert.equal(await card.locator('h2').textContent(),colon<0?label:label.slice(0,colon));assert.equal(await card.locator('.deliverable-description').textContent(),colon<0?'':label.slice(colon+1));assert.equal(await card.locator('.deliverable-format').textContent(),c.rows[i][1]);const box=await card.boundingBox();for(const field of await card.locator('h2,p').all()){const text=await field.boundingBox();assert(text.y+text.height<=box.y+box.height+1);}}
+ assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2));await p.screenshot({path:`backups/background-tabs-20261112/showcase-p17-${width}.png`,fullPage:width===390});
+ await p.goto(url+'#p18');await p.evaluate(async()=>Promise.all([...document.querySelectorAll('#presentation img')].map(i=>i.decode())));assert.equal(await p.locator('.basemap-layout > .copy-column').count(),0);assert.equal(await p.locator('.gallery-tabs button').count(),12);const layout=await p.locator('.basemap-layout').boundingBox(),reader=await p.locator('.eagle-reader').boundingBox();assert(reader.width/layout.width>.99);await p.screenshot({path:`backups/background-tabs-20261112/showcase-p18-${width}.png`,fullPage:width===390});
+ await p.goto(url+'#p21');const order=await p.locator('.audit-detail').first().evaluate(n=>[...n.children].map(n=>n.className));assert.deepEqual(order,['','audit-detail-province','review-clause-letter','review-clause-text']);await p.screenshot({path:`backups/background-tabs-20261112/showcase-p21-${width}.png`,fullPage:width===390});await p.close();}assert.deepEqual(errors,[]);}finally{await b.close();}
+});
+test('第17页轮转光带与入场动画可暂停、继续、跳过、重播，静态与离页安全',async()=>{
+ const b=await chromium.launch({channel:'chrome'}),p=await b.newPage({viewport:{width:1920,height:1080},offline:true});
+ try{await p.goto(url+'#p17');assert.equal(await p.locator('.deliverable-card.is-current .deliverable-number').innerText(),'01');await p.waitForTimeout(2950);assert.equal(await p.locator('.deliverable-card.is-current .deliverable-number').innerText(),'02');assert(await p.locator('.deliverable-card.is-current .deliverable-progress').evaluate(n=>n.getAnimations().some(a=>a.playState==='running')));
+ await p.locator('#pause-button').click();const current=await p.locator('.deliverable-card.is-current .deliverable-number').innerText();await p.waitForTimeout(2950);assert.equal(await p.locator('.deliverable-card.is-current .deliverable-number').innerText(),current);await p.locator('#pause-button').click();await p.waitForTimeout(2950);assert.notEqual(await p.locator('.deliverable-card.is-current .deliverable-number').innerText(),current);
+ await p.locator('#skip-button').click();const frozen=await p.locator('.deliverable-card.is-current .deliverable-number').innerText();await p.waitForTimeout(2950);assert.equal(await p.locator('.deliverable-card.is-current .deliverable-number').innerText(),frozen);assert.equal(await p.locator('.deliverable-card:visible').count(),6);await p.locator('#replay-button').click();assert.equal(await p.locator('.deliverable-card.is-current .deliverable-number').innerText(),'01');
+ await p.locator('#static-button').click();assert.equal(await p.locator('.deliverable-progress').evaluateAll(ns=>ns.flatMap(n=>n.getAnimations()).filter(a=>a.playState==='running').length),0);await p.goto(url+'#p18');assert.equal(await p.locator('.deliverable-card').count(),0);assert.equal(await p.locator('#page-count').innerText(),'18 / 30');}finally{await b.close();}
 });

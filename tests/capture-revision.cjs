@@ -24,7 +24,7 @@ const {pathToFileURL}=require('node:url');
   await page.locator('#play-button').click(); await page.waitForTimeout(4500);
   await page.goto(url+'#p14'); await page.waitForTimeout(1800);
   await page.screenshot({path:path.join(out,'business-large.png')});
-  await page.goto(url+'#p21'); await page.getByRole('button',{name:'政策文件',exact:true}).click();
+  await page.goto(url+'#p22'); await page.getByRole('button',{name:'政策文件',exact:true}).click();
   await page.waitForTimeout(1000); await page.screenshot({path:path.join(out,'audit-documents.png')});
   const video=page.video(); await page.close(); await context.close();
   await video.saveAs(path.join(out,'RiverAtlas-v1.1-preview.webm'));

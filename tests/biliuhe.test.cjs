@@ -9,17 +9,16 @@ test('1107版碧流河三张成果图与调查表均可离线查看',async()=>{
  const browser=await chromium.launch({channel:'chrome'}),page=await browser.newPage({viewport:{width:1920,height:1080},offline:true,reducedMotion:'reduce'});
  const errors=[],remote=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(/^https?:/.test(r.url()))remote.push(r.url());});
  try{
-  await page.goto(url+'#p16');assert.equal(await page.locator('.gallery-tabs button').count(),12);
-  assert.equal(await page.locator('.gallery-spread img').getAttribute('data-asset'),'301');
+  await page.goto(url+'#p18');assert.equal(await page.locator('.gallery-tabs button').count(),12);
+  assert.equal(await page.locator('.gallery-spread img').getAttribute('data-asset'),'516');
   const names=await page.locator('.gallery-tabs button').evaluateAll(ns=>ns.map(n=>n.getAttribute('aria-label')));
-  assert.match(names[0],/登记单元图/);assert.match(names[2],/水流资源/);
-  for(let i=0;i<3;i++){
+  assert.match(names[1],/登记单元图/);assert.match(names[3],/水流资源/);
+  for(const i of [1,2,3]){
    await page.locator('.gallery-tabs button').nth(i).click();await page.locator('.gallery-spread .image-button').click();
    await page.waitForFunction(()=>{const i=document.getElementById('original-image');return !i.hidden&&i.complete&&i.naturalWidth>0;});
    assert.equal(await page.locator('#image-title').innerText(),names[i]);await page.keyboard.press('Escape');
   }
-  await page.goto(url+'#p18');await page.locator('.document-board .image-button').first().click();
-  assert.match(await page.locator('#image-title').innerText(),/成果目录/);await page.keyboard.press('Escape');
+  await page.goto(url+'#p17');assert.equal(await page.locator('.deliverable-card').count(),6);assert.equal(await page.locator('#presentation img').count(),0);
   for(const id of [28,29,30])assert.equal(await page.locator('#presentation [data-asset="'+id+'"]').count(),0);
   assert.deepEqual(errors,[]);assert.deepEqual(remote,[]);
  }finally{await browser.close();}
@@ -27,7 +26,7 @@ test('1107版碧流河三张成果图与调查表均可离线查看',async()=>{
 test('原稿资料入口和弹窗逻辑移除，运行素材仅保留当前页面引用',async()=>{
  const browser=await chromium.launch({channel:'chrome'}),page=await browser.newPage({viewport:{width:1920,height:1080},offline:true,reducedMotion:'reduce'});
  try{
-  await page.goto(url+'#p16');assert.equal(await page.locator('#sources-button,#sources-dialog,#sources-content').count(),0);
+  await page.goto(url+'#p18');assert.equal(await page.locator('#sources-button,#sources-dialog,#sources-content').count(),0);
   assert.doesNotMatch(fs.readFileSync(path.join(root,'src/app.js'),'utf8'),/renderSources|function imageGrid|source\.slides/);
   const c={};vm.runInNewContext(fs.readFileSync(path.join(root,'src/source.js'),'utf8')+';this.source=RiverAtlasSource',c);
   assert.equal(c.source.slides,undefined);

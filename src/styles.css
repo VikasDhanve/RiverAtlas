@@ -1056,3 +1056,174 @@ body.static-mode button { transition: none; }
  .source-board-layout[data-board="deliverables"] .document-window { aspect-ratio:1.93; }
  .source-board-layout[data-board="deliverables"] .document-figure:last-child .document-window { aspect-ratio:2.8; }
 }
+
+/* 工作目标：桌面正文使用整行宽度，小屏沿用自然换行。 */
+@media (min-width:768px) {
+  .slide[data-layout="map"] > .slide-lead { max-width:none; }
+}
+
+/* 数据建库动画对比页：成果汇流、分层组织与质检回路。 */
+.db-cinema { width:100%; min-width:0; height:100%; min-height:0; display:grid; grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr); gap:0; }
+.db-cinema-scene { width:100%; min-width:0; min-height:0; flex:1; }
+.db-cinema-scene > svg { width:100%; height:100%; display:block; }
+.db-cinema-hint { display:none; }
+.db-cinema-heading { fill:var(--ink); font-size:27px; font-weight:600; }
+.db-cinema-subtitle { fill:var(--muted); font-size:19px; }
+.db-cinema-source-text { fill:var(--ink); font-size:22px; }
+.db-cinema-rule { stroke:var(--line); stroke-width:1; }
+.db-cinema-wire { stroke:#36596c; stroke-width:1.5; stroke-linejoin:round; }
+.db-cinema-wire[data-phase="2"] { stroke:#7d6950; stroke-dasharray:7 7; }
+.db-cinema-wire.is-current { stroke:var(--water); stroke-width:3; }
+.db-cinema-wire.is-current[data-phase="2"] { stroke:var(--amber); }
+.db-cinema-packet { fill:var(--water); }
+.db-cinema-packet:nth-of-type(5) { fill:var(--amber); }
+.db-cinema-plane { fill:#123750; stroke:#4e879b; stroke-width:1.5; }
+.db-cinema-edge { fill:#0b263b; stroke:#36596c; stroke-width:1; }
+.db-cinema-category { fill:var(--ink); font-size:21px; }
+.db-cinema-layer.is-current .db-cinema-plane { fill:#1c4c63; stroke:var(--water); }
+.db-cinema-gate-outline { fill:#0b263b; stroke:#4e879b; stroke-width:2; }
+.db-cinema-gate.is-current .db-cinema-gate-outline { stroke:var(--water); }
+.db-cinema-amend { fill:var(--amber); font-size:22px; }
+.db-cinema-result { fill:var(--water); font-size:25px; }
+.db-cinema-result-mark { stroke:var(--water); stroke-width:2; }
+.db-cinema-scan { stroke:var(--water); stroke-width:3; }
+
+
+
+@media(max-width:767px) {
+ .db-cinema { height:auto; grid-template-rows:auto auto; gap:8px; }
+ .db-cinema-scene { flex:none; height:413px; overflow-x:auto; }
+ .db-cinema-scene > svg { height:413px; width:1100px; max-width:none; }
+ .db-cinema-hint { display:block; margin:0; font-size:14px; }
+
+
+}
+
+/* 地图占满右栏，属性改为与真实河流位置关联的图上标注。 */
+.map-layout { grid-template-columns:230px minmax(0,1fr); gap:20px; }
+.map-figure { position:relative; min-width:0; gap:0; }
+.map-figure .map-window { height:100%; }
+.map-figure .map-controls { position:absolute; z-index:800; left:12px; right:12px; bottom:24px; padding:8px 10px; background:#061a2ce8; border-radius:6px; gap:12px; }
+.map-figure .map-controls span { margin-right:auto; }
+.map-attribute-marker { width:220px !important; height:auto !important; pointer-events:none; }
+.map-attribute-marker.river-label-dimmed { display:none; }
+.river-map-annotation { background:#0a263bef; border:1px solid #5d8da1; border-radius:6px; padding:9px 11px; color:#edf4f8; box-shadow:0 6px 14px #0004; }
+.river-map-annotation .map-river-text { display:block; background:none; padding:0 0 5px; font-size:20px; }
+.map-attribute-values { display:grid; grid-template-columns:62px minmax(0,1fr); gap:3px 6px; margin:0; font-size:15px; line-height:1.3; font-variant-numeric:tabular-nums; }
+.map-attribute-values dt { color:#b6cbd9; }
+.map-attribute-values dd { margin:0; overflow-wrap:anywhere; }
+.policy-reader { padding-left:20px; }
+.policy-window { overflow:hidden; }
+.policy-sheet { width:100%; height:100%; }
+.policy-sheet img { object-fit:cover; object-position:top center; }
+@media(max-width:767px) {
+ .map-layout { grid-template-columns:minmax(0,1fr); gap:20px; }
+ .map-figure { height:520px; }
+ .map-figure .map-controls { bottom:22px; left:8px; right:8px; }
+ .map-attribute-marker { width:228px !important; }
+ .map-compact-labels .map-attribute-marker { width:100px !important; }
+ .map-compact-labels .river-map-annotation { padding:3px 6px; }
+ .map-compact-labels .map-river-text { font-size:15px; padding:0; }
+ .map-compact-labels .map-attribute-values { display:none; }
+ .policy-reader { padding-left:0; }
+}
+
+/* 总览只标河名；完整属性仅在选中单河时展示。 */
+.map-compact-labels .map-attribute-marker { width:100px !important; }
+.map-compact-labels .river-map-annotation { padding:3px 6px; border:0; box-shadow:none; background:#0a263bd9; }
+.map-compact-labels .map-river-text { font-size:19px; padding:0; }
+.map-compact-labels .map-attribute-values { display:none; }
+.map-figure .map-controls { left:auto; right:12px; bottom:24px; padding:0; background:transparent; gap:0; border-radius:0; }
+.map-figure .map-controls button { background:#061a2ce8; }
+@media(max-width:767px) { .map-compact-labels .map-river-text { font-size:15px; } }
+
+/* 第9页：完整图定位与固定局部阅读窗，不使用悬浮放大镜。 */
+.basemap-layout { grid-template-columns:250px minmax(0,1fr);gap:18px; }
+.basemap-layout > .copy-column { border-right:1px solid #50738480;padding-right:24px;gap:0;justify-content:space-between; }
+.basemap-layout .copy-point + .copy-point { border-top:1px solid #50738480;padding-top:14px; }
+.basemap-layout .copy-point h2 { font-size:23px;margin-bottom:6px; }
+.basemap-layout .copy-point p { font-size:19px;line-height:1.5; }
+.eagle-reader { position:relative;display:grid;grid-template-rows:minmax(0,1fr) 62px;gap:10px;min-width:0;min-height:0;padding-top:0; }
+.eagle-views { display:grid;grid-template-columns:minmax(0,.30fr) minmax(0,.70fr);gap:12px;min-height:0; }
+.eagle-overview,.eagle-detail { display:flex;flex-direction:column;min-width:0;min-height:0;position:relative; }
+.eagle-views h2 { font-size:18px;font-weight:400;margin:0 0 8px;line-height:24px;color:#d6e6ee; }
+.eagle-overview .gallery-spread { display:flex;min-height:0;height:auto;flex:1;background:#f8f9f6;perspective:none; }
+.eagle-overview .eagle-sheet { position:relative;flex:none;overflow:hidden;cursor:crosshair;border:0;min-height:0;touch-action:none; }
+.eagle-overview .eagle-sheet img { pointer-events:none; }
+.eagle-lens { position:absolute;border:2px solid #18cce1;background:#43d9ee14;pointer-events:none; }
+.eagle-viewport { position:relative;flex:1;min-height:0;overflow:hidden;background:#f8f9f6;touch-action:none;cursor:crosshair; }
+.eagle-viewport img { position:absolute;left:0;top:0;max-width:none;max-height:none;object-fit:fill;transform-origin:0 0;pointer-events:none; }
+.eagle-zoom { position:absolute;right:10px;bottom:12px;display:flex;align-items:center;gap:10px;background:#062337ed;padding:5px 8px;border-radius:4px; }
+.eagle-zoom button { padding:2px 8px;font-size:15px;min-height:26px; }.eagle-zoom output { font-size:16px;min-width:48px;text-align:center; }
+.eagle-tools { position:absolute;right:0;top:-36px; }.eagle-tools button { padding:4px 12px;font-size:16px; }
+.eagle-reader .gallery-footer { min-height:0;border:1px solid #32566d80;border-radius:3px;padding:0 10px;gap:16px; }
+.eagle-reader .gallery-tabs { flex:0 0 auto;gap:5px;padding:0; }
+.eagle-reader .gallery-tabs button { flex:0 0 66px;width:66px;min-width:66px;max-width:66px;height:54px;padding:3px; }
+.eagle-reader .gallery-caption { flex:1;font-size:17px;line-height:1.3;margin:0;border-left:1px solid #42647780;padding-left:16px; }
+.eagle-reader .gallery-source { font-size:16px;white-space:nowrap; }
+@media(max-width:767px){
+ .basemap-layout { grid-template-columns:1fr;gap:20px; }.basemap-layout > .copy-column { border-right:0;padding-right:0;gap:16px; }
+ .eagle-reader { grid-template-rows:450px auto;padding-top:28px;gap:10px; }.eagle-views { grid-template-columns:minmax(0,.34fr) minmax(0,.66fr);gap:8px; }
+ .eagle-tools { top:-10px; }.eagle-views h2 { font-size:15px; }.eagle-zoom { left:4px;right:4px;bottom:5px;gap:3px;padding:4px;flex-wrap:wrap;justify-content:center; }
+ .eagle-zoom button { font-size:13px;padding:2px 5px; }.eagle-zoom output { font-size:13px;min-width:36px; }
+ .eagle-reader .gallery-footer { flex-wrap:wrap;padding:8px;gap:8px; }.eagle-reader .gallery-tabs { flex:1 1 100%;justify-content:space-between; }.eagle-reader .gallery-caption { font-size:14px;padding-left:0;border:0; }
+}
+
+@media(max-width:767px){.eagle-reader{grid-template-rows:820px auto}.eagle-views{grid-template-columns:minmax(0,1fr);grid-template-rows:340px minmax(0,1fr);gap:14px}}
+
+/* 文字上图要求独立成页；专题图复用鹰眼，底部进度提示2秒切图。 */
+.mapping-text-only {display:flex;flex-direction:column;justify-content:space-evenly;height:100%;gap:20px;max-width:1350px;}
+.mapping-text-only .copy-point {display:grid;grid-template-columns:330px minmax(0,1fr);gap:40px;padding:30px 0;border-bottom:1px solid #50738480;align-items:start;}
+.mapping-text-only h2 {font-size:32px;color:#8de3ee;margin:0;}.mapping-text-only p {font-size:28px;line-height:1.65;margin:0;color:#d7e6ed;}
+.eagle-reader .gallery-tabs {position:relative;flex:0 1 55%;min-width:0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;}
+.eagle-thumb-progress {position:absolute;left:0;right:0;bottom:0;height:3px;background:#81edfa;transform:scaleX(0);transform-origin:left;pointer-events:none;}
+.eagle-autoplay-toggle {font-size:15px;padding:5px 8px;white-space:nowrap;}
+@media(max-width:767px){.mapping-text-only .copy-point{grid-template-columns:1fr;gap:10px;padding:20px 0}.mapping-text-only h2{font-size:24px}.mapping-text-only p{font-size:20px}.eagle-reader .gallery-tabs{flex:1 1 100%;justify-content:flex-start}.eagle-autoplay-toggle{font-size:14px}}
+
+.eagle-reader{grid-template-columns:minmax(0,1fr)}.eagle-reader .gallery-footer{min-width:0;max-width:100%}@media(max-width:767px){.eagle-reader .gallery-tabs{max-width:100%}}
+
+/* 第11/12页说明按内容自然排布，不分散拉伸。 */
+.basemap-layout.eagle-natural-copy > .copy-column {justify-content:flex-start;gap:24px;}
+.basemap-layout.eagle-natural-copy .copy-point {flex:0 0 auto;}
+
+/* 第21页：双列处室索引与大字号审核要点，沿用第23页浅色阅读面。 */
+.audit-reader-layout {display:grid;grid-template-columns:560px minmax(0,1fr);gap:28px;height:100%;min-height:0;}
+.audit-department-index {display:flex;flex-direction:column;min-height:0;min-width:0;}
+.audit-index-heads,.audit-department-choice {display:grid;grid-template-columns:1fr 1.05fr;gap:20px;}
+.audit-index-heads {font-size:21px;color:#b8ceda;padding:0 16px 14px;border-bottom:1px solid #496b80;}
+.audit-index-options {display:grid;grid-template-rows:repeat(9,minmax(0,1fr));flex:1;min-height:0;gap:3px;}
+.audit-department-choice {text-align:left;align-items:center;min-height:0;width:100%;padding:4px 16px;border:0;border-bottom:1px solid #385c7080;border-radius:0;background:transparent;transform:none;}
+.audit-department-choice.is-current {background:#173e53;border-bottom-color:#81e0ee;color:#9decf5;}
+.audit-department-name {font-size:22px;line-height:1.2;white-space:pre-line;font-weight:550;}
+.audit-province-name {font-size:20px;line-height:1.25;color:#bdd0dc;white-space:pre-line;}
+.audit-detail-reader {padding:36px 40px 24px;min-height:0;}
+.audit-detail-reader .review-clause-letter {font-size:20px;margin-bottom:22px;}
+.audit-detail-reader .review-clause h2 {font-size:34px;white-space:pre-line;margin-bottom:12px;}
+.audit-detail-province {font-size:21px;color:#526d7e;margin:0 0 30px;line-height:1.5;}
+.audit-detail-reader .review-clause-text {font-size:30px;line-height:1.8;}
+@media(max-width:767px){.audit-reader-layout{grid-template-columns:minmax(0,1fr);height:auto;gap:24px}.audit-index-heads{font-size:16px;padding:0 8px 12px;gap:12px}.audit-index-options{flex:none;grid-template-rows:none;grid-auto-rows:minmax(72px,auto)}.audit-department-choice{gap:12px;padding:10px 8px}.audit-department-name{font-size:20px}.audit-province-name{font-size:17px}.audit-detail-reader{padding:26px 22px 20px;min-height:450px}.audit-detail-reader .review-clause h2{font-size:28px}.audit-detail-reader .review-clause-text{font-size:24px}.audit-detail-province{font-size:18px;margin-bottom:22px}}
+
+/* 成果一：六类成果满幅陈列，动画仅强调结构，不代表实际交付进度。 */
+.basemap-layout.eagle-image-only {grid-template-columns:minmax(0,1fr);}
+.audit-detail-reader .audit-detail-province {margin-bottom:24px;}
+.audit-detail-reader .review-clause-letter {margin-bottom:12px;}
+.deliverables-showcase {height:100%;min-height:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:20px;}
+.deliverable-card {position:relative;min-width:0;min-height:0;overflow:hidden;padding:22px 26px 24px;border:1px solid #42677d;background:linear-gradient(140deg,#163b50e8,#0a2437ee);border-radius:5px;display:flex;flex-direction:column;}
+.deliverable-card.is-current {border-color:#8ce6f2;background:linear-gradient(140deg,#20536ae8,#103447ee);}
+.deliverable-card-top {display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.deliverable-number {font-size:22px;color:#9cdce8;font-variant-numeric:tabular-nums;}
+.deliverable-format {font-size:17px;color:#c6e9ef;border:1px solid #568292;padding:4px 10px;border-radius:3px;}
+.deliverable-emblem {position:absolute;right:24px;top:76px;width:86px;height:86px;opacity:.12;color:#adf0fa;}
+.deliverable-emblem svg {width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:.8;}
+.deliverable-card h2 {font-size:29px;line-height:1.45;margin:22px 0 12px;max-width:92%;color:#e6f6fa;font-weight:550;}
+.deliverable-description {font-size:21px;line-height:1.65;color:#b8d3df;margin:0;max-width:96%;}
+.deliverable-progress {position:absolute;left:0;right:0;bottom:0;height:3px;background:#9cecf7;transform:scaleX(0);transform-origin:left;pointer-events:none;}
+@media(max-width:767px){.deliverables-showcase{height:auto;grid-template-columns:minmax(0,1fr);grid-template-rows:none;gap:16px}.deliverable-card{min-height:210px;padding:22px}.deliverable-card h2{font-size:25px}.deliverable-description{font-size:19px}.deliverable-emblem{right:20px;top:70px;width:72px;height:72px}}
+
+.deliverable-sheen{position:absolute;left:0;top:0;bottom:0;width:40%;background:linear-gradient(90deg,transparent,#9eeaf4,transparent);opacity:0;pointer-events:none;z-index:0}.deliverable-card-top,.deliverable-card h2,.deliverable-description{position:relative;z-index:1}
+
+/* 省级参照信息用深青强调，保持浅色审核阅读面的对比度。 */
+.audit-detail-reader .audit-detail-province {color:#076b78;font-weight:600;background:#dceef0;border-left:3px solid #168b98;padding:7px 12px;align-self:flex-start;}
+.gallery-auto .gallery-tabs {position:relative;}
+.gallery-thumb-progress {position:absolute;left:0;right:0;bottom:0;height:3px;background:#9cecf7;transform:scaleX(0);transform-origin:left;pointer-events:none;}
+.gallery-auto-toggle {font-size:16px;padding:5px 10px;white-space:nowrap;}

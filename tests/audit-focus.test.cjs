@@ -1,31 +1,21 @@
-'use strict';
-const {test}=require('node:test'),assert=require('node:assert/strict');
-const {chromium}=require('playwright'),{pathToFileURL}=require('node:url'),path=require('node:path');
-const url=pathToFileURL(path.resolve(__dirname,'../index.html')).href;
-test('第21页悬停逐行聚焦、点击固定后临时预览其他行，移开恢复且可清除',async()=>{
+const {test}=require('node:test'),assert=require('node:assert/strict'),{chromium}=require('playwright'),{pathToFileURL}=require('url'),path=require('path'),fs=require('fs'),vm=require('vm');const url=pathToFileURL(path.resolve(__dirname,'../index.html')).href,c={};vm.runInNewContext(fs.readFileSync(path.resolve(__dirname,'../src/content.js'),'utf8')+';this.rows=RiverAtlasSlides[20].table.rows',c);
+
+test('第21页双列处室索引联动审核要点，放大字体并删除顶部说明',async()=>{
  const b=await chromium.launch({channel:'chrome'}),p=await b.newPage({viewport:{width:1920,height:1080},offline:true,reducedMotion:'reduce'});
- try{
-  await p.goto(url+'#p22');const choices=p.locator('.audit-table tbody button');assert.equal(await choices.count(),9);
-  const cells=p.locator('.audit-table tbody tr').nth(3).locator('td');const normal=await cells.last().evaluate(n=>getComputedStyle(n).backgroundColor);
-  await choices.nth(3).hover();assert.equal(await choices.nth(3).getAttribute('aria-current'),'true');assert.notEqual(await cells.last().evaluate(n=>getComputedStyle(n).backgroundColor),normal);
-  await choices.nth(3).click();assert.equal(await choices.nth(3).getAttribute('aria-pressed'),'true');
-  await choices.nth(6).hover();assert.equal(await choices.nth(6).getAttribute('aria-current'),'true');assert.equal(await choices.nth(3).getAttribute('aria-pressed'),'true');
-  await p.locator('#slide-title').hover();assert.equal(await choices.nth(3).getAttribute('aria-current'),'true');assert.equal(await choices.nth(6).getAttribute('aria-current'),'false');
-  await p.getByRole('button',{name:'清除聚焦',exact:true}).click();assert.equal(await p.locator('.audit-table [aria-pressed="true"]').count(),0);assert.equal(await p.locator('.audit-table [aria-current="true"]').count(),0);
-  await choices.first().click();await p.keyboard.press('ArrowRight');assert.match(await p.locator('#slide-title').innerText(),/外部审核/);await p.keyboard.press('ArrowLeft');assert.equal(await p.locator('.audit-table [aria-pressed="true"]').count(),0);
-  await p.goto(url+'#p8');assert.equal(await p.locator('.audit-table tbody button').count(),0,'仅第21页使用审核讲解交互');
+ try{await p.goto(url+'#p21');const choices=p.locator('.audit-department-choice');assert.equal(await choices.count(),9);assert.equal(await p.locator('.audit-table,.slide-lead,.audit-help').count(),0);
+ assert.deepEqual(await p.locator('.audit-index-heads span').allTextContents(),['本项目涉及处室','省级部门（参照）']);
+ for(let i=0;i<9;i++){await choices.nth(i).hover();assert.equal(await choices.nth(i).getAttribute('aria-current'),'true');const detail=p.locator('.audit-detail:not([hidden])');assert.equal(await detail.locator('h2').textContent(),c.rows[i][0]);assert.equal(await detail.locator('.review-clause-text').textContent(),c.rows[i][2]);assert.equal(await choices.nth(i).locator('.audit-province-name').textContent(),c.rows[i][1]);}
+ await p.locator('#slide-title').hover();assert.equal(await choices.last().getAttribute('aria-current'),'true');await p.getByRole('button',{name:'恢复首项',exact:true}).click();assert.equal(await choices.first().getAttribute('aria-current'),'true');
+ assert.equal(await p.locator('.audit-department-name').first().evaluate(n=>getComputedStyle(n).fontSize),'22px');assert.equal(await p.locator('.audit-detail:not([hidden]) .review-clause-text').evaluate(n=>getComputedStyle(n).fontSize),'30px');
+ for(const control of await choices.all()){const r=await control.boundingBox();for(const span of await control.locator('span').all()){const t=await span.boundingBox();assert(t.y>=r.y-1&&t.y+t.height<=r.y+r.height+1);}}await p.screenshot({path:'backups/background-tabs-20261112/audit-reader-desktop.png'});await choices.nth(5).click();await p.screenshot({path:'backups/background-tabs-20261112/audit-reader-forest.png'});
+ await p.getByRole('button',{name:'下一项',exact:true}).click();assert.equal(await choices.nth(6).getAttribute('aria-current'),'true');await p.getByRole('button',{name:'上一项',exact:true}).click();assert.equal(await choices.nth(5).getAttribute('aria-current'),'true');
+ await p.locator('#slide-title').focus();await p.keyboard.press('ArrowRight');assert.match(await p.locator('#slide-title').innerText(),/外部审核/);await p.keyboard.press('ArrowLeft');assert.equal(await p.locator('.audit-department-choice').first().getAttribute('aria-current'),'true');
+ await p.goto(url+'#p8');assert.equal(await p.locator('.audit-department-choice').count(),0);
  }finally{await b.close();}
 });
-test('第21页键盘切换与固定、Escape清除、触屏点选和减少动态均可用',async()=>{
+test('第21页键盘方向定位与触屏点击均能切换阅读，手机不越界',async()=>{
  const b=await chromium.launch({channel:'chrome'}),p=await b.newPage({viewport:{width:1920,height:1080},offline:true,reducedMotion:'reduce'});
- try{
-  await p.goto(url+'#p22');const choices=p.locator('.audit-table tbody button');await choices.first().focus();
-  await p.keyboard.press('ArrowDown');assert.equal(await choices.nth(1).evaluate(n=>n===document.activeElement),true);
-  await p.keyboard.press('End');assert.equal(await choices.last().evaluate(n=>n===document.activeElement),true);assert.equal(await p.locator('#page-count').innerText(),'22 / 31');
-  await p.keyboard.press('Enter');assert.equal(await choices.last().getAttribute('aria-pressed'),'true');await p.keyboard.press('Escape');assert.equal(await choices.last().getAttribute('aria-pressed'),'false');
-  await p.keyboard.press('Home');await p.keyboard.press(' ');assert.equal(await choices.first().getAttribute('aria-pressed'),'true');
-  assert.equal(await choices.first().locator('..').evaluate(n=>getComputedStyle(n).transitionDuration),'0s');
-  const touch=await b.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,offline:true,reducedMotion:'reduce'});
-  await touch.goto(url+'#p22');const target=touch.locator('.audit-table tbody button').nth(5);await target.tap();assert.equal(await target.getAttribute('aria-pressed'),'true');await target.tap();assert.equal(await target.getAttribute('aria-pressed'),'false');assert.equal(await touch.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),true);await touch.close();
+ try{await p.goto(url+'#p21');const choices=p.locator('.audit-department-choice');await choices.first().focus();await p.keyboard.press('ArrowDown');assert.equal(await choices.nth(1).evaluate(n=>n===document.activeElement),true);await p.keyboard.press('End');assert.equal(await choices.last().getAttribute('aria-current'),'true');assert.equal(await p.locator('#page-count').innerText(),'21 / 30');await p.keyboard.press('Home');await p.keyboard.press(' ');assert.equal(await choices.first().getAttribute('aria-pressed'),'true');
+ const touch=await b.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,offline:true,reducedMotion:'reduce'});await touch.goto(url+'#p21');await touch.locator('.audit-department-choice').nth(5).tap();assert.equal(await touch.locator('.audit-detail:not([hidden]) h2').textContent(),c.rows[5][0]);assert.equal(await touch.locator('.audit-department-choice[aria-current="true"]').count(),1);assert(await touch.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2));await touch.screenshot({path:'backups/background-tabs-20261112/audit-reader-mobile.png',fullPage:true});await touch.close();
  }finally{await b.close();}
 });

@@ -98,14 +98,25 @@
       loupeMark.style.transform=`translate(${x*magnification+offsetX}px,${y*magnification+offsetY}px)`;
     });
   }
-  function gallery(ids) {
+  function gallery(ids, autoAdvance=0) {
     const c = el('div', 'gallery'), spread = el('div', 'gallery-spread');
     const caption = el('p', 'gallery-caption'), tabs = el('div', 'gallery-tabs');
     const sourceLink = button('查看原图', () => openImage(active), 'gallery-source');
     sourceLink.hidden = !ids.some(id => assets.get(id).sourceFile);
     const footer = el('div', 'gallery-footer'); footer.append(caption, sourceLink);
     tabs.setAttribute('role', 'group'); tabs.setAttribute('aria-label', '选择业务图像');
-    let active = ids[0];
+    let active = ids[0],autoTimer=null,autoProgress=null,manual=false,disposed=false;
+    const auto=autoAdvance===2000,autoToggle=button('暂停轮播',()=>{manual=!manual;syncAuto();},'gallery-auto-toggle');
+    if(auto){c.classList.add('gallery-auto');footer.append(autoToggle);}
+    function stopAuto(){clearTimeout(autoTimer);autoTimer=null;autoProgress?.cancel();autoProgress=null;c.dataset.autoplay='false';}
+    function syncAuto(){
+      autoToggle.textContent=manual?'继续轮播':'暂停轮播';autoToggle.setAttribute('aria-pressed',String(manual));
+      if(!auto||disposed||manual||paused||motionOff()||document.hidden||!c.getClientRects().length){stopAuto();return;}
+      if(autoTimer)return;c.dataset.autoplay='true';
+      autoProgress=tabs.querySelector('[aria-pressed="true"] .gallery-thumb-progress').animate([{transform:'scaleX(0)'},{transform:'scaleX(1)'}],{duration:2000,easing:'linear',fill:'forwards'});
+      autoTimer=setTimeout(()=>{autoTimer=null;autoProgress?.cancel();autoProgress=null;if(disposed)return;select(ids[(ids.indexOf(active)+1)%ids.length]);syncAuto();},2000);
+    }
+    function manualSelect(id){stopTimeline();if(auto){manual=true;syncAuto();}if(active!==id)select(id);}
     function fit() {
       const sheet=spread.firstElementChild,img=sheet?.firstElementChild;
       if(!img?.naturalWidth||!spread.clientHeight)return;
@@ -127,6 +138,7 @@
       }));
       caption.textContent = RiverAtlasCaptions[id] || assets.get(id).caption;
       for (const b of tabs.children) b.setAttribute('aria-pressed', String(Number(b.dataset.asset) === id));
+      if(auto){const b=tabs.querySelector('[aria-pressed="true"]');if(b)tabs.scrollTo({left:Math.max(0,b.offsetLeft-tabs.clientWidth/2+b.clientWidth/2),behavior:motionOff()?'instant':'smooth'});}
       if (animate && !motionOff() && !paused) {
         mediaTween = gsap.fromTo(spread.children, { opacity:.45, x:direction*28, scale:.985, clipPath:direction>0?'inset(0 0 0 9%)':'inset(0 9% 0 0)' },
           { opacity:1, x:0, scale:1, clipPath:'inset(0 0 0 0)', duration:.28, ease:'power3.out', clearProps:'transform,opacity,clipPath' });
@@ -135,12 +147,12 @@
     }
     ids.forEach((id, i) => {
       const label = RiverAtlasCaptions[id] || assets.get(id).caption;
-      const b = button('', () => { stopTimeline(); if(active!==id)select(id); });
+      const b = button('', () => manualSelect(id));
       b.addEventListener('pointerenter',event=>{
         if(event.pointerType!=='mouse'||!matchMedia('(hover: hover) and (pointer: fine)').matches)return;
-        stopTimeline();if(active!==id)select(id);
+        manualSelect(id);
       });
-      b.append(assetImage(id,'gallery-thumbnail',true),el('span','gallery-tab-number',pad(i+1)));
+      b.append(assetImage(id,'gallery-thumbnail',true),el('span','gallery-tab-number',pad(i+1)));if(auto)b.append(el('span','gallery-thumb-progress'));
       b.dataset.asset = id; b.title = label; b.setAttribute('aria-label', label); tabs.append(b);
     });
     const tools = el('div', 'gallery-tools');
@@ -151,15 +163,121 @@
       focus.textContent = on ? '显示讲解' : '专注图件'; focus.setAttribute('aria-pressed', String(on));
       fit();
     }, 'focus-media'); focus.setAttribute('aria-pressed','false');
-    const previous=button('',()=>{stopTimeline();select(ids[(ids.indexOf(active)+ids.length-1)%ids.length]);},'gallery-previous');previous.append(icon('prev'));previous.setAttribute('aria-label','上一张图件');
-    const next=button('',()=>{stopTimeline();select(ids[(ids.indexOf(active)+1)%ids.length]);},'gallery-next');next.append(icon('next'));next.setAttribute('aria-label','下一张图件');
+    const previous=button('',()=>manualSelect(ids[(ids.indexOf(active)+ids.length-1)%ids.length]),'gallery-previous');previous.append(icon('prev'));previous.setAttribute('aria-label','上一张图件');
+    const next=button('',()=>manualSelect(ids[(ids.indexOf(active)+1)%ids.length]),'gallery-next');next.append(icon('next'));next.setAttribute('aria-label','下一张图件');
     tools.append(previous,tabs,next,focus);c.append(spread,tools,footer);select(active,false);
-    activeGallery = { element:c, ids, select, refit:fit };
+    activeGallery = { element:c, ids, select, refit:fit,setState:syncAuto,destroy:()=>{disposed=true;stopAuto();},finish:()=>{if(auto){manual=true;syncAuto();}},play:auto?()=>{stopAuto();manual=false;select(ids[0],false);syncAuto();}:null };
     return c;
   }
+  function renderBasemap(s) {
+    const layout=el('div','gallery-layout basemap-layout'),reader=el('div','gallery eagle-reader');layout.dataset.focus='false';
+    if([15,17].includes(s.images[0]))layout.classList.add('eagle-natural-copy');
+    const views=el('div','eagle-views'),overview=el('section','eagle-overview'),detail=el('section','eagle-detail');
+    const spread=el('div','gallery-spread'),overviewButton=button('',()=>openImage(active),'image-button eagle-sheet');
+    const lens=el('span','eagle-lens'),viewport=el('div','eagle-viewport'),detailImage=assetImage(s.images[0]);
+    viewport.tabIndex=0;viewport.setAttribute('role','region');viewport.setAttribute('aria-label','局部放大，方向键移动视角');
+    overviewButton.setAttribute('aria-label','查看完整原件');lens.setAttribute('aria-hidden','true');
+    const zoomTools=el('div','eagle-zoom'),level=el('output'),tabs=el('div','gallery-tabs'),footer=el('div','gallery-footer'),caption=el('p','gallery-caption');
+    tabs.setAttribute('role','group');tabs.setAttribute('aria-label','选择业务图像');
+    let active=s.images[0],overviewImage=null,cx=.5,cy=.4,factor=1,fitBoth=false;
+    let autoTimer=null,progress=null,skipped=false,disposed=false;
+    const auto=s.autoAdvance===2000,autoToggle=button('跳过动画',()=>{skipped=!skipped;syncAuto();},'eagle-autoplay-toggle');
+    function stopAuto(){clearTimeout(autoTimer);autoTimer=null;progress?.cancel();progress=null;reader.dataset.autoplay='false';}
+    function syncAuto(){
+      autoToggle.textContent=skipped?'恢复自动':'跳过动画';autoToggle.setAttribute('aria-pressed',String(skipped));
+      if(!auto||disposed||skipped||paused||motionOff()||document.hidden){stopAuto();return;}
+      if(autoTimer)return;
+      reader.dataset.autoplay='true';
+      const selected=tabs.querySelector('[aria-pressed="true"]');
+      progress=selected.querySelector('.eagle-thumb-progress').animate([{transform:'scaleX(0)'},{transform:'scaleX(1)'}],{duration:2000,easing:'linear',fill:'forwards'});
+      autoTimer=setTimeout(()=>{autoTimer=null;progress?.cancel();progress=null;if(disposed)return;select(s.images[(s.images.indexOf(active)+1)%s.images.length]);syncAuto();},2000);
+    }
+    function manualSelect(id){stopTimeline();if(auto){skipped=true;syncAuto();}if(active!==id)select(id);}
+    const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+    function fit(){
+      if(!overviewImage?.naturalWidth||!viewport.clientWidth)return;
+      const nw=overviewImage.naturalWidth,nh=overviewImage.naturalHeight;
+      const miniScale=Math.min(spread.clientWidth/nw,spread.clientHeight/nh),mw=nw*miniScale,mh=nh*miniScale;
+      overviewButton.style.width=mw+'px';overviewButton.style.height=mh+'px';
+      const scale=fitBoth?Math.min(viewport.clientWidth/nw,viewport.clientHeight/nh):viewport.clientWidth/nw*factor;
+      const w=nw*scale,h=nh*scale,vw=viewport.clientWidth,vh=viewport.clientHeight;
+      const x=w>vw?clamp(cx*w-vw/2,0,w-vw):0,y=h>vh?clamp(cy*h-vh/2,0,h-vh):0;
+      detailImage.style.width=w+'px';detailImage.style.height=h+'px';
+      detailImage.style.transform=`translate3d(${w<vw?(vw-w)/2:-x}px,${h<vh?(vh-h)/2:-y}px,0)`;
+      lens.style.cssText=`left:${x/w*mw}px;top:${y/h*mh}px;width:${Math.min(1,vw/w)*mw}px;height:${Math.min(1,vh/h)*mh}px`;
+      level.textContent=Math.round(scale/(vw/nw)*100)+'%';
+      viewport.dataset.center=cx.toFixed(3)+','+cy.toFixed(3);
+    }
+    function point(event){
+      if(event.pointerType!=='mouse'&&event.type==='pointermove'&&!event.buttons)return;
+      const r=overviewButton.getBoundingClientRect();cx=clamp((event.clientX-r.left)/r.width,0,1);cy=clamp((event.clientY-r.top)/r.height,0,1);fit();
+    }
+    overviewButton.addEventListener('pointermove',point);overviewButton.addEventListener('pointerdown',point);
+    viewport.addEventListener('pointermove',event=>{
+      if(event.pointerType!=='mouse'&&!event.buttons)return;
+      const r=viewport.getBoundingClientRect();cx=clamp((event.clientX-r.left)/r.width,0,1);cy=clamp((event.clientY-r.top)/r.height,0,1);fit();
+    });
+    viewport.addEventListener('keydown',event=>{
+      const moves={ArrowLeft:[-.06,0],ArrowRight:[.06,0],ArrowUp:[0,-.06],ArrowDown:[0,.06]};
+      if(!moves[event.key])return;event.preventDefault();event.stopPropagation();cx=clamp(cx+moves[event.key][0],0,1);cy=clamp(cy+moves[event.key][1],0,1);fit();
+    });
+    function select(id){
+      hideLoupe();active=id;cx=.5;cy=.4;
+      overviewImage=assetImage(id,'',true);overviewImage.addEventListener('load',fit);
+      overviewButton.replaceChildren(overviewImage,lens);overviewButton.dataset.asset=id;
+      detailImage.src=assets.get(id).path;detailImage.alt=overviewImage.alt;detailImage.dataset.asset=id;detailImage.addEventListener('load',fit,{once:true});
+      caption.textContent=RiverAtlasCaptions[id]||assets.get(id).caption;
+      for(const b of tabs.children)b.setAttribute('aria-pressed',String(Number(b.dataset.asset)===id));
+      const selected=tabs.querySelector('[aria-pressed="true"]');if(auto&&selected)tabs.scrollTo({left:Math.max(0,selected.offsetLeft-tabs.clientWidth/2+selected.clientWidth/2),behavior:motionOff()?'instant':'smooth'});fit();
+    }
+    s.images.forEach((id,i)=>{
+      const b=button('',()=>manualSelect(id));b.dataset.asset=id;
+      b.setAttribute('aria-label',RiverAtlasCaptions[id]||assets.get(id).caption);
+      b.append(assetImage(id,'gallery-thumbnail',true),el('span','gallery-tab-number',pad(i+1)));if(auto)b.append(el('span','eagle-thumb-progress'));
+      b.addEventListener('pointerenter',event=>{if(event.pointerType==='mouse'&&matchMedia('(hover:hover) and (pointer:fine)').matches)manualSelect(id);});tabs.append(b);
+    });
+    function changeZoom(delta){factor=clamp((fitBoth?1:factor)+delta,1,3);fitBoth=false;fit();}
+    zoomTools.append(button('−',()=>changeZoom(-.25),'eagle-zoom-out'),level,button('+',()=>changeZoom(.25),'eagle-zoom-in'),button('适应全图',()=>{fitBoth=true;fit();}));
+    zoomTools.querySelector('.eagle-zoom-out').setAttribute('aria-label','缩小局部视图');zoomTools.querySelector('.eagle-zoom-in').setAttribute('aria-label','放大局部视图');
+    spread.append(overviewButton);if(s.showViewTitles!==false)overview.append(el('h2','','完整图件'));overview.append(spread);
+    viewport.append(detailImage);if(s.showViewTitles!==false)detail.append(el('h2','','局部放大'));detail.append(viewport,zoomTools);views.append(overview,detail);
+    const focus=button('专注图件',()=>{const on=layout.dataset.focus!=='true';layout.dataset.focus=String(on);layout.closest('.slide')?.classList.toggle('media-focus',on);focus.textContent=on?'显示讲解':'专注图件';focus.setAttribute('aria-pressed',String(on));fit();},'focus-media');focus.setAttribute('aria-pressed','false');
+    const tools=el('div','eagle-tools');tools.append(focus);
+    footer.append(tabs,caption);if(auto)footer.append(autoToggle);footer.append(button('查看原图',()=>openImage(active),'gallery-source'));
+    reader.append(tools,views,footer);if(s.points?.length)layout.append(copyPoints(s.points),reader);else{layout.classList.add('eagle-image-only');layout.append(reader);}select(active);
+    activeGallery={element:reader,ids:s.images,select,refit:fit,setState:syncAuto,destroy:()=>{disposed=true;stopAuto();},finish:()=>{if(auto){skipped=true;syncAuto();}},play:auto?()=>{stopAuto();skipped=false;select(s.images[0]);syncAuto();}:null};return layout;
+  }
+
   function mediaLayout(s) {
+    if(s.images?.[0]===501)return renderBasemap(s);
     const c = el('div', 'gallery-layout'); c.dataset.focus='false';
-    c.append(copyPoints(s.points), gallery(s.images)); return c;
+    c.append(copyPoints(s.points), gallery(s.images,s.autoAdvance)); return c;
+  }
+  function renderBackgroundTabs(s) {
+    const layout=el('div','background-tabs-layout'),tabs=el('div','program-tabs');
+    layout.style.cssText='height:100%;display:grid;grid-template-rows:auto minmax(0,1fr);gap:18px;min-height:0';
+    tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','工作背景');
+    const deployment=el('section','background-deployment'),documents=renderDocumentBoard(s),view=exhibitView;
+    documents.style.minHeight='0';
+
+    deployment.style.cssText='overflow:auto;padding:clamp(16px,2vw,36px);border:1px solid #496e84;border-radius:12px;background:#102b3eaa';
+    deployment.append(el('h2','','国家部署'));
+    for(const text of ["开展自然资源统一确权登记，是深化生态文明体制改革、建设美丽中国、落实党中央治国理政新理念新思想新战略的一项重要举措，党中央、国务院高度重视。","为贯彻落实党中央、国务院关于生态文明建设决策部署，建立和实施自然资源统一确权登记制度，推进自然资源确权登记法治化，推动建立归属清晰、权责明确、保护严格、流转顺畅、监管有效的自然资源资产产权制度，实现山水林田湖草整体保护、系统修复、综合治理。辽宁省人民政府办公厅和大连市人民政府办公室先后印发了自然资源统一确权登记工作总体方案。"]) {
+      const paragraph=el('p','',text);paragraph.style.cssText='font-size:clamp(18px,1.55vw,30px);line-height:1.9;margin:18px 0';deployment.append(paragraph);
+    }
+    const panels=[deployment,documents];
+    function select(index) {
+      panels.forEach((panel,i)=>{panel.hidden=i!==index;panel.style.display=i===index?(i===1?'grid':'block'):'none';});
+      [...tabs.children].forEach((control,i)=>{control.setAttribute('aria-selected',String(i===index));control.setAttribute('aria-pressed',String(i===index));control.tabIndex=i===index?0:-1;});
+      if(index===1)requestAnimationFrame(()=>view.refit());
+    }
+    ['国家部署','政策文件'].forEach((name,i)=>{
+      const control=button(name,()=>select(i));control.id='background-tab-'+i;control.setAttribute('role','tab');control.setAttribute('aria-controls','background-panel-'+i);
+      panels[i].id='background-panel-'+i;panels[i].setAttribute('role','tabpanel');panels[i].setAttribute('aria-labelledby',control.id);
+      control.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();event.stopPropagation();const next=event.key==='Home'?0:event.key==='End'?1:1-i;select(next);tabs.children[next].focus();});tabs.append(control);
+    });
+    layout.append(tabs,...panels);select(0);
+    exhibitView={...view,reset:()=>{select(0);view.reset();}};return layout;
   }
   function renderDocumentBoard(s) {
     const layout=el('div','gallery-layout'),board=el('div','document-board'),documents=[];
@@ -224,9 +342,7 @@
     function fit() {
       const sheet=sheets.get(active); if(!sheet)return;
       const img=sheet.firstElementChild; if(!img.naturalWidth || !windowEl.clientHeight)return;
-      const ratio=img.naturalWidth/img.naturalHeight;
-      const width=Math.min(windowEl.clientWidth,windowEl.clientHeight*ratio);
-      sheet.style.width=width+'px';sheet.style.height=width/ratio+'px';
+      sheet.style.width=windowEl.clientWidth+'px';sheet.style.height=windowEl.clientHeight+'px';
     }
     function camera(scale) {
       const img=sheets.get(active)?.firstElementChild;if(!img)return;
@@ -357,14 +473,14 @@
     exhibitView={
       reset:()=>{pinned=-1;select(-1);},
       refit:()=>positionCrops(false),
-      pause:()=>motion?.pause(),resume:()=>motion?.resume(),finish:()=>motion?.progress(1).pause(),
+      pause:()=>motion?.pause(),resume:()=>{motion?.resume();if(!motionOff()&&!paused&&(!timeline||timeline.paused()))playDemonstration();},finish:()=>motion?.progress(1).pause(),
       destroy:()=>{disposed=true;motion?.kill();}
     };
     return layout;
   }
   function renderProgram(s) {
     const c = el('div','program-layout'), tabs = el('div','program-tabs');
-    const process = renderProcess(s), docs = mediaLayout({images:s.images,points:[
+    const process = renderProcess(s), docs = renderBasemap({images:s.images,points:[
       ['适用语境','辽宁省本级自然资源统一确权登记暂行管理办法。'],
       ['审核程序','预审、内部审核、外部审核与登簿审核。'],
       ['办理方式','登簿审核依托登记信息系统线上办理；此前三类审核按文件线下进行。']
@@ -372,6 +488,7 @@
     function select(showDocs) {
       stopTimeline(); process.hidden=showDocs; docs.hidden=!showDocs;
       c.classList.toggle('show-documents',showDocs);
+      if(showDocs)requestAnimationFrame(()=>activeGallery?.refit());
       c.closest('.slide')?.classList.toggle('media-focus',showDocs && docs.dataset.focus==='true');
       for (const b of tabs.children) b.setAttribute('aria-pressed',String(b.dataset.documents===String(showDocs)));
     }
@@ -382,20 +499,9 @@
   }
   function renderMap(s) {
     const layout=el('div','map-layout'),list=el('div','river-list'),figure=el('div','map-figure');
-    const windowEl=el('div','map-window river-map'),controls=el('div','map-controls'),desc=el('span','','五河空间总览');
+    const windowEl=el('div','map-window river-map'),controls=el('div','map-controls');
     windowEl.setAttribute('role','region');windowEl.setAttribute('aria-label','五河地理地图');windowEl.tabIndex=0;
     let view;
-    const attributes=el('div','river-attributes');attributes.setAttribute('aria-live','polite');
-    function showAttributes(index){
-      attributes.replaceChildren();
-      if(index===null){
-        const table=renderTable({heads:['河流','长度 / km','面积 / 公顷','涉及县区'],rows:s.rivers.map((r,i)=>[r[0],s.riverAttributes[i][1],s.riverAttributes[i][2],s.riverAttributes[i][3]])},'river-attribute-table');
-        attributes.append(table);
-      }else{
-        const [,length,area,county]=s.riverAttributes[index];
-        const values=el('dl','river-attribute-values');for(const [name,value] of [['长度 / km',length],['面积 / 公顷',area],['涉及县区',county]])values.append(el('dt','',name),el('dd','',value));attributes.append(values);
-      }
-    }
     function select(index){view?.select(index);}
     const all=button('',()=>select(null),'river-choice river-all');all.dataset.river='all';
     all.append(el('strong','','全部'),el('span','','五条河流总览'));list.append(all);
@@ -405,16 +511,16 @@
     });
     function selected(index){
       for(const choice of list.children)choice.setAttribute('aria-pressed',String(choice.dataset.river===(index===null?'all':String(index))));
-      desc.textContent=index===null?'五河空间总览':s.rivers[index][0]+' · '+s.rivers[index][1];
-      showAttributes(index);
+
+
     }
     const original=button('查看原件',()=>openImage(12));original.dataset.asset='12';
-    controls.append(desc,button('恢复全图',()=>select(null)),original);figure.append(windowEl,controls,attributes);layout.append(list,figure);selected(null);
+    controls.append(original);figure.append(windowEl,controls);layout.append(list,figure);selected(null);
     if(typeof RiverAtlasMap!=='undefined'&&typeof L!=='undefined'&&typeof RiverAtlasGeography!=='undefined'){
-      view=RiverAtlasMap.create(windowEl,{onSelect:selected});
+      view=RiverAtlasMap.create(windowEl,{onSelect:selected,attributes:s.riverAttributes,rivers:s.rivers});
       exhibitView={...view,resetLabel:'显示全部',reset(){select(null);}};
     }else{
-      windowEl.append(assetImage(12));desc.textContent='地图资源未加载，已保留原稿分布图';
+      windowEl.append(assetImage(12));windowEl.setAttribute('aria-label','地图资源未加载，已保留原稿分布图');
       for(const choice of list.children)choice.disabled=true;
     }
     return layout;
@@ -469,7 +575,7 @@
     controls.append(el('span','atlas-unit','大沙河 · 210200331000003'),expand,collapse,button('查看图件',()=>openImage(s.images[selected]),'atlas-open'));
     stack.append(previews);scene.append(stack);display.append(scene,controls);layout.append(list,display);
     exhibitView={resetLabel:'复位图层',reset:()=>{expanded=true;highlightStep(0);},selectStep:index=>{selected=index;paint();},refit:()=>{fit();paint(false);},
-      pause:()=>motion?.pause(),resume:()=>motion?.resume(),finish:()=>motion?.progress(1).pause(),destroy:()=>motion?.kill()};
+      pause:()=>motion?.pause(),resume:()=>{motion?.resume();if(!motionOff()&&!paused&&(!timeline||timeline.paused()))playDemonstration();},finish:()=>motion?.progress(1).pause(),destroy:()=>motion?.kill()};
     paint(false);return layout;
   }
   function renderWorkflow(s){
@@ -594,7 +700,35 @@
     };
     return layout;
   }
+  function renderDatabaseAnimation(s){
+    const layout=el('div','db-cinema');
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 1200 450');svg.setAttribute('role','img');svg.setAttribute('aria-label','三类基础成果汇入五类登记单元数据，经软件质检、不合格逐条修改和复检直至合格。');
+    function shape(tag,attrs,text,parent=svg){const n=document.createElementNS(svg.namespaceURI,tag);for(const [key,value] of Object.entries(attrs))n.setAttribute(key,String(value));if(text!==undefined)n.textContent=text;parent.append(n);return n;}
+    const signals=[],dots=[],groups=[];
+    function line(d,phase){const p=shape('path',{d,class:'db-cinema-wire','data-phase':phase,fill:'none'});signals.push(p);dots.push(shape('circle',{r:4,class:'db-cinema-packet','data-phase':phase,opacity:0,'aria-hidden':'true'}));}
+    line('M280 140H305V243H340',0);line('M280 220H305',0);line('M280 300H305V243',0);
+    line('M750 243H870',1);line('M950 305V424H305V351H340',2);line('M1030 243H1140V330',3);
+    shape('text',{x:10,y:36,class:'db-cinema-heading'},'成果基础');
+    s.foundations.forEach((text,i)=>{const g=shape('g',{'data-phase':0,class:'db-cinema-source'});shape('path',{d:`M10 ${158+i*80}h255`,class:'db-cinema-rule'},undefined,g);shape('text',{x:10,y:140+i*80,class:'db-cinema-source-text'},text,g);groups.push(g);});
+    shape('text',{x:545,y:36,'text-anchor':'middle',class:'db-cinema-heading'},'自然资源登记单元');shape('text',{x:545,y:70,'text-anchor':'middle',class:'db-cinema-subtitle'},'以单元为单位组织数据库');
+    s.categories.forEach((text,i)=>{const g=shape('g',{class:'db-cinema-layer','data-phase':0});const y=110+i*54;shape('path',{d:`M340 ${y}H750V${y+36}H340Z`,class:'db-cinema-plane'},undefined,g);shape('path',{d:`M340 ${y+36}l8 7h410v-36l-8-7v36Z`,class:'db-cinema-edge'},undefined,g);shape('text',{x:545,y:y+25,'text-anchor':'middle',class:'db-cinema-category'},text,g);groups.push(g);});
+    const scan=shape('path',{d:'M350 110H740',class:'db-cinema-scan',opacity:0,'aria-hidden':'true'});svg.insertBefore(scan,svg.querySelector('.db-cinema-layer'));
+    const gate=shape('g',{'data-phase':1,class:'db-cinema-gate'});shape('path',{d:'M870 190h160v115H870zM890 190v-16h120v16',class:'db-cinema-gate-outline'},undefined,gate);shape('text',{x:950,y:235,'text-anchor':'middle',class:'db-cinema-heading'},'软件质检',gate);shape('text',{x:950,y:272,'text-anchor':'middle',class:'db-cinema-subtitle'},'检查数据成果',gate);groups.push(gate);
+    const amend=shape('g',{'data-phase':2});shape('text',{x:650,y:409,'text-anchor':'middle',class:'db-cinema-amend'},'不合格 → 逐条修改 → 重新检查',amend);groups.push(amend);
+    const done=shape('g',{'data-phase':3});shape('path',{d:'M1104 350h72m-36-24v48',class:'db-cinema-result-mark'},undefined,done);shape('text',{x:1140,y:395,'text-anchor':'middle',class:'db-cinema-result'},'复检合格',done);groups.push(done);
+    let motion=null;
+    function finish(){motion?.kill();motion=null;dots.forEach(dot=>dot.style.opacity='0');scan.style.opacity='0';}
+    function selectStep(index){finish();layout.dataset.phase=index;groups.forEach(g=>g.classList.toggle('is-current',Number(g.dataset.phase)===index));signals.forEach(p=>p.classList.toggle('is-current',Number(p.dataset.phase)===index));
+      if(motionOff()||paused)return;motion=gsap.timeline();signals.forEach((p,i)=>{if(Number(p.dataset.phase)!==index)return;const meter={t:0},dot=dots[i],length=p.getTotalLength(),start=index===0?i*.12:0;motion.set(dot,{opacity:0},start).to(dot,{opacity:1,duration:.2},start).fromTo(meter,{t:0},{t:1,duration:2.3,ease:'sine.inOut',immediateRender:false,onUpdate:()=>{const point=p.getPointAtLength(length*meter.t);dot.setAttribute('transform',`translate(${point.x} ${point.y})`);}},start).to(dot,{opacity:0,duration:.25},start+2.05);});
+      if(index===1)motion.set(scan,{opacity:0,y:0},0).to(scan,{opacity:.45,duration:.2},0).to(scan,{y:250,duration:2.3,ease:'sine.inOut'},0).to(scan,{opacity:0,duration:.25},2.05);
+    }
+    const view={selectStep,pause:()=>motion?.pause(),resume:()=>{motion?.resume();if(!motionOff()&&!paused&&(!timeline||timeline.paused()))playDemonstration();},finish,destroy:finish,play:()=>{timeline=gsap.timeline({repeat:-1,repeatDelay:2});for(let i=0;i<4;i++)timeline.call(()=>highlightStep(i),[],i*3.2);timeline.to({},{duration:12.8},0).call(finish,[],12.8);}};workflowView=view;
+    const scene=el('div','db-cinema-scene');scene.tabIndex=0;scene.setAttribute('aria-label','建库示意图，窄屏可横向滚动');scene.addEventListener('keydown',event=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(event.key))event.stopPropagation();});scene.append(svg);
+    layout.append(el('p','db-cinema-hint','左右滑动查看完整建库示意'),scene);requestAnimationFrame(()=>{if(layout.isConnected&&workflowView===view&&!motionOff()&&!paused)playDemonstration();});return layout;
+  }
+
   function renderDatabase(s){
+    if(s.interaction==='database-cinematic')return renderDatabaseAnimation(s);
     const layout=el('div','database-layout'),standards=el('div','database-standards');
     standards.append(el('strong','','数据建库依据'));s.standards.forEach(text=>standards.append(el('span','',text)));
     const flow=el('div','database-organization'),foundation=el('section','database-foundation');foundation.append(el('h2','','成果基础'));
@@ -699,35 +833,36 @@
     t.append(body); return t;
   }
   function renderAudit(s) {
-    const table=renderTable(s.table,'audit-table audit-focus-table'),rows=[...table.tBodies[0].rows],choices=[];
-    const status=el('caption','sr-only');status.setAttribute('aria-live','polite');table.prepend(status);
-    let pinned=-1;
+    const layout=el('div','audit-reader-layout review-layout'),nav=el('section','audit-department-index'),reader=el('section','review-reader audit-detail-reader');
+    const heads=el('div','audit-index-heads'),options=el('div','audit-index-options'),choices=[],panels=[];
+    const progress=el('p','review-position');progress.setAttribute('aria-live','polite');
+    heads.append(el('span','',s.table.heads[0]),el('span','',s.table.heads[1]));
+    options.setAttribute('role','group');options.setAttribute('aria-label','内部审核处室索引');reader.setAttribute('aria-label','对应审核要点');
+    let selected=-1;
     function select(index){
-      rows.forEach((row,i)=>{row.classList.toggle('is-current',i===index);row.classList.toggle('is-pinned',i===pinned);
-        choices[i].setAttribute('aria-current',String(i===index));choices[i].setAttribute('aria-pressed',String(i===pinned));
-        choices[i].setAttribute('aria-label',(i===pinned?'取消固定讲解：':'固定讲解：')+s.table.rows[i][0]);choices[i].tabIndex=i===(index<0?0:index)?0:-1;
-      });
-      status.textContent=index<0?'已恢复全部审核分工。':(index===pinned?'已固定讲解：':'当前讲解：')+s.table.rows[index][0]+'。';
+      selected=Math.max(0,Math.min(s.table.rows.length-1,index));
+      choices.forEach((c,i)=>{c.classList.toggle('is-current',i===selected);c.setAttribute('aria-pressed',String(i===selected));c.setAttribute('aria-current',String(i===selected));c.tabIndex=i===selected?0:-1;});
+      panels.forEach((p,i)=>p.hidden=i!==selected);progress.textContent=pad(selected+1)+' / '+pad(choices.length);
     }
-    function reset(){pinned=-1;select(-1);}
-    rows.forEach((row,i)=>{
-      const control=el('button','audit-row-control');control.type='button';control.setAttribute('aria-describedby','audit-help');
-      control.append(el('span','',s.table.rows[i][0]),el('span','audit-pin','已固定'));row.cells[0].replaceChildren(control);choices.push(control);
-      row.addEventListener('pointerenter',event=>{if(event.pointerType!=='touch')select(i);});
-      control.addEventListener('focus',()=>select(i));
-      row.addEventListener('click',()=>{control.focus({preventScroll:true});pinned=pinned===i?-1:i;select(i);});
+    s.table.rows.forEach(([department,province,text],i)=>{
+      const control=button('',()=>select(i),'audit-department-choice');control.setAttribute('aria-controls','audit-detail-'+i);
+      control.setAttribute('aria-label',department+'；省级部门（参照）：'+province);
+      control.append(el('span','audit-department-name',department),el('span','audit-province-name',province));
+      control.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse'&&matchMedia('(hover:hover) and (pointer:fine)').matches)select(i);});
+      control.addEventListener('focus',()=>select(i));choices.push(control);options.append(control);
+      const panel=el('section','review-clause audit-detail');panel.id='audit-detail-'+i;panel.setAttribute('aria-label',department);
+      panel.append(el('h2','',department),el('p','audit-detail-province','省级部门（参照）：'+province),el('span','review-clause-letter','审核要点'),el('p','review-clause-text',text));panels.push(panel);reader.append(panel);
     });
-    table.addEventListener('pointerleave',()=>{const focused=choices.findIndex(control=>control.matches(':focus-visible'));select(focused<0?pinned:focused);});
-    table.addEventListener('focusout',event=>{if(!table.contains(event.relatedTarget))select(pinned);});
-    table.addEventListener('keydown',event=>{
-      if(event.altKey||event.ctrlKey||event.metaKey)return;
-      const index=choices.indexOf(event.target);if(index<0)return;
-      const next={ArrowDown:(index+1)%rows.length,ArrowUp:(index+rows.length-1)%rows.length,Home:0,End:rows.length-1}[event.key];
+    options.addEventListener('keydown',event=>{
+      if(event.altKey||event.ctrlKey||event.metaKey)return;const i=choices.indexOf(event.target);if(i<0)return;
+      const next={ArrowDown:(i+1)%choices.length,ArrowUp:(i+choices.length-1)%choices.length,Home:0,End:choices.length-1}[event.key];
       if(next!==undefined){event.preventDefault();event.stopPropagation();choices[next].focus();}
-      if(event.key==='Escape'){event.preventDefault();event.stopPropagation();reset();}
     });
-    exhibitView={resetLabel:'清除聚焦',reset};reset();return table;
+    const tools=el('div','review-reader-tools');tools.append(button('上一项',()=>select((selected+choices.length-1)%choices.length)),progress,button('下一项',()=>select((selected+1)%choices.length)));
+    nav.append(heads,options);reader.append(tools);layout.append(nav,reader);
+    exhibitView={resetLabel:'恢复首项',reset:()=>select(0)};select(0);return layout;
   }
+
   function renderRegistration(s) {
     const layout=el('div','registration-combined'),context=el('section','registration-context');
     const choices=[],panels=[],methods=[],count=s.points.length;
@@ -897,7 +1032,37 @@
     exhibitView={...board,resetLabel:'恢复全览',reset:()=>{filter('全部');select(0);}};
     return layout;
   }
+  function renderDeliverables(s){
+    const layout=el('div','deliverables-showcase'),cards=[];
+    let active=0,timer=null,progress=null,sweep=null,entry=null,disposed=false,stopped=false;
+    function stop(){clearTimeout(timer);timer=null;progress?.cancel();progress=null;sweep?.cancel();sweep=null;}
+    function select(index){active=index;cards.forEach((card,i)=>card.classList.toggle('is-current',i===active));}
+    function sync(){
+      if(disposed||stopped||paused||motionOff()||document.hidden){stop();entry?.pause();return;}
+      entry?.resume();if(timer)return;
+      progress=cards[active].querySelector('.deliverable-progress').animate([{transform:'scaleX(0)'},{transform:'scaleX(1)'}],{duration:2800,easing:'linear',fill:'forwards'});
+      sweep=cards[active].querySelector('.deliverable-sheen').animate([{transform:'translateX(-150%) skewX(-18deg)',opacity:0},{opacity:.16,offset:.4},{transform:'translateX(400%) skewX(-18deg)',opacity:0}],{duration:2800,easing:'linear'});
+      timer=setTimeout(()=>{timer=null;progress?.cancel();progress=null;sweep?.cancel();sweep=null;if(disposed)return;select((active+1)%cards.length);sync();},2800);
+    }
+    s.table.rows.forEach(([label,format],i)=>{
+      const split=label.indexOf('：'),title=split<0?label:label.slice(0,split),detail=split<0?'':label.slice(split+1);
+      const card=el('section','deliverable-card'),top=el('div','deliverable-card-top'),visual=el('div','deliverable-emblem');
+      top.append(el('span','deliverable-number',pad(i+1)),el('span','deliverable-format',format));
+      visual.append(icon(['browser','board','board','board','calendar','shield'][i]));
+      card.append(el('span','deliverable-sheen'),top,visual,el('h2','',title),el('p','deliverable-description',detail),el('span','deliverable-progress'));cards.push(card);layout.append(card);
+    });
+    exhibitView={autoplay:true,reset:()=>{stop();stopped=false;select(0);sync();},setState:sync,pause:()=>{stop();entry?.pause();},resume:sync,finish:()=>{stopped=true;stop();entry?.progress(1).pause();},destroy:()=>{disposed=true;stop();entry?.kill();}};
+    requestAnimationFrame(()=>{
+      if(disposed)return;
+      if(!motionOff()&&!paused)entry=gsap.fromTo(cards,{opacity:.4,y:18},{opacity:1,y:0,duration:.5,stagger:.06,ease:'power3.out',clearProps:'opacity,transform'});
+    });
+    select(0);return layout;
+  }
+
   function renderBody(s) {
+    if(s.interaction==='deliverables-showcase')return renderDeliverables(s);
+    if(s.interaction==='eagle')return renderBasemap(s);
+    if(s.interaction==='mapping-copy')return copyPoints(s.points,'mapping-text-only');
     if (s.interaction === 'outfall-register') return renderOutfalls(s);
     if (s.layout === 'agenda') return renderAgenda();
     if(s.interaction==='summary-focus')return renderSummary(s);
@@ -908,6 +1073,7 @@
     if (s.layout === 'staffing') return renderStaffing(s);
     if (s.interaction === 'document-exhibit') return renderDocumentExhibit(s);
     if (s.interaction === 'policy-library') return renderPolicyLibrary(s);
+    if (s.interaction==='document-board' && s===slides[2]) return renderBackgroundTabs(s);
     if (['document-board','source-board'].includes(s.interaction)) return renderDocumentBoard(s);
     if (s.layout === 'gallery' || s.layout === 'expert') {
       return mediaLayout(s);
@@ -992,7 +1158,7 @@
     }
   }
   function updateControls() {
-    const manualView=Boolean(exhibitView);
+    const manualView=Boolean(exhibitView&&!exhibitView.autoplay);
     $('pause-button').textContent = paused ? '继续' : '暂停';
     $('pause-button').setAttribute('aria-pressed', String(paused));
     $('static-button').setAttribute('aria-pressed', String(motionOff()));
@@ -1007,7 +1173,7 @@
     document.body.classList.toggle('static-mode', motionOff());
     document.body.classList.toggle('motion-paused',paused);
     starfield?.setState({paused,staticMode:motionOff()});
-    exhibitView?.setState?.({paused,staticMode:motionOff()});
+    exhibitView?.setState?.({paused,staticMode:motionOff()});activeGallery?.setState?.();
     $('stage').dataset.paused = String(paused);
   }
   function intro(animate, direction = 1) {
@@ -1038,7 +1204,7 @@
     document.querySelectorAll('.chapter-button').forEach(node => node.classList.remove('is-agenda-preview'));
     const next = Math.max(0, Math.min(slides.length - 1, Math.trunc(index)));
     const direction = next >= pageIndex ? 1 : -1;
-    stopTimeline(); landscape?.destroy(); exhibitView?.destroy?.();workflowView?.destroy();workflowView=null; exhibitView=null; landscape=null; activeGallery=null; pageIndex = next; currentStep = 0;
+    stopTimeline(); landscape?.destroy(); exhibitView?.destroy?.();activeGallery?.destroy?.();workflowView?.destroy();workflowView=null; exhibitView=null; landscape=null; activeGallery=null; pageIndex = next; currentStep = 0;
     const s = slides[pageIndex], slide = el('article', 'slide');
     slide.dataset.layout=s.layout;
     if (s.layout === 'cover' || s.layout === 'closing') {
@@ -1050,13 +1216,9 @@
     } else {
       const heading = el('div', 'slide-heading'), title = el('h1', '', s.title); title.id = 'slide-title'; title.tabIndex = -1;
       heading.append(title); if (s.status) heading.append(el('span', 'status-label', s.status));
-      if(s.interaction==='audit-focus'){
-        const help=el('p','audit-help');help.id='audit-help';
-        help.append(el('span','audit-help-pointer','悬停聚焦 · 点击固定 · ↑↓切换'),el('span','audit-help-touch','点击固定讲解 · 再次点击取消'));heading.append(help);
-      }
       const content = el('div', 'slide-content'); content.append(renderBody(s));
       slide.append(heading);
-      if(s.board!=='protected-units')for(const paragraph of s.leadParagraphs||[s.lead])slide.append(el('p','slide-lead',paragraph));
+      if(s.interaction!=='database-cinematic'&&s.interaction!=='audit-focus'&&s.board!=='protected-units')for(const paragraph of s.leadParagraphs||[s.lead])slide.append(el('p','slide-lead',paragraph));
       slide.append(content);
       if (['gallery','expert'].includes(s.layout)) slide.classList.add('media-slide');
       if(s.interaction==='source-board')slide.classList.add('source-slide');
@@ -1082,11 +1244,13 @@
     if (window.innerWidth < 768) window.scrollTo({ top: 0, behavior: 'instant' });
   }
   function playDemonstration() {
-    if (exhibitView) { exhibitView.reset(); return; }
+    if (exhibitView) { if(exhibitView.autoplay){paused=false;updateControls();}exhibitView.reset(); return; }
     stopTimeline(); paused = false; updateControls();
     if (motionOff()) { notify('静态模式下可用“下一步”直接切换讲解位置。'); return; }
     const s = slides[pageIndex];
     landscape?.restart();
+    if(s.interaction==='database-cinematic'){workflowView.play();return;}
+    if(activeGallery?.play){activeGallery.play();return;}
     if (activeGallery?.element.getClientRects().length) {
       const g=activeGallery; g.select(g.ids[0], false);
       timeline=gsap.timeline();
@@ -1096,9 +1260,9 @@
       highlightStep(0);timeline=gsap.timeline();timeline.call(()=>highlightStep(1),[],2.4).call(()=>highlightStep(2),[],9.2).to({},{duration:2.6},9.2);
     } else if (['process','layers','database','staffing'].includes(s.layout)) {
       const count = s.steps?.length || s.points.length;
-      const interval=s.layout==='workflow'?3:1.5;
+      const interval=s.interaction==='database-cinematic'?2.4:s.layout==='workflow'?3:1.5;
       highlightStep(0);
-      timeline = gsap.timeline({ onComplete: () => highlightStep(count - 1) });
+      timeline = gsap.timeline({ onComplete: () => {highlightStep(count - 1);if(s.interaction==='database-cinematic')workflowView?.finish();} });
       for (let i = 1; i < count; i++) timeline.call(() => highlightStep(i), [], i * interval);
       timeline.to({}, { duration: interval }, (count - 1) * interval);
     } else if (s.layout === 'chart') {
@@ -1117,7 +1281,7 @@
     timeline?.progress(1).pause(); landscape?.pause(); mediaTween?.progress(1).pause(); stepTween?.progress(1).pause(); exhibitView?.finish?.();
     const s = slides[pageIndex];
     if (['process','workflow','database','staffing'].includes(s.layout) || (s.layout === 'layers' && !exhibitView)) highlightStep((s.steps || s.points).length - 1);
-    workflowView?.finish();
+    workflowView?.finish();activeGallery?.finish?.();
   }
   function openDialog(id) { hideLoupe();pauseAll(); const d = $(id); if (!d.open) d.showModal(); }
   function renderContents() {

@@ -1,3 +1,4 @@
+const remainingPage=n=>{const p=n-(n>15?1:0)-(n>19?1:0);return p+(p>=18?1:0);};
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const {chromium}=require('playwright'),{pathToFileURL}=require('node:url'),path=require('node:path');
@@ -18,7 +19,7 @@ test('第2/8页小屏保留完整文书，触屏与键盘均可打开原件',asy
  const errors=[],remote=[];p.on('pageerror',e=>errors.push(e.message));p.on('request',r=>{if(/^https?:/.test(r.url()))remote.push(r.url());});
  try{
   for(const n of [2]){
-   await p.goto(url+'#p'+(n>=2&&n<=9?n+1:n));await p.locator('.document-board img').first().evaluate(i=>i.decode());
+   await p.goto(url+'#p'+remainingPage(n>=2&&n<=9?n+1:n));if(n===2)await p.getByRole('tab',{name:'政策文件',exact:true}).click();await p.locator('.document-board img').first().evaluate(i=>i.decode());
    assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),true);
    for(const img of await p.locator('.document-board img').all()){
     await img.evaluate(i=>i.decode());
@@ -50,7 +51,7 @@ test('第8页按PPT第10页展示编制依据与唯一底图，移除旧图集�
 test('第2页两份方案同时完整显示，原件可打开且没有缩略图选择区',async()=>{
  const b=await chromium.launch({channel:'chrome'}),p=await b.newPage({viewport:{width:1920,height:1080},offline:true,reducedMotion:'reduce'});
  try{
-  await p.goto(url+'#p3');
+  await p.goto(url+'#p3');assert.equal(await p.getByRole('tab').count(),2);assert(await p.locator('.background-deployment').isVisible());assert.match(await p.locator('.background-deployment').innerText(),/归属清晰、权责明确、保护严格、流转顺畅、监管有效/);await p.getByRole('tab',{name:'政策文件',exact:true}).click();
   assert.equal(await p.locator('.document-board img').count(),2);
   assert.equal(await p.locator('.gallery-tabs').count(),0);
   const pictures=p.locator('.document-board img');

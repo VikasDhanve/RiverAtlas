@@ -1,9 +1,9 @@
 /* Local WGS84 vectors; no network tiles, inferred registration boundaries or water simulation. */
 const RiverAtlasMap=(()=>{
   'use strict';
-  function create(container,{onSelect}){
+  function create(container,{onSelect,attributes,rivers}){
     let map=null,selected=null,paused=false,staticMode=false,destroyed=false;
-    const groups=[],labels=[],data=RiverAtlasGeography;
+    const groups=[],labels=[],annotations=[],data=RiverAtlasGeography;
     const allBounds=L.geoJSON(data.rivers).getBounds();
     const text=(value,className)=>{const n=document.createElement('span');n.className=className;n.textContent=value;return n;};
     function paint(){
@@ -13,12 +13,27 @@ const RiverAtlasMap=(()=>{
         group.eachLayer(collection=>collection.eachLayer(layer=>layer.getElement()?.classList.toggle('river-dimmed',dim)));
       });
       labels.forEach((label,index)=>label.getElement()?.classList.toggle('river-label-dimmed',selected!==null&&selected!==index));
+      layoutLabels();
       container.setAttribute('aria-label',selected===null?'五河地理地图':data.rivers.features[selected].properties.name+'地理地图');
+    }
+    function layoutLabels(){
+      if(!map)return;
+      const small=container.clientWidth<520,compact=selected===null;
+      container.dataset.selection=selected===null?'all':String(selected);container.classList.toggle('map-compact-labels',compact);
+      const width=compact?100:small?228:220,height=compact?30:132;
+      const slots=[[.5,.88],[.02,.88],[.04,.02],[.50,.02],[.98,.47]];
+      annotations.forEach((a,i)=>{
+        if(compact){const point=map.latLngToContainerPoint(a.anchor).add([8,-12]);a.marker.setLatLng(map.containerPointToLatLng(point));a.connector.setStyle({opacity:0});return;}
+        const slot=selected===null?slots[i]:[0,0],x=12+slot[0]*Math.max(0,container.clientWidth-width-24),y=12+slot[1]*Math.max(0,container.clientHeight-height-68);
+        a.marker.setLatLng(map.containerPointToLatLng([x,y]));
+        a.connector.setLatLngs([a.anchor,map.containerPointToLatLng([x+width/2,y+height/2])]);
+        a.connector.setStyle({opacity:selected===null||selected===i ? .45 : 0});
+      });
     }
     function fit(animate){
       if(!map)return;
       const bounds=selected===null?allBounds:L.geoJSON(data.rivers.features[selected]).getBounds();
-      const options={padding:[36,30],maxZoom:12,animate:animate&&!paused&&!staticMode,duration:.85};
+      const options={padding:container.clientWidth<520?[30,30]:[70,65],maxZoom:12,animate:animate&&!paused&&!staticMode,duration:.85};
       map.stop();if(options.animate)map.flyToBounds(bounds,options);else map.fitBounds(bounds,options);
     }
     function select(index,animate=true){
@@ -53,15 +68,24 @@ const RiverAtlasMap=(()=>{
         group.eachLayer(collection=>collection.eachLayer(layer=>{const path=layer.getElement();if(path)path.dataset.river=String(index);}));
         const line=feature.geometry.coordinates.reduce((a,b)=>a.length>b.length?a:b);
         const point=line[Math.floor(line.length*.55)];
-        const label=L.marker([point[1],point[0]],{interactive:false,keyboard:false,icon:L.divIcon({html:text(feature.properties.name,'map-river-text'),className:'map-river-label',iconSize:[100,24],iconAnchor:[-10,12]})}).addTo(map);
-        labels.push(label);
+        const anchor=L.latLng(point[1],point[0]),card=document.createElement('div');card.className='river-map-annotation';card.dataset.river=String(index);
+        card.append(text(feature.properties.name,'map-river-text'));
+        const details=document.createElement('dl');details.className='map-attribute-values';
+        const [,length,area,county]=attributes[index];
+        for(const [key,value] of [['长度',length+' km'],['面积',area+' 公顷'],['涉及县区',county]]){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=key;dd.textContent=value;details.append(dt,dd);}
+        card.append(details);
+        const connector=L.polyline([anchor,anchor],{interactive:false,color:'#8db9c7',weight:1,opacity:.45}).addTo(map);
+        L.circleMarker(anchor,{interactive:false,radius:3,color:'#b8f3f7',weight:1,fillOpacity:1}).addTo(map);
+        const label=L.marker(anchor,{interactive:false,keyboard:false,zIndexOffset:600,icon:L.divIcon({html:card,className:'map-attribute-marker',iconSize:[220,132],iconAnchor:[0,0]})}).addTo(map);
+        labels.push(label);annotations.push({marker:label,connector,anchor});
       });
+      map.on('move zoom resize',layoutLabels);
       select(selected,false);
     }
     function setState(next){paused=next.paused;staticMode=next.staticMode;if(paused||staticMode)map?.stop();paint();}
     return {
       select,setState,
-      refit(){init();map?.invalidateSize({pan:false,animate:false});},
+      refit(){init();map?.invalidateSize({pan:false,animate:false});layoutLabels();},
       pause(){paused=true;map?.stop();paint();},
       resume(){paused=false;paint();},
       finish(){map?.stop();},

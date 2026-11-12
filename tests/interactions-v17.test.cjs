@@ -3,10 +3,10 @@ const {test}=require('node:test'),assert=require('node:assert/strict');
 const {chromium}=require('playwright');
 const path=require('node:path'),{pathToFileURL}=require('node:url');
 const url=pathToFileURL(path.resolve(__dirname,'../index.html')).href;
-test('第五页属性区只显示属性，总览与单河均无重复标题',async()=>{
+test('第4页图上标注包含河名与属性，选河仅突出对应标注',async()=>{
  const b=await chromium.launch({channel:'chrome'}),p=await b.newPage({viewport:{width:1920,height:1080},offline:true,reducedMotion:'reduce'});
- try{await p.goto(url+'#p4');assert.equal(await p.locator('.river-attributes h2').count(),0);assert.match(await p.locator('.river-attributes').innerText(),/26\.77[\s\S]*327.98/);
- await p.getByRole('button',{name:'登沙河 普兰店区、金普新区',exact:true}).click();assert.equal(await p.locator('.river-attributes h2').count(),0);assert.doesNotMatch(await p.locator('.river-attributes').innerText(),/登沙河|市级/);assert.match(await p.locator('.river-attributes').innerText(),/26\.77[\s\S]*327.98/);
+ try{await p.goto(url+'#p4');assert.equal(await p.locator('.river-map-annotation h2').count(),0);assert.match((await p.locator('.river-map-annotation').allTextContents()).join(' '),/26\.77[\s\S]*327.98/);
+ await p.getByRole('button',{name:'登沙河 普兰店区、金普新区',exact:true}).click();assert.equal(await p.locator('.river-map-annotation h2').count(),0);assert.equal(await p.locator('.map-attribute-marker:not(.river-label-dimmed) .map-river-text').innerText(),'登沙河');assert.doesNotMatch(await p.locator('.map-attribute-marker:not(.river-label-dimmed) .map-attribute-values').innerText(),/市级/);assert.match((await p.locator('.river-map-annotation').allTextContents()).join(' '),/26\.77[\s\S]*327.98/);
  }finally{await b.close();}
 });
 test('第六页按原图保留21节点与22条关系，包含全部分支、回流和入库关联',async()=>{
@@ -32,9 +32,9 @@ test('缩略图图集主图有跟随局部放大镜，边缘避让且离图、�
   const box=await p.locator('#media-loupe').boundingBox();assert(box.x>=0&&box.y>=0&&box.x+box.width<=1920&&box.y+box.height<=1080);
   await p.locator('#slide-title').hover();assert.equal(await p.locator('#media-loupe').count(),0);
   await img.hover();await p.keyboard.press('ArrowRight');await p.waitForTimeout(500);assert.equal(await p.locator('#media-loupe').count(),0);
-  await p.goto(url+'#p16');await p.locator('.gallery-spread img').hover();await p.locator('.gallery-spread .image-button').click();assert.equal(await p.locator('#media-loupe').count(),0);
+  await p.goto(url+'#p18');await p.locator('.gallery-spread img').hover();await p.locator('.gallery-spread .image-button').click();assert.equal(await p.locator('#media-loupe').count(),0);
   await p.keyboard.press('Escape');
-  await p.emulateMedia({reducedMotion:'reduce'});await p.goto(url+'#p29');await p.locator('#slide-title').hover();await p.locator('.gallery-spread img').hover();assert.equal(await p.locator('#media-loupe').count(),1);
+  await p.emulateMedia({reducedMotion:'reduce'});await p.goto(url+'#p28');await p.locator('#slide-title').hover();await p.locator('.gallery-spread img').hover();assert.equal(await p.locator('#media-loupe').count(),1);
  }finally{await b.close();}
 });
 test('流程条件分支分别描绘，解决与未解决不同时高亮，暂停冻结描线',async()=>{

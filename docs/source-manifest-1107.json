@@ -331,9 +331,8 @@
         "ppt/media/image26.jpeg",
         "ppt/media/image27.jpeg"
       ],
-      "presentationPages": [
-        15
-      ]
+      "presentationPages": [],
+      "removalNote": "2026-11-12 用户明确删除展示页面；原始资料保持。"
     },
     {
       "page": 17,
@@ -351,7 +350,7 @@
       ],
       "images": [],
       "presentationPages": [
-        16
+        15
       ]
     },
     {
@@ -365,7 +364,7 @@
         "ppt/media/image30.png"
       ],
       "presentationPages": [
-        16
+        18
       ]
     },
     {
@@ -384,7 +383,7 @@
       ],
       "images": [],
       "presentationPages": [
-        17
+        16
       ]
     },
     {
@@ -419,7 +418,7 @@
         "ppt/media/image31.png"
       ],
       "presentationPages": [
-        18
+        17
       ]
     },
     {
@@ -438,9 +437,8 @@
         ""
       ],
       "images": [],
-      "presentationPages": [
-        19
-      ]
+      "presentationPages": [],
+      "removalNote": "2026-11-12 用户明确删除展示页面；原始资料保持。"
     },
     {
       "page": 22,
@@ -456,7 +454,7 @@
         "ppt/media/image32.jpeg"
       ],
       "presentationPages": [
-        20
+        19
       ]
     },
     {
@@ -468,7 +466,7 @@
         "ppt/media/image33.png"
       ],
       "presentationPages": [
-        20
+        19
       ]
     },
     {
@@ -480,7 +478,7 @@
         "ppt/media/image34.jpeg"
       ],
       "presentationPages": [
-        20
+        19
       ]
     },
     {
@@ -493,7 +491,7 @@
         "ppt/media/image36.png"
       ],
       "presentationPages": [
-        21
+        20
       ]
     },
     {
@@ -529,7 +527,7 @@
       ],
       "images": [],
       "presentationPages": [
-        22
+        21
       ]
     },
     {
@@ -551,7 +549,7 @@
       ],
       "images": [],
       "presentationPages": [
-        22
+        21
       ]
     },
     {
@@ -561,7 +559,7 @@
       ],
       "images": [],
       "presentationPages": [
-        23
+        22
       ]
     },
     {
@@ -590,7 +588,7 @@
       ],
       "images": [],
       "presentationPages": [
-        24
+        23
       ]
     },
     {
@@ -610,7 +608,7 @@
       ],
       "images": [],
       "presentationPages": [
-        25
+        24
       ]
     },
     {
@@ -660,7 +658,7 @@
       ],
       "images": [],
       "presentationPages": [
-        26
+        25
       ]
     },
     {
@@ -672,7 +670,7 @@
         "ppt/media/image37.png"
       ],
       "presentationPages": [
-        27
+        26
       ]
     },
     {
@@ -689,7 +687,7 @@
       ],
       "images": [],
       "presentationPages": [
-        28
+        27
       ]
     },
     {
@@ -701,7 +699,7 @@
         "ppt/media/image38.jpeg"
       ],
       "presentationPages": [
-        29
+        28
       ]
     },
     {
@@ -713,7 +711,7 @@
         "ppt/media/image39.jpeg"
       ],
       "presentationPages": [
-        29
+        28
       ]
     },
     {
@@ -725,7 +723,7 @@
         "ppt/media/image40.png"
       ],
       "presentationPages": [
-        29
+        28
       ]
     },
     {
@@ -737,7 +735,7 @@
         "ppt/media/image41.png"
       ],
       "presentationPages": [
-        29
+        28
       ]
     },
     {
@@ -749,7 +747,7 @@
         "ppt/media/image42.png"
       ],
       "presentationPages": [
-        29
+        28
       ]
     },
     {
@@ -761,7 +759,7 @@
         "ppt/media/image43.png"
       ],
       "presentationPages": [
-        29
+        28
       ]
     },
     {
@@ -782,7 +780,7 @@
       ],
       "images": [],
       "presentationPages": [
-        30
+        29
       ]
     },
     {
@@ -796,7 +794,7 @@
       ],
       "images": [],
       "presentationPages": [
-        31
+        30
       ]
     }
   ],
